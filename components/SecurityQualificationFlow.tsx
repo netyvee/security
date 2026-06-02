@@ -478,14 +478,14 @@ export default function SecurityQualificationFlow() {
           {/* Calendly */}
           <div className="mb-6">
             <h3 className="text-white font-medium text-lg mb-4 text-center">Book your free discovery call</h3>
-            <div style={{ minHeight: '630px' }}>
+            <div style={{ minHeight: '630px' }} className="calendly-inline-widget">
               <InlineWidget
                 url={calendlyUrl}
                 styles={{ height: '630px' }}
                 pageSettings={{
-                  backgroundColor: '0a1628',
+                  backgroundColor: 'ffffff',
                   primaryColor: '4ecdc4',
-                  textColor: 'ffffff'
+                  textColor: '0a1628'
                 }}
               />
             </div>
