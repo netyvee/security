@@ -71,10 +71,58 @@
 4. **Always check forbidden claims** before pushing any content
 5. **Always test build** — must show 0 errors before pushing
 6. **Never use git add -A** — stage specific source files only
-7. **Keep .next/ and node_modules gitignored**
+7. **Keep .next/ and node_modules gitignored** (exception: vercel.json MUST be committed)
 8. **Match the exact design system** — no new colors, fonts, or spacing
 9. **SOP compliance required** — every page 2,500+ words, full schema, FAQs, etc.
 10. **When in doubt, ask** — never assume or invent
+
+---
+
+## DEPLOYMENT VERIFICATION — MANDATORY AFTER EVERY PUSH
+
+**CRITICAL:** After every `git push`, you MUST verify the Vercel deployment succeeds. This is non-negotiable and automatic.
+
+### Autonomous Verification Process:
+
+1. **Wait 90 seconds** for Vercel to build and deploy
+
+2. **Check deployment status** using one of these methods:
+
+   **Method A (if VERCEL_TOKEN available):**
+   ```bash
+   curl -s "https://api.vercel.com/v6/deployments?projectId=prj_Pd0vRktsJFy2tThpoLsWhJZyKmnQ&limit=1" \
+     -H "Authorization: Bearer $VERCEL_TOKEN" | grep -o '"state":"[^"]*"'
+   ```
+
+   **Method B (fallback — always works):**
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}" https://security-sable.vercel.app
+   ```
+   - `200` = deployment succeeded ✅
+   - Non-200 = deployment failed ❌
+
+3. **If deployment failed:**
+   - Run `npm run build` locally to capture errors
+   - Fix EVERY error automatically (no approval needed)
+   - Commit the fix with descriptive message
+   - Push to GitHub
+   - Wait another 90 seconds
+   - Check deployment status again
+   - **Repeat until deployment succeeds**
+
+4. **Report only when:**
+   - Deployment is confirmed live with HTTP 200 response
+   - Include: deployment URL, build time, route count, any fixes applied
+
+### Rules:
+- **Never skip verification** — every push requires confirmation
+- **Never ask for approval** during the fix loop — fix autonomously
+- **Never stop until 200 response** — persistence required
+- **Always fix locally first** — never push broken code hoping Vercel will fix it
+- **Log every iteration** — if multiple fix attempts needed, document what was tried
+
+### Exception:
+If 3+ consecutive fix attempts fail, report the error pattern and ask for human intervention.
 
 ---
 
