@@ -1,32 +1,64 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 interface NavProps {
   minimal?: boolean;
 }
 
 const guardingServices = [
-  { label: "Manned Guarding London", href: "/manned-guarding-london/" },
-  { label: "Mobile Patrols London", href: "/mobile-patrols-london/" },
-  { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/" },
-  { label: "Concierge Security", href: "/concierge-security-london/" },
+  { label: "Manned Guarding London", href: "/manned-guarding-london/", icon: "ti-shield-check" },
+  { label: "Mobile Patrols London", href: "/mobile-patrols-london/", icon: "ti-car" },
+  { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/", icon: "ti-key" },
+  { label: "Concierge Security", href: "/concierge-security-london/", icon: "ti-user-check" },
 ];
 
 const specialistServices = [
-  { label: "Event Security London", href: "/event-security-london/" },
-  { label: "Retail Security London", href: "/retail-security-london/" },
-  { label: "Construction Site Security", href: "/construction-site-security-london/" },
-  { label: "CCTV Monitoring London", href: "/cctv-monitoring-london/" },
+  { label: "Event Security London", href: "/event-security-london/", icon: "ti-confetti" },
+  { label: "Retail Security London", href: "/retail-security-london/", icon: "ti-building-store" },
+  { label: "Construction Site Security", href: "/construction-site-security-london/", icon: "ti-crane" },
+  { label: "CCTV Monitoring London", href: "/cctv-monitoring-london/", icon: "ti-camera" },
 ];
 
 export default function Nav({ minimal = false }: NavProps) {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [locationsOpen, setLocationsOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobileLocationsOpen, setMobileLocationsOpen] = useState(false);
+
+  const servicesTimerRef = useRef<NodeJS.Timeout>();
+  const locationsTimerRef = useRef<NodeJS.Timeout>();
+
+  const handleServicesEnter = () => {
+    if (servicesTimerRef.current) clearTimeout(servicesTimerRef.current);
+    setServicesOpen(true);
+  };
+
+  const handleServicesLeave = () => {
+    servicesTimerRef.current = setTimeout(() => setServicesOpen(false), 150);
+  };
+
+  const handleLocationsEnter = () => {
+    if (locationsTimerRef.current) clearTimeout(locationsTimerRef.current);
+    setLocationsOpen(true);
+  };
+
+  const handleLocationsLeave = () => {
+    locationsTimerRef.current = setTimeout(() => setLocationsOpen(false), 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (servicesTimerRef.current) clearTimeout(servicesTimerRef.current);
+      if (locationsTimerRef.current) clearTimeout(locationsTimerRef.current);
+    };
+  }, []);
+
+  const isActive = (path: string) => pathname === path;
 
   return (
     <nav
@@ -84,66 +116,78 @@ export default function Nav({ minimal = false }: NavProps) {
             {/* Services Dropdown */}
             <li
               className="relative"
-              onMouseEnter={() => setServicesOpen(true)}
-              onMouseLeave={() => setServicesOpen(false)}
+              onMouseEnter={handleServicesEnter}
+              onMouseLeave={handleServicesLeave}
+              style={{ paddingBottom: '8px' }}
             >
               <button
-                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 flex items-center gap-1"
+                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 flex items-center gap-1 relative pb-1"
                 onClick={() => setServicesOpen(!servicesOpen)}
               >
                 Services
                 <svg
-                  width="12"
-                  height="12"
+                  width="10"
+                  height="10"
                   fill="none"
-                  stroke="currentColor"
+                  stroke="rgba(255,255,255,0.4)"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`transition-transform ${servicesOpen ? "rotate-180" : ""}`}
+                  className={`transition-all duration-200 ${servicesOpen ? "rotate-180 !stroke-[#4ecdc4]" : ""}`}
+                  style={{ marginTop: '1px' }}
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
+                <span
+                  className="absolute bottom-0 left-0 h-[1.5px] bg-[#4ecdc4] rounded-[1px] transition-all duration-200"
+                  style={{
+                    width: servicesOpen ? '100%' : '0%',
+                  }}
+                />
               </button>
 
               {servicesOpen && (
                 <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[520px] bg-[#0f1f3d] rounded-lg shadow-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden"
-                  style={{ zIndex: 100 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 w-[540px] bg-[#0f1f3d] rounded-lg shadow-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden"
+                  style={{ zIndex: 100, marginTop: '-8px', paddingTop: '8px' }}
+                  onMouseEnter={handleServicesEnter}
+                  onMouseLeave={handleServicesLeave}
                 >
                   <div className="grid grid-cols-2 gap-6 p-6">
-                    {/* Group 1 */}
+                    {/* Guarding Services */}
                     <div>
                       <h3 className="text-[11px] text-[#4ecdc4] uppercase tracking-wider font-medium mb-3">
                         Guarding Services
                       </h3>
-                      <ul className="space-y-2">
+                      <ul className="space-y-1">
                         {guardingServices.map((service) => (
                           <li key={service.href}>
                             <Link
                               href={service.href}
-                              className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] transition-colors block py-1"
+                              className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all block py-2 px-3 rounded flex items-center gap-2"
                             >
-                              {service.label}
+                              <i className={`${service.icon} text-[16px]`} style={{ minWidth: '16px' }} />
+                              <span>{service.label}</span>
                             </Link>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* Group 2 */}
+                    {/* Specialist Security */}
                     <div>
                       <h3 className="text-[11px] text-[#4ecdc4] uppercase tracking-wider font-medium mb-3">
                         Specialist Security
                       </h3>
-                      <ul className="space-y-2">
+                      <ul className="space-y-1">
                         {specialistServices.map((service) => (
                           <li key={service.href}>
                             <Link
                               href={service.href}
-                              className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] transition-colors block py-1"
+                              className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all block py-2 px-3 rounded flex items-center gap-2"
                             >
-                              {service.label}
+                              <i className={`${service.icon} text-[16px]`} style={{ minWidth: '16px' }} />
+                              <span>{service.label}</span>
                             </Link>
                           </li>
                         ))}
@@ -157,38 +201,48 @@ export default function Nav({ minimal = false }: NavProps) {
             {/* Locations Dropdown */}
             <li
               className="relative"
-              onMouseEnter={() => setLocationsOpen(true)}
-              onMouseLeave={() => setLocationsOpen(false)}
+              onMouseEnter={handleLocationsEnter}
+              onMouseLeave={handleLocationsLeave}
+              style={{ paddingBottom: '8px' }}
             >
               <button
-                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 flex items-center gap-1"
+                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 flex items-center gap-1 relative pb-1"
                 onClick={() => setLocationsOpen(!locationsOpen)}
               >
                 Locations
                 <svg
-                  width="12"
-                  height="12"
+                  width="10"
+                  height="10"
                   fill="none"
-                  stroke="currentColor"
+                  stroke="rgba(255,255,255,0.4)"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`transition-transform ${locationsOpen ? "rotate-180" : ""}`}
+                  className={`transition-all duration-200 ${locationsOpen ? "rotate-180 !stroke-[#4ecdc4]" : ""}`}
+                  style={{ marginTop: '1px' }}
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
+                <span
+                  className="absolute bottom-0 left-0 h-[1.5px] bg-[#4ecdc4] rounded-[1px] transition-all duration-200"
+                  style={{
+                    width: locationsOpen ? '100%' : '0%',
+                  }}
+                />
               </button>
 
               {locationsOpen && (
                 <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[320px] bg-[#0f1f3d] rounded-lg shadow-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden"
-                  style={{ zIndex: 100 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 w-[340px] bg-[#0f1f3d] rounded-lg shadow-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden"
+                  style={{ zIndex: 100, marginTop: '-8px', paddingTop: '8px' }}
+                  onMouseEnter={handleLocationsEnter}
+                  onMouseLeave={handleLocationsLeave}
                 >
                   <div className="p-6">
                     <h3 className="text-[11px] text-[#4ecdc4] uppercase tracking-wider font-medium mb-3">
                       Service Locations
                     </h3>
-                    <ul className="space-y-2">
+                    <ul className="space-y-1">
                       {[
                         { label: "Security in Barnet", href: "/commercial-security-barnet/" },
                         { label: "Security in Hackney", href: "/commercial-security-hackney/" },
@@ -204,7 +258,7 @@ export default function Nav({ minimal = false }: NavProps) {
                         <li key={location.href}>
                           <Link
                             href={location.href}
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] transition-colors block py-1"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all block py-2 px-3 rounded"
                           >
                             {location.label}
                           </Link>
@@ -215,22 +269,39 @@ export default function Nav({ minimal = false }: NavProps) {
                 </div>
               )}
             </li>
-            <li>
+
+            {/* About Link with underline */}
+            <li className="relative">
               <Link
                 href="/about/"
-                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200"
+                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 inline-block pb-1 relative"
               >
                 About
+                <span
+                  className="absolute bottom-0 left-0 h-[1.5px] bg-[#4ecdc4] rounded-[1px] transition-all duration-200"
+                  style={{
+                    width: isActive('/about/') ? '100%' : '0%',
+                  }}
+                />
               </Link>
             </li>
-            <li>
+
+            {/* Careers Link with underline */}
+            <li className="relative">
               <Link
                 href="/careers/"
-                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200"
+                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 inline-block pb-1 relative"
               >
                 Careers
+                <span
+                  className="absolute bottom-0 left-0 h-[1.5px] bg-[#4ecdc4] rounded-[1px] transition-all duration-200"
+                  style={{
+                    width: isActive('/careers/') ? '100%' : '0%',
+                  }}
+                />
               </Link>
             </li>
+
             <li>
               <a
                 href="tel:+442039738892"

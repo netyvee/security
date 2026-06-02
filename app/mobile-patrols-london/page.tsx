@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
+import MidPageCTA from '@/components/MidPageCTA'
 
 const focusKeyword = 'mobile patrol security London'
 const serviceTitle = 'Mobile Patrols London'
@@ -401,6 +402,9 @@ export default function MobilePatrolsPage() {
           </div>
         </div>
       </section>
+
+      {/* Mid-Page CTA */}
+      <MidPageCTA />
 
       {/* FAQ Section */}
       <section className="bg-[#0a1628] py-16 px-6">

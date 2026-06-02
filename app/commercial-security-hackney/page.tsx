@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
+import MidPageCTA from '@/components/MidPageCTA'
 
 const focusKeyword = 'commercial security Hackney'
 const serviceTitle = 'Commercial Security Hackney'
@@ -364,6 +365,9 @@ export default function CommercialSecurityHackneyPage() {
           <p>
             You'll receive a detailed quote within 24 hours of the site assessment, outlining recommended services, officer deployment patterns, shift costs, and contract terms. Once you approve the quote, we mobilise within 48–72 hours for standard contracts or within 24 hours for emergency deployments. Our account manager remains your single point of contact for all {borough} services, handling scheduling, invoicing, incident reporting, and any service adjustments.
           </p>
+
+      {/* Mid-Page CTA */}
+      <MidPageCTA />
 
           {/* FAQs */}
           <div className="mt-16">

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
+import MidPageCTA from '@/components/MidPageCTA'
 
 const focusKeyword = 'commercial security Camden'
 const serviceTitle = 'Commercial Security Camden'

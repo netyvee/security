@@ -5,6 +5,9 @@ import Script from 'next/script'
 import Nav from '@/components/Nav'
 import TrustBar from '@/components/TrustBar'
 import Footer from '@/components/Footer'
+import FloatingCTA from '@/components/FloatingCTA'
+import Sidebar from '@/components/Sidebar'
+import LayoutClient from './layout-client'
 
 export const metadata: Metadata = {
   ...seoConfig,
@@ -56,6 +59,8 @@ export default function RootLayout({
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
           })(window,document,'script','dataLayer','GTM-N74LRNBJ');`}
         </Script>
+        {/* Tabler Icons */}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
       </head>
       <body>
         {/* Google Tag Manager (noscript) */}
@@ -69,8 +74,10 @@ export default function RootLayout({
         </noscript>
         <Nav />
         <TrustBar />
-        {children}
+        <LayoutClient>{children}</LayoutClient>
         <Footer />
+        <FloatingCTA />
+        <Sidebar />
       </body>
     </html>
   )
