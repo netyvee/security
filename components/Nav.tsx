@@ -233,38 +233,129 @@ export default function Nav({ minimal = false }: NavProps) {
 
               {locationsOpen && (
                 <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 w-[340px] bg-[#0f1f3d] rounded-lg shadow-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden"
-                  style={{ zIndex: 100, marginTop: '-8px', paddingTop: '8px' }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 w-[480px] bg-[#0f1f3d] rounded-lg border border-[rgba(255,255,255,0.1)]"
+                  style={{ zIndex: 100, marginTop: '-8px', paddingTop: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
                   onMouseEnter={handleLocationsEnter}
                   onMouseLeave={handleLocationsLeave}
                 >
-                  <div className="p-6">
-                    <h3 className="text-[11px] text-[#4ecdc4] uppercase tracking-wider font-medium mb-3">
-                      Service Locations
-                    </h3>
-                    <ul className="space-y-1">
-                      {[
-                        { label: "Barnet", href: "/commercial-security-barnet/" },
-                        { label: "Camden", href: "/commercial-security-camden/" },
-                        { label: "Canary Wharf", href: "/commercial-security-canary-wharf/" },
-                        { label: "City of London", href: "/commercial-security-city-of-london/" },
-                        { label: "Greater London", href: "/commercial-security-greater-london/" },
-                        { label: "Hackney", href: "/commercial-security-hackney/" },
-                        { label: "Islington", href: "/commercial-security-islington/" },
-                        { label: "Southwark", href: "/commercial-security-southwark/" },
-                        { label: "Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
-                        { label: "Westminster", href: "/commercial-security-westminster/" }
-                      ].map((location) => (
-                        <li key={location.href}>
+                  <div className="grid grid-cols-2 gap-6 p-4">
+                    {/* North & East London */}
+                    <div>
+                      <h3 className="text-[9px] text-[#4ecdc4] uppercase mb-3 font-medium" style={{ letterSpacing: '0.08em' }}>
+                        North & East London
+                      </h3>
+                      <ul className="space-y-0.5">
+                        <li>
                           <Link
-                            href={location.href}
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all block py-2 px-3 rounded"
+                            href="/commercial-security-barnet/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
                           >
-                            {location.label}
+                            <i className="ti-building text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Barnet</span>
                           </Link>
                         </li>
-                      ))}
-                    </ul>
+                        <li>
+                          <Link
+                            href="/commercial-security-camden/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-masks-theater text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Camden</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/commercial-security-hackney/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-building-community text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Hackney</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/commercial-security-islington/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-building text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Islington</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/commercial-security-tower-hamlets/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-tower text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Tower Hamlets</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/commercial-security-canary-wharf/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-building-skyscraper text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Canary Wharf</span>
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Central & South London */}
+                    <div>
+                      <h3 className="text-[9px] text-[#4ecdc4] uppercase mb-3 font-medium" style={{ letterSpacing: '0.08em' }}>
+                        Central & South London
+                      </h3>
+                      <ul className="space-y-0.5">
+                        <li>
+                          <Link
+                            href="/commercial-security-city-of-london/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-crown text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>City of London</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/commercial-security-westminster/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-building-arch text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Westminster</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/commercial-security-southwark/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-bridge text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Southwark</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/commercial-security-greater-london/"
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
+                            style={{ padding: '8px 12px' }}
+                          >
+                            <i className="ti-map text-[16px]" style={{ minWidth: '16px' }} />
+                            <span>Greater London</span>
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               )}
@@ -466,28 +557,55 @@ export default function Nav({ minimal = false }: NavProps) {
               </button>
 
               {mobileLocationsOpen && (
-                <div className="mt-4 space-y-2 pl-4">
-                  {[
-                    { label: "Barnet", href: "/commercial-security-barnet/" },
-                    { label: "Camden", href: "/commercial-security-camden/" },
-                    { label: "Canary Wharf", href: "/commercial-security-canary-wharf/" },
-                    { label: "City of London", href: "/commercial-security-city-of-london/" },
-                    { label: "Greater London", href: "/commercial-security-greater-london/" },
-                    { label: "Hackney", href: "/commercial-security-hackney/" },
-                    { label: "Islington", href: "/commercial-security-islington/" },
-                    { label: "Southwark", href: "/commercial-security-southwark/" },
-                    { label: "Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
-                    { label: "Westminster", href: "/commercial-security-westminster/" }
-                  ].map((location) => (
-                    <Link
-                      key={location.href}
-                      href={location.href}
-                      className="text-[14px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors block"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {location.label}
-                    </Link>
-                  ))}
+                <div className="mt-4 space-y-4 pl-4">
+                  <div>
+                    <h4 className="text-[11px] text-[#4ecdc4] uppercase tracking-wider font-medium mb-2">
+                      North & East London
+                    </h4>
+                    <ul className="space-y-2">
+                      {[
+                        { label: "Barnet", href: "/commercial-security-barnet/" },
+                        { label: "Camden", href: "/commercial-security-camden/" },
+                        { label: "Canary Wharf", href: "/commercial-security-canary-wharf/" },
+                        { label: "Hackney", href: "/commercial-security-hackney/" },
+                        { label: "Islington", href: "/commercial-security-islington/" },
+                        { label: "Tower Hamlets", href: "/commercial-security-tower-hamlets/" }
+                      ].map((location) => (
+                        <li key={location.href}>
+                          <Link
+                            href={location.href}
+                            className="text-[14px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors block"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {location.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] text-[#4ecdc4] uppercase tracking-wider font-medium mb-2">
+                      Central & South London
+                    </h4>
+                    <ul className="space-y-2">
+                      {[
+                        { label: "City of London", href: "/commercial-security-city-of-london/" },
+                        { label: "Greater London", href: "/commercial-security-greater-london/" },
+                        { label: "Southwark", href: "/commercial-security-southwark/" },
+                        { label: "Westminster", href: "/commercial-security-westminster/" }
+                      ].map((location) => (
+                        <li key={location.href}>
+                          <Link
+                            href={location.href}
+                            className="text-[14px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors block"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {location.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>

@@ -65,19 +65,6 @@ const services = [
   }
 ]
 
-const locations = [
-  { name: 'Security in Barnet', href: '/commercial-security-barnet/' },
-  { name: 'Security in Hackney', href: '/commercial-security-hackney/' },
-  { name: 'Security in Islington', href: '/commercial-security-islington/' },
-  { name: 'Security in Westminster', href: '/commercial-security-westminster/' },
-  { name: 'Security in Tower Hamlets', href: '/commercial-security-tower-hamlets/' },
-  { name: 'Security in Camden', href: '/commercial-security-camden/' },
-  { name: 'Security in Southwark', href: '/commercial-security-southwark/' },
-  { name: 'Security in Canary Wharf', href: '/commercial-security-canary-wharf/' },
-  { name: 'Security in City of London', href: '/commercial-security-city-of-london/' },
-  { name: 'Greater London Security', href: '/commercial-security-greater-london/' }
-]
-
 export default function SecurityServicesPage() {
   return (
     <>
@@ -130,23 +117,21 @@ export default function SecurityServicesPage() {
       {/* Coverage Section */}
       <Coverage />
 
-      <section className="bg-[#0a1628] py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-12">
-            Service Locations
+      {/* London-Wide Coverage Paragraph */}
+      <section className="bg-[#0a1628] py-12 px-6">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-6">
+            London-Wide Security Coverage
           </h2>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {locations.map((location) => (
-              <Link
-                key={location.href}
-                href={location.href}
-                className="bg-[#0f1f3d] border border-white/10 rounded-lg p-4 hover:border-[#4ecdc4]/50 transition-colors text-white/70 hover:text-[#4ecdc4] text-[15px]"
-              >
-                {location.name}
-              </Link>
-            ))}
-          </div>
+          <p className="text-white/65 text-[16px] leading-relaxed mb-4">
+            Vigil Security Services operates across all Greater London boroughs, providing comprehensive security solutions to commercial, retail, residential, construction, and event clients. Our regional knowledge spans from the financial districts of the City of London and Canary Wharf to the mixed-use developments of Camden and Hackney, the high-value estates of Westminster and Barnet, and the thriving commercial centres of Islington, Tower Hamlets, and Southwark.
+          </p>
+          <p className="text-white/65 text-[16px] leading-relaxed mb-4">
+            Every officer deployed by Vigil Security is SIA-licensed, DBS-checked, and directly employed — ensuring accountability, consistency, and service quality across all London locations. We tailor security solutions to the specific risk profiles and operational needs of each borough, whether responding to high footfall in Westminster's tourist zones, securing construction sites under the CDM 2015 framework in Tower Hamlets, or providing concierge security for Build-to-Rent developments in Canary Wharf.
+          </p>
+          <p className="text-white/65 text-[16px] leading-relaxed">
+            Our operations centre coordinates mobile patrols, key holding, and alarm response services across all covered boroughs, with guaranteed response times and 24/7 availability. From single-site manned guarding contracts to multi-site mobile patrol schedules spanning Greater London, Vigil Security delivers scalable, reliable, and compliant security services backed by £10M public and employer's liability insurance.
+          </p>
         </div>
       </section>
 
