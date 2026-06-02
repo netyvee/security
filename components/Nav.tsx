@@ -24,7 +24,9 @@ const specialistServices = [
 export default function Nav({ minimal = false }: NavProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [locationsOpen, setLocationsOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [mobileLocationsOpen, setMobileLocationsOpen] = useState(false);
 
   return (
     <nav
@@ -152,13 +154,66 @@ export default function Nav({ minimal = false }: NavProps) {
               )}
             </li>
 
-            <li>
-              <Link
-                href="/security-services/"
-                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200"
+            {/* Locations Dropdown */}
+            <li
+              className="relative"
+              onMouseEnter={() => setLocationsOpen(true)}
+              onMouseLeave={() => setLocationsOpen(false)}
+            >
+              <button
+                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 flex items-center gap-1"
+                onClick={() => setLocationsOpen(!locationsOpen)}
               >
                 Locations
-              </Link>
+                <svg
+                  width="12"
+                  height="12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`transition-transform ${locationsOpen ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {locationsOpen && (
+                <div
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[320px] bg-[#0f1f3d] rounded-lg shadow-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden"
+                  style={{ zIndex: 100 }}
+                >
+                  <div className="p-6">
+                    <h3 className="text-[11px] text-[#4ecdc4] uppercase tracking-wider font-medium mb-3">
+                      Service Locations
+                    </h3>
+                    <ul className="space-y-2">
+                      {[
+                        { label: "Security in Barnet", href: "/commercial-security-barnet/" },
+                        { label: "Security in Hackney", href: "/commercial-security-hackney/" },
+                        { label: "Security in Islington", href: "/commercial-security-islington/" },
+                        { label: "Security in Westminster", href: "/commercial-security-westminster/" },
+                        { label: "Security in Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
+                        { label: "Security in Camden", href: "/commercial-security-camden/" },
+                        { label: "Security in Southwark", href: "/commercial-security-southwark/" },
+                        { label: "Security in Canary Wharf", href: "/commercial-security-canary-wharf/" },
+                        { label: "Security in City of London", href: "/commercial-security-city-of-london/" },
+                        { label: "Greater London Security", href: "/commercial-security-greater-london/" }
+                      ].map((location) => (
+                        <li key={location.href}>
+                          <Link
+                            href={location.href}
+                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] transition-colors block py-1"
+                          >
+                            {location.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </li>
             <li>
               <Link
@@ -318,14 +373,53 @@ export default function Nav({ minimal = false }: NavProps) {
               )}
             </div>
 
-            {/* Other Links */}
-            <Link
-              href="/security-services/"
-              className="block text-white text-[15px] font-medium hover:text-[#4ecdc4] transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Locations
-            </Link>
+            {/* Locations Accordion */}
+            <div>
+              <button
+                onClick={() => setMobileLocationsOpen(!mobileLocationsOpen)}
+                className="flex items-center justify-between w-full text-white text-[15px] font-medium"
+              >
+                Locations
+                <svg
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`transition-transform ${mobileLocationsOpen ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {mobileLocationsOpen && (
+                <div className="mt-4 space-y-2 pl-4">
+                  {[
+                    { label: "Security in Barnet", href: "/commercial-security-barnet/" },
+                    { label: "Security in Hackney", href: "/commercial-security-hackney/" },
+                    { label: "Security in Islington", href: "/commercial-security-islington/" },
+                    { label: "Security in Westminster", href: "/commercial-security-westminster/" },
+                    { label: "Security in Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
+                    { label: "Security in Camden", href: "/commercial-security-camden/" },
+                    { label: "Security in Southwark", href: "/commercial-security-southwark/" },
+                    { label: "Security in Canary Wharf", href: "/commercial-security-canary-wharf/" },
+                    { label: "Security in City of London", href: "/commercial-security-city-of-london/" },
+                    { label: "Greater London", href: "/commercial-security-greater-london/" }
+                  ].map((location) => (
+                    <Link
+                      key={location.href}
+                      href={location.href}
+                      className="text-[14px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors block"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {location.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
             <Link
               href="/about/"
               className="block text-white text-[15px] font-medium hover:text-[#4ecdc4] transition-colors"
