@@ -11,7 +11,7 @@ Add these in Vercel Dashboard → Settings → Environment Variables:
 
 ### 1. Calendly Integration
 ```
-NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/vigilcleaners/new-meeting
+NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/vigsecs/30min
 ```
 **Environment:** Production, Preview, Development  
 **Note:** This is read from env var, never hardcoded
@@ -71,7 +71,7 @@ CRM_ENDPOINT=https://app.vigilservices.co.uk/enquiry
 
 | Variable Name | Value | Production | Preview | Development |
 |--------------|-------|------------|---------|-------------|
-| NEXT_PUBLIC_CALENDLY_URL | https://calendly.com/vigilcleaners/new-meeting | ✓ | ✓ | ✓ |
+| NEXT_PUBLIC_CALENDLY_URL | https://calendly.com/vigsecs/30min | ✓ | ✓ | ✓ |
 | NEXT_PUBLIC_GTM_ID | GTM-N74LRNBJ | ✓ | ✓ | ✓ |
 | NEXT_PUBLIC_APP_URL | https://security.vigilservices.co.uk | ✓ | (use preview URL) | (use localhost) |
 | GMAIL_USER | vigsecs@gmail.com | ✓ | ✓ | ✓ |

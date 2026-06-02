@@ -239,7 +239,7 @@ The standalone app is ready for Vercel deployment:
 
 ### Environment Variables Required:
 ```
-NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/vigilcleaners/new-meeting
+NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/vigsecs/30min
 GMAIL_USER=<Gmail address>
 GMAIL_APP_PASSWORD=<Gmail app password>
 NEXT_PUBLIC_GTM_ID=GTM-N74LRNBJ

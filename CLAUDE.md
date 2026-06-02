@@ -196,7 +196,7 @@ Before every push:
 
 ### Vercel Environment Variables:
 ```
-NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/vigilcleaners/new-meeting
+NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/vigsecs/30min
 NEXT_PUBLIC_GTM_ID=GTM-N74LRNBJ
 NEXT_PUBLIC_APP_URL=https://security.vigilservices.co.uk
 GMAIL_USER=vigsecs@gmail.com
