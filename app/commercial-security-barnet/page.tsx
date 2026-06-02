@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
 import MidPageCTA from '@/components/MidPageCTA'
+import ServiceLinks from '@/components/ServiceLinks'
 
 const focusKeyword = 'commercial security Barnet'
 const serviceTitle = 'Commercial Security Barnet'
@@ -333,6 +334,9 @@ export default function CommercialSecurityBarnetPage() {
               </p>
             </div>
           </div>
+
+          {/* Service Links */}
+          <ServiceLinks borough={borough} />
 
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-3 mt-12">
             SIA licensing and insurance for {borough} services

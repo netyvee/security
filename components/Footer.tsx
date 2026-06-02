@@ -1,27 +1,27 @@
 import Link from "next/link";
 
 const services = [
-  { label: "Manned Guarding London", href: "/manned-guarding-london/" },
-  { label: "Mobile Patrols London", href: "/mobile-patrols-london/" },
+  { label: "Manned Guarding", href: "/manned-guarding-london/" },
+  { label: "Mobile Patrols", href: "/mobile-patrols-london/" },
   { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/" },
-  { label: "Event Security London", href: "/event-security-london/" },
-  { label: "Retail Security London", href: "/retail-security-london/" },
+  { label: "Event Security", href: "/event-security-london/" },
+  { label: "Retail Security", href: "/retail-security-london/" },
   { label: "Construction Site Security", href: "/construction-site-security-london/" },
-  { label: "CCTV Monitoring London", href: "/cctv-monitoring-london/" },
-  { label: "Concierge Security London", href: "/concierge-security-london/" },
+  { label: "CCTV Monitoring", href: "/cctv-monitoring-london/" },
+  { label: "Concierge Security", href: "/concierge-security-london/" },
 ];
 
 const locations = [
-  { label: "Security in Barnet", href: "/commercial-security-barnet/" },
-  { label: "Security in Hackney", href: "/commercial-security-hackney/" },
-  { label: "Security in Islington", href: "/commercial-security-islington/" },
-  { label: "Security in Westminster", href: "/commercial-security-westminster/" },
-  { label: "Security in Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
-  { label: "Security in Camden", href: "/commercial-security-camden/" },
-  { label: "Security in Southwark", href: "/commercial-security-southwark/" },
-  { label: "Security in Canary Wharf", href: "/commercial-security-canary-wharf/" },
-  { label: "Security in City of London", href: "/commercial-security-city-of-london/" },
-  { label: "Greater London Security", href: "/commercial-security-greater-london/" },
+  { label: "Barnet", href: "/commercial-security-barnet/" },
+  { label: "Camden", href: "/commercial-security-camden/" },
+  { label: "Canary Wharf", href: "/commercial-security-canary-wharf/" },
+  { label: "City of London", href: "/commercial-security-city-of-london/" },
+  { label: "Greater London", href: "/commercial-security-greater-london/" },
+  { label: "Hackney", href: "/commercial-security-hackney/" },
+  { label: "Islington", href: "/commercial-security-islington/" },
+  { label: "Southwark", href: "/commercial-security-southwark/" },
+  { label: "Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
+  { label: "Westminster", href: "/commercial-security-westminster/" },
 ];
 
 const company = [

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Coverage from '@/components/Coverage'
 
 export const metadata: Metadata = {
   title: 'Security Services London | All Security Solutions',
@@ -125,6 +126,9 @@ export default function SecurityServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* Coverage Section */}
+      <Coverage />
 
       <section className="bg-[#0a1628] py-16 px-6">
         <div className="max-w-6xl mx-auto">

@@ -9,17 +9,17 @@ interface NavProps {
 }
 
 const guardingServices = [
-  { label: "Manned Guarding London", href: "/manned-guarding-london/", icon: "ti-shield-check" },
-  { label: "Mobile Patrols London", href: "/mobile-patrols-london/", icon: "ti-car" },
+  { label: "Manned Guarding", href: "/manned-guarding-london/", icon: "ti-shield-check" },
+  { label: "Mobile Patrols", href: "/mobile-patrols-london/", icon: "ti-car" },
   { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/", icon: "ti-key" },
   { label: "Concierge Security", href: "/concierge-security-london/", icon: "ti-user-check" },
 ];
 
 const specialistServices = [
-  { label: "Event Security London", href: "/event-security-london/", icon: "ti-confetti" },
-  { label: "Retail Security London", href: "/retail-security-london/", icon: "ti-building-store" },
+  { label: "Event Security", href: "/event-security-london/", icon: "ti-confetti" },
+  { label: "Retail Security", href: "/retail-security-london/", icon: "ti-building-store" },
   { label: "Construction Site Security", href: "/construction-site-security-london/", icon: "ti-crane" },
-  { label: "CCTV Monitoring London", href: "/cctv-monitoring-london/", icon: "ti-camera" },
+  { label: "CCTV Monitoring", href: "/cctv-monitoring-london/", icon: "ti-camera" },
 ];
 
 export default function Nav({ minimal = false }: NavProps) {
@@ -244,16 +244,16 @@ export default function Nav({ minimal = false }: NavProps) {
                     </h3>
                     <ul className="space-y-1">
                       {[
-                        { label: "Security in Barnet", href: "/commercial-security-barnet/" },
-                        { label: "Security in Hackney", href: "/commercial-security-hackney/" },
-                        { label: "Security in Islington", href: "/commercial-security-islington/" },
-                        { label: "Security in Westminster", href: "/commercial-security-westminster/" },
-                        { label: "Security in Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
-                        { label: "Security in Camden", href: "/commercial-security-camden/" },
-                        { label: "Security in Southwark", href: "/commercial-security-southwark/" },
-                        { label: "Security in Canary Wharf", href: "/commercial-security-canary-wharf/" },
-                        { label: "Security in City of London", href: "/commercial-security-city-of-london/" },
-                        { label: "Greater London Security", href: "/commercial-security-greater-london/" }
+                        { label: "Barnet", href: "/commercial-security-barnet/" },
+                        { label: "Camden", href: "/commercial-security-camden/" },
+                        { label: "Canary Wharf", href: "/commercial-security-canary-wharf/" },
+                        { label: "City of London", href: "/commercial-security-city-of-london/" },
+                        { label: "Greater London", href: "/commercial-security-greater-london/" },
+                        { label: "Hackney", href: "/commercial-security-hackney/" },
+                        { label: "Islington", href: "/commercial-security-islington/" },
+                        { label: "Southwark", href: "/commercial-security-southwark/" },
+                        { label: "Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
+                        { label: "Westminster", href: "/commercial-security-westminster/" }
                       ].map((location) => (
                         <li key={location.href}>
                           <Link
@@ -468,16 +468,16 @@ export default function Nav({ minimal = false }: NavProps) {
               {mobileLocationsOpen && (
                 <div className="mt-4 space-y-2 pl-4">
                   {[
-                    { label: "Security in Barnet", href: "/commercial-security-barnet/" },
-                    { label: "Security in Hackney", href: "/commercial-security-hackney/" },
-                    { label: "Security in Islington", href: "/commercial-security-islington/" },
-                    { label: "Security in Westminster", href: "/commercial-security-westminster/" },
-                    { label: "Security in Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
-                    { label: "Security in Camden", href: "/commercial-security-camden/" },
-                    { label: "Security in Southwark", href: "/commercial-security-southwark/" },
-                    { label: "Security in Canary Wharf", href: "/commercial-security-canary-wharf/" },
-                    { label: "Security in City of London", href: "/commercial-security-city-of-london/" },
-                    { label: "Greater London", href: "/commercial-security-greater-london/" }
+                    { label: "Barnet", href: "/commercial-security-barnet/" },
+                    { label: "Camden", href: "/commercial-security-camden/" },
+                    { label: "Canary Wharf", href: "/commercial-security-canary-wharf/" },
+                    { label: "City of London", href: "/commercial-security-city-of-london/" },
+                    { label: "Greater London", href: "/commercial-security-greater-london/" },
+                    { label: "Hackney", href: "/commercial-security-hackney/" },
+                    { label: "Islington", href: "/commercial-security-islington/" },
+                    { label: "Southwark", href: "/commercial-security-southwark/" },
+                    { label: "Tower Hamlets", href: "/commercial-security-tower-hamlets/" },
+                    { label: "Westminster", href: "/commercial-security-westminster/" }
                   ].map((location) => (
                     <Link
                       key={location.href}

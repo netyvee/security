@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
 import MidPageCTA from '@/components/MidPageCTA'
+import Coverage from '@/components/Coverage'
 
 const focusKeyword = 'CCTV monitoring London'
 const serviceTitle = 'CCTV Monitoring London'
@@ -273,6 +274,9 @@ export default function RetailSecurityPage() {
           </div>
         </div>
       </div>
+
+      {/* Coverage Section */}
+      <Coverage />
     </>
   )
 }

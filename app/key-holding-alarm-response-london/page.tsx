@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
 import MidPageCTA from '@/components/MidPageCTA'
+import Coverage from '@/components/Coverage'
 
 const focusKeyword = 'key holding alarm response London'
 const serviceTitle = 'Key Holding & Alarm Response London'
@@ -376,6 +377,9 @@ export default function KeyHoldingPage() {
           </div>
         </div>
       </section>
+
+      {/* Coverage Section */}
+      <Coverage />
 
       {/* Mid-Page CTA */}
       <MidPageCTA />

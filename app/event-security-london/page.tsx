@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
 import MidPageCTA from '@/components/MidPageCTA'
+import Coverage from '@/components/Coverage'
 
 const focusKeyword = 'event security London'
 const serviceTitle = 'Event Security London'
@@ -373,6 +374,9 @@ export default function EventSecurityPage() {
           </div>
         </div>
       </section>
+
+      {/* Coverage Section */}
+      <Coverage />
 
       {/* Mid-Page CTA */}
       <MidPageCTA />

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
 import MidPageCTA from '@/components/MidPageCTA'
+import Coverage from '@/components/Coverage'
 
 const focusKeyword = 'manned guarding London'
 const serviceTitle = 'Manned Guarding London'
@@ -398,6 +399,9 @@ export default function MannedGuardingPage() {
           </div>
         </div>
       </section>
+
+      {/* Coverage Section */}
+      <Coverage />
 
       {/* Mid-Page CTA */}
       <MidPageCTA />

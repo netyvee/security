@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
 import MidPageCTA from '@/components/MidPageCTA'
+import ServiceLinks from '@/components/ServiceLinks'
 
 const focusKeyword = 'commercial security Westminster'
 const serviceTitle = 'Commercial Security Westminster'
@@ -222,6 +223,9 @@ export default function CommercialSecurityWestminsterPage() {
               <p className="text-white/50 text-[14px]">— Venue Manager, Bar & Restaurant, {borough}</p>
             </div>
           </div>
+
+          {/* Service Links */}
+          <ServiceLinks borough={borough} />
 
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-3 mt-12">SIA licensing and insurance for {borough} services</h2>
           <p className="tldr mb-6">Every officer holds a current SIA licence and enhanced DBS check — £10M public liability insurance covers all contracts.</p>
