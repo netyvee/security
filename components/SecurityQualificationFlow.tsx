@@ -379,7 +379,7 @@ export default function SecurityQualificationFlow() {
             We don&apos;t currently cover {pcVal}
           </h2>
           <p className="text-white/60 text-lg mb-8">
-            Vigil Security operates exclusively within Greater London&apos;s 32 boroughs. Your postcode falls outside our service area.
+            Vigil Security operates exclusively within Greater London. Your postcode falls outside our service area.
           </p>
           <p className="text-white/60 text-base mb-8">
             If you believe this is an error, please contact us directly at{' '}

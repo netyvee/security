@@ -1,29 +1,30 @@
 import Link from "next/link";
 
 const services = [
-  { label: "Office Cleaning",            href: "/services/office-cleaning-london/" },
-  { label: "Healthcare Cleaning",        href: "/services/healthcare-facility-cleaning-london/" },
-  { label: "Construction Cleaning",      href: "/construction-site-cleaning-london/" },
-  { label: "Property Management",        href: "/property-management-cleaning-london/" },
-  { label: "After Builders Cleaning",   href: "/after-builders-cleaning-london/" },
-  { label: "Emergency Cleaning",         href: "/emergency-cleaning-london/" },
+  { label: "Manned Guarding",            href: "/manned-guarding-london/" },
+  { label: "Mobile Patrols",             href: "/mobile-patrols-london/" },
+  { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/" },
+  { label: "Event Security",             href: "/event-security-london/" },
+  { label: "Retail Security",            href: "/retail-security-london/" },
+  { label: "Construction Site Security", href: "/construction-site-security-london/" },
+  { label: "CCTV Monitoring",            href: "/cctv-monitoring-london/" },
+  { label: "Concierge Security",         href: "/concierge-security-london/" },
 ];
 
 const company = [
-  { label: "About Vigil",  href: "/about-vigil-cleaning-services/" },
-  { label: "Our Locations", href: "/commercial-cleaning-london/" },
-  { label: "FAQ",           href: "/faq/" },
-  { label: "Contact",       href: "/cleaning-company-contact-details/" },
-  { label: "Careers",       href: "/cleaning-jobs-near-me/" },
+  { label: "About Vigil Security", href: "/about/" },
+  { label: "Our Coverage",         href: "/commercial-security-greater-london/" },
+  { label: "FAQ",                  href: "/faq/" },
+  { label: "Contact",              href: "/contact/" },
+  { label: "Careers",              href: "/careers/" },
 ];
 
 const legal = [
-  { label: "Privacy Policy",          href: "/privacy-policy/" },
-  { label: "Cookie Policy",           href: "/cookie-policy-eu/" },
-  { label: "Modern Slavery",          href: "/modern-slavery-statement/" },
-  { label: "Equal Opportunities",     href: "/equal-opportunities-employer-policy/" },
-  { label: "Accessibility",           href: "/accessibility-statement/" },
-  { label: "Environmental Policy",    href: "/environmental-commitment/" },
+  { label: "Privacy Policy",       href: "/privacy-policy/" },
+  { label: "Cookie Policy",        href: "/cookie-policy/" },
+  { label: "Modern Slavery",       href: "/modern-slavery-statement/" },
+  { label: "Equal Opportunities",  href: "/equal-opportunities-policy/" },
+  { label: "Accessibility",        href: "/accessibility-statement/" },
 ];
 
 export default function Footer() {
@@ -37,24 +38,15 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <p className="font-['Playfair_Display'] text-[20px] font-medium text-white mb-1">
-              Vigil <em className="text-[#4ecdc4]">Cleaning</em>
+              Vigil <em className="text-[#4ecdc4]">Security</em>
             </p>
             <p className="text-[13px] text-[rgba(255,255,255,0.55)] leading-relaxed mt-3">
-              B2B commercial cleaning across all 32 London boroughs. Directly employed operatives.
-              Digital proof of service on every contract.
+              Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured.
             </p>
             <div className="mt-5 flex gap-4">
-              <a href="https://www.instagram.com/vigilcleaners/" target="_blank" rel="noopener noreferrer"
+              <a href="https://www.instagram.com/vigil.security/" target="_blank" rel="noopener noreferrer"
                 className="text-[rgba(255,255,255,0.45)] hover:text-[#4ecdc4] transition-colors text-xs">
                 Instagram
-              </a>
-              <a href="https://www.facebook.com/profile.php?id=61573334595099" target="_blank" rel="noopener noreferrer"
-                className="text-[rgba(255,255,255,0.45)] hover:text-[#4ecdc4] transition-colors text-xs">
-                Facebook
-              </a>
-              <a href="https://www.linkedin.com/in/vigil-cleaning-services-689800354" target="_blank" rel="noopener noreferrer"
-                className="text-[rgba(255,255,255,0.45)] hover:text-[#4ecdc4] transition-colors text-xs">
-                LinkedIn
               </a>
             </div>
           </div>
@@ -109,13 +101,13 @@ export default function Footer() {
 
         <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-[rgba(255,255,255,0.06)] flex flex-col md:flex-row justify-between items-start gap-3">
           <p className="text-[12px] text-[rgba(255,255,255,0.35)]">
-            © {year} Vigil Cleaning Services. Company registered in England &amp; Wales.
+            © {year} Vigil Security Services. Company registered in England &amp; Wales.
           </p>
           <p className="text-[12px] text-[rgba(255,255,255,0.35)]">
-            <a href="tel:+442030986037" className="hover:text-[#4ecdc4] transition-colors">020 3098 6037</a>
+            <a href="tel:+442039738892" className="hover:text-[#4ecdc4] transition-colors">020 3973 8892</a>
             {" · "}
-            <a href="mailto:cleaning@vigilservices.co.uk" className="hover:text-[#4ecdc4] transition-colors">
-              cleaning@vigilservices.co.uk
+            <a href="mailto:security@vigilservices.co.uk" className="hover:text-[#4ecdc4] transition-colors">
+              security@vigilservices.co.uk
             </a>
           </p>
         </div>
@@ -125,14 +117,13 @@ export default function Footer() {
       <div className="bg-[#060f20] px-6 md:px-12 py-8">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
           <p className="text-[12px] text-[rgba(255,255,255,0.30)] leading-relaxed">
-            Vigil Cleaning Services provides B2B commercial cleaning contracts across Greater London, covering all 32 boroughs
-            including the City of London, Westminster, Canary Wharf, Islington, Barnet, Hackney, Camden, Southwark, and Tower Hamlets.
-            We serve offices, healthcare facilities, construction sites, and property management portfolios.
+            Vigil Security Services provides professional security services across Greater London. All officers are SIA-licensed,
+            DBS-checked, and directly employed. We serve commercial offices, retail premises, construction sites, event venues,
+            and residential developments with manned guarding, mobile patrols, key holding, and CCTV monitoring.
           </p>
           <p className="text-[12px] text-[rgba(255,255,255,0.30)] leading-relaxed">
-            All operatives are directly employed — never agency or subcontract staff. Minimum contract: 2 visits per week,
-            4 hours per visit, 3-month rolling term. CQC-aware cleaning procedures. COSHH trained. DBS checked.
-            £5 million public liability insurance. TUPE transitions managed in full.
+            Greater London coverage. Directly employed officers — never agency or sub-contracted. £10M public liability insurance.
+            SIA-licensed with enhanced DBS checks. 24/7 cover available. Flexible shift patterns from 8 hours to round-the-clock security.
           </p>
         </div>
       </div>

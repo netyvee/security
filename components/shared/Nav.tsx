@@ -5,10 +5,10 @@ import Image from "next/image";
 import { useState } from "react";
 
 const navLinks = [
-  { label: "Services", href: "/services/" },
-  { label: "About",    href: "/about-vigil-cleaning-services/" },
-  { label: "Contact",  href: "/cleaning-company-contact-details/" },
-  { label: "Careers",  href: "/cleaning-jobs-near-me/" },
+  { label: "Services", href: "/security-services/" },
+  { label: "About",    href: "/about/" },
+  { label: "Contact",  href: "/contact/" },
+  { label: "Careers",  href: "/careers/" },
 ];
 
 export default function Nav() {
@@ -25,7 +25,7 @@ export default function Nav() {
       }}
     >
       {/* Logo + wordmark */}
-      <Link href="/" className="flex items-center shrink-0" aria-label="Vigil Cleaning Services — home" style={{ gap: 10 }}>
+      <Link href="/" className="flex items-center shrink-0" aria-label="Vigil Security Services — home" style={{ gap: 10 }}>
         <Image
           src="/images/vigil-logo.png"
           alt=""
@@ -35,7 +35,7 @@ export default function Nav() {
           priority
         />
         <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.06em", color: "#fff", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-          VIGIL CLEANING SERVICES
+          VIGIL SECURITY SERVICES
         </span>
       </Link>
 
@@ -53,51 +53,68 @@ export default function Nav() {
         ))}
       </ul>
 
-      {/* Right — phone + CTA */}
-      <div className="hidden md:flex items-center gap-5 shrink-0">
+      {/* Right: phone + CTA */}
+      <div className="hidden md:flex items-center gap-4">
         <a
-          href="tel:+442030986037"
-          className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-white transition-colors"
+          href="tel:+442039738892"
+          className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-white transition-colors"
         >
-          020 3098 6037
+          020 3973 8892
         </a>
-        <Link href="/get-started/" className="btn-primary text-sm">
+        <Link
+          href="/"
+          className="bg-[#4ecdc4] hover:bg-[#3dbdb4] text-white text-[13px] font-medium px-5 py-2 rounded-md transition-colors"
+        >
           Get a quote
         </Link>
       </div>
 
-      {/* Hamburger — mobile */}
+      {/* Mobile menu button */}
       <button
+        onClick={() => setOpen(!open)}
         className="md:hidden text-white"
-        onClick={() => setOpen((v) => !v)}
         aria-label="Toggle menu"
       >
-        <span className="block w-6 h-0.5 bg-white mb-1" />
-        <span className="block w-6 h-0.5 bg-white mb-1" />
-        <span className="block w-4 h-0.5 bg-white" />
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          {open ? (
+            <>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </>
+          ) : (
+            <>
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </>
+          )}
+        </svg>
       </button>
 
       {/* Mobile menu */}
       {open && (
-        <div
-          className="absolute top-16 left-0 right-0 bg-[#0f1f3d] border-t border-[rgba(255,255,255,0.08)] px-6 py-6 flex flex-col gap-5"
-        >
-          {navLinks.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-[15px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4]"
-              onClick={() => setOpen(false)}
-            >
-              {l.label}
-            </Link>
-          ))}
-          <a href="tel:+442030986037" className="text-[14px] text-[rgba(255,255,255,0.55)]">
-            020 3098 6037
-          </a>
-          <Link href="/get-started/" className="btn-primary text-center text-sm" onClick={() => setOpen(false)}>
-            Get a quote
-          </Link>
+        <div className="absolute top-16 left-0 right-0 bg-[#0a1628] border-b border-white/10 md:hidden">
+          <ul className="px-6 py-4 space-y-3">
+            {navLinks.map((l) => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  className="block text-[14px] text-white hover:text-[#4ecdc4] transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <a
+                href="tel:+442039738892"
+                className="block text-[14px] text-[#4ecdc4] hover:text-white transition-colors"
+              >
+                020 3973 8892
+              </a>
+            </li>
+          </ul>
         </div>
       )}
     </nav>

@@ -273,10 +273,10 @@ export default function MobilePatrolsPage() {
             Mobile patrol coverage across Greater London
           </h2>
           <p className="tldr mb-6">
-            All 32 boroughs covered with response times of 20-30 minutes for most locations.
+            Greater London coverage with response times of 20-30 minutes for most locations.
           </p>
           <p>
-            Vigil operates a fleet of marked patrol vehicles based strategically across Greater London to ensure rapid response times. We cover all 32 boroughs including central London (Westminster, City of London, Camden, Islington), east London (Tower Hamlets, Hackney, Newham, Barking & Dagenham), south London (Southwark, Lambeth, Croydon, Bromley), west London (Ealing, Hounslow, Hillingdon), and north London (Barnet, Enfield, Haringey).
+            Vigil operates a fleet of marked patrol vehicles based strategically across Greater London to ensure rapid response times. We cover all Greater London boroughs including central London (Westminster, City of London, Camden, Islington), east London (Tower Hamlets, Hackney, Newham, Barking & Dagenham), south London (Southwark, Lambeth, Croydon, Bromley), west London (Ealing, Hounslow, Hillingdon), and north London (Barnet, Enfield, Haringey).
           </p>
           <p>
             For routine patrols, we guarantee visits within your contracted time windows. For alarm response callouts, we aim for 20-30 minute attendance for most Greater London locations, with faster response for central and inner London sites. Response times are tracked and reported in your monthly KPI summary.
