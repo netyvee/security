@@ -5,7 +5,26 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        pathname: '/duhicmygg/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'source.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'security.vigilservices.co.uk',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cleaning.vigilservices.co.uk',
       },
     ],
   },
@@ -44,7 +63,7 @@ const nextConfig = {
               "font-src 'self' data: https://fonts.gstatic.com",
               "frame-src 'self' https://calendly.com https://*.calendly.com",
               "connect-src 'self' https://*.calendly.com https://api.postcodes.io https://www.google-analytics.com https://app.vigilservices.co.uk",
-              "img-src 'self' https://res.cloudinary.com https://images.unsplash.com data: blob:",
+              "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://source.unsplash.com https://plus.unsplash.com https://*.cloudinary.com https://security.vigilservices.co.uk https://cleaning.vigilservices.co.uk",
             ].join('; '),
           },
           {
