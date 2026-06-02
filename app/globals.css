@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,500;1,400&display=swap');
+
+@layer base {
+  body {
+    @apply bg-navy text-white font-sans font-light;
+  }
+}
+
+@layer components {
+  .section-tag {
+    @apply text-[11px] font-medium uppercase tracking-[0.1em] text-[#4ecdc4] flex items-center gap-3 before:content-[''] before:w-5 before:h-[1px] before:bg-[#4ecdc4];
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-[14px] font-medium text-white bg-[#4ecdc4] rounded-lg hover:bg-[#3dbdb4] transition-colors;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-6 py-3 text-[14px] font-medium text-white border-2 border-white rounded-lg hover:bg-white hover:text-navy transition-colors;
+  }
+
+  .quick-answer-block {
+    @apply bg-[rgba(78,205,196,0.08)] border-l-4 border-[#4ecdc4] rounded-r-lg px-6 py-4 text-[15px] text-[rgba(255,255,255,0.75)] leading-relaxed;
+  }
+
+  .tldr {
+    @apply text-[14px] font-medium text-[#4ecdc4];
+  }
+}
