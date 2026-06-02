@@ -146,8 +146,8 @@ export default function MobilePatrolsPage() {
 
           <div className="relative h-[400px] rounded-xl overflow-hidden">
             <Image
-              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1558618666-fcd25c85cd64"
-              alt="SIA-licensed mobile patrol officer conducting security check of London commercial premises at night"
+              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200"
+              alt="Vigil Security mobile patrol vehicle conducting site security check across Greater London — Vigil Security Services"
               fill
               className="object-cover"
               priority

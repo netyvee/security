@@ -146,8 +146,8 @@ export default function MannedGuardingPage() {
 
           <div className="relative h-[400px] rounded-xl overflow-hidden">
             <Image
-              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1563986768609-322da13575f3"
-              alt="Professional SIA-licensed security officer conducting manned guarding in London office building"
+              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1588421357574-87938a86fa28?w=1200"
+              alt="SIA-licensed security officer providing manned guarding at commercial office building in London — Vigil Security Services"
               fill
               className="object-cover"
               priority

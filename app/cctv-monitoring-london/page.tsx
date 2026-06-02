@@ -120,8 +120,8 @@ export default function RetailSecurityPage() {
           </div>
           <div className="relative h-[400px] rounded-xl overflow-hidden">
             <Image
-              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1441986300917-64674bd600d8"
-              alt="SIA-licensed CCTV monitoring officer providing surveillance in London store"
+              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=1200"
+              alt="Professional CCTV monitoring operator reviewing security footage for London commercial premises — Vigil Security Services"
               fill
               className="object-cover"
               priority

@@ -127,7 +127,7 @@ export default function CommercialSecurityIslingtonPage() {
           <div className="relative h-[400px] rounded-xl overflow-hidden">
             <Image
               src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1513635269975-59663e0ac1ad"
-              alt={`Professional SIA-licensed security officer providing commercial security services in ${borough}`}
+              alt={`SIA-licensed security services in ${borough} London — Vigil Security Services`}
               fill
               className="object-cover"
               priority

@@ -146,8 +146,8 @@ export default function KeyHoldingPage() {
 
           <div className="relative h-[400px] rounded-xl overflow-hidden">
             <Image
-              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1558618666-fcd25c85cd64"
-              alt="SIA-licensed security officer responding to alarm activation with secure key holding service in London"
+              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1558618047-f0a7b6e18a7a?w=1200"
+              alt="Professional key holding and alarm response officer securing commercial premises in London — Vigil Security Services"
               fill
               className="object-cover"
               priority
