@@ -9,6 +9,27 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      { source: '/professional-security-services/', destination: '/', permanent: true },
+      { source: '/about-us/', destination: '/about/', permanent: true },
+      { source: '/security-company-contacts/', destination: '/contact/', permanent: true },
+      { source: '/request-quote/', destination: '/contact/', permanent: true },
+      { source: '/security-services/manned-guarding/', destination: '/manned-guarding-london/', permanent: true },
+      { source: '/security-guard/', destination: '/manned-guarding-london/', permanent: true },
+      { source: '/subcontract-security-guards/', destination: '/manned-guarding-london/', permanent: true },
+      { source: '/security-services/mobile-patrols/', destination: '/mobile-patrols-london/', permanent: true },
+      { source: '/mobile-patrol/', destination: '/mobile-patrols-london/', permanent: true },
+      { source: '/security-services/keyholding/', destination: '/key-holding-alarm-response-london/', permanent: true },
+      { source: '/security-services/alarm-response/', destination: '/key-holding-alarm-response-london/', permanent: true },
+      { source: '/security-services/cctv-monitoring/', destination: '/cctv-monitoring-london/', permanent: true },
+      { source: '/security-services/event-security/', destination: '/event-security-london/', permanent: true },
+      { source: '/security-services/concierge-security/', destination: '/concierge-security-london/', permanent: true },
+      { source: '/concierge-security/', destination: '/concierge-security-london/', permanent: true },
+      { source: '/construction-site-security/', destination: '/construction-site-security-london/', permanent: true },
+      { source: '/traffic-marshals/', destination: '/construction-site-security-london/', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
