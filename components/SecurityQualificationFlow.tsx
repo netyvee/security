@@ -512,19 +512,19 @@ export default function SecurityQualificationFlow() {
             </svg>
           </div>
           <h2 className="font-display text-[clamp(28px,3vw,42px)] font-medium text-white mb-4">
-            Your call is confirmed
+            Discovery call confirmed
           </h2>
-          <p className="text-white/60 text-lg mb-8">
-            We&apos;ve sent a confirmation email with your discovery call details and a summary of your security brief. We&apos;ll assess your requirements and have a tailored quote ready for the call.
+          <p className="text-white/60 text-lg mb-4">
+            Your confirmation has been sent by email. We will review your brief before the call and come prepared.
           </p>
-          <div className="bg-navy-mid border border-white/10 rounded-xl p-6 mb-8">
-            <p className="text-white/75 text-sm leading-relaxed">
-              <strong className="text-white">What happens next:</strong><br />
-              Your dedicated account manager will review your brief before the call. We&apos;ll discuss your site, confirm cover requirements, and provide a fixed-price quote — no surprises, no hidden fees.
-            </p>
-          </div>
-          <a href="/" className="btn-primary inline-block">
-            Return to homepage
+          <p className="text-white/50 text-base mb-8">
+            Questions in the meantime — call{' '}
+            <a href="tel:02039738892" className="text-[#4ecdc4] hover:underline">020 3973 8892</a>
+            {' '}or email{' '}
+            <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] hover:underline">security@vigilservices.co.uk</a>
+          </p>
+          <a href="/" className="btn-outline inline-block">
+            Back to homepage
           </a>
         </div>
       </div>
