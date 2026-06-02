@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import SecurityQualificationFlow from '@/components/SecurityQualificationFlow'
+import HomeLayout from '@/components/HomeLayout'
 
 export const metadata: Metadata = {
   title: 'SIA Licensed Security Services London | Vigil Security',
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function HomePage() {
-  return <SecurityQualificationFlow />
+  return (
+    <HomeLayout>
+      <SecurityQualificationFlow />
+    </HomeLayout>
+  )
 }

@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { seoConfig } from '@/lib/seo.config'
 import Script from 'next/script'
+import Nav from '@/components/Nav'
+import TrustBar from '@/components/TrustBar'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   ...seoConfig,
@@ -15,7 +18,7 @@ const organizationSchema = {
   name: 'Vigil Security Services',
   description: 'Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured.',
   url: 'https://security.vigilservices.co.uk',
-  telephone: '+442030986037',
+  telephone: '+442039738892',
   email: 'security@vigilservices.co.uk',
   address: {
     '@type': 'PostalAddress',
@@ -29,7 +32,7 @@ const organizationSchema = {
     name: 'Greater London',
   },
   sameAs: [
-    'https://www.instagram.com/vigilcleaners/',
+    'https://www.instagram.com/vigil.security/',
   ],
 }
 
@@ -64,7 +67,10 @@ export default function RootLayout({
             style={{ display: 'none', visibility: 'hidden' }}
           />
         </noscript>
+        <Nav />
+        <TrustBar />
         {children}
+        <Footer />
       </body>
     </html>
   )
