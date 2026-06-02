@@ -120,8 +120,8 @@ export default function RetailSecurityPage() {
           </div>
           <div className="relative h-[400px] rounded-xl overflow-hidden">
             <Image
-              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://security.vigilservices.co.uk/wp-content/uploads/2025/08/construction-site-security.jpg"
-              alt="Security officer controlling site access at London construction site — Vigil Security Services"
+              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200"
+              alt="SIA-licensed Construction Site Security officer controlling site access at London construction site — Vigil Security Services"
               fill
               className="object-cover"
               priority

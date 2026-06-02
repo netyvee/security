@@ -146,8 +146,8 @@ export default function EventSecurityPage() {
 
           <div className="relative h-[400px] rounded-xl overflow-hidden">
             <Image
-              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://security.vigilservices.co.uk/wp-content/uploads/2025/08/crowd-barrier-control-london.jpg"
-              alt="SIA-licensed event security officer managing crowd safety at London venue — Vigil Security Services"
+              src="https://res.cloudinary.com/duhicmygg/image/fetch/w_1200,f_auto,q_auto/https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200"
+              alt="SIA-licensed Event Security officer managing crowd safety at corporate event in London — Vigil Security Services"
               fill
               className="object-cover"
               priority
