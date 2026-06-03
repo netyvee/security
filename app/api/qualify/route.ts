@@ -29,7 +29,7 @@ export async function POST(request: Request) {
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          service_type: 'Security',
+          service_type: 'Cleaning',
           premises_type: premises,
           service_required: service,
           hours_required: hours,
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
           name,
           company,
           email,
-          source: 'Security Website Qualification Flow',
+          source: 'Cleaning Website Qualification Flow',
           created_at: new Date().toISOString(),
         }),
       })
@@ -57,11 +57,11 @@ export async function POST(request: Request) {
 
         // Email 1 - Team notification
         await resend.emails.send({
-          from: 'Vigil Security Services <security@vigilservices.co.uk>',
-          to: 'security@vigilservices.co.uk',
-          subject: `New security enquiry — ${premises} — ${postcode}`,
+          from: 'Vigil Cleaning Services <cleaning@vigilservices.co.uk>',
+          to: 'cleaning@vigilservices.co.uk',
+          subject: `New cleaning enquiry — ${premises} — ${postcode}`,
           html: `
-            <h2>New Security Enquiry</h2>
+            <h2>New Cleaning Enquiry</h2>
             <p><strong>Name:</strong> ${name || 'Not provided'}</p>
             <p><strong>Company:</strong> ${company || 'Not provided'}</p>
             <p><strong>Email:</strong> ${email || 'Not provided'}</p>
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
             <p><strong>Location:</strong> ${postcode}</p>
             <p><strong>Preferred Start:</strong> ${preferredStart || 'Not specified'}</p>
             <p><strong>Contract Length:</strong> ${contractLength || 'Not specified'}</p>
-            <p><strong>Source:</strong> Security Website Qualification Flow</p>
+            <p><strong>Source:</strong> Cleaning Website Qualification Flow</p>
             <p><strong>Submitted:</strong> ${new Date().toLocaleString('en-GB')}</p>
           `,
         })
@@ -79,12 +79,12 @@ export async function POST(request: Request) {
         // Email 2 - Client acknowledgement (only if email provided)
         if (email) {
           await resend.emails.send({
-            from: 'Vigil Security Services <security@vigilservices.co.uk>',
+            from: 'Vigil Cleaning Services <cleaning@vigilservices.co.uk>',
             to: email,
-            subject: 'Your enquiry is confirmed — Vigil Security Services',
+            subject: 'Your enquiry is confirmed — Vigil Cleaning Services',
             html: `
               <p>Dear ${name || 'valued customer'},</p>
-              <p>Thank you for your enquiry with Vigil Security Services.</p>
+              <p>Thank you for your enquiry with Vigil Cleaning Services.</p>
               <p>We have received your brief and will review your requirements. A member of our team will be in touch within 24 hours.</p>
               <p><strong>Brief summary:</strong></p>
               <ul>
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
                 <li>Hours: ${hours}</li>
               </ul>
               <p>For urgent matters, please call 020 3098 6037 or reply to this email.</p>
-              <p>The Vigil Security team</p>
+              <p>The Vigil Cleaning team</p>
             `,
           })
         }
