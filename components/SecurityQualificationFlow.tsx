@@ -24,6 +24,10 @@ interface Ans {
   postcode: string
   preferredStart: string
   contractLength: string
+  name?: string
+  email?: string
+  company?: string
+  bookedSlot?: string
 }
 
 const INIT: Ans = {
@@ -43,7 +47,14 @@ const ACK_PREMISES: Record<string, string> = {
 }
 
 const ACK_SERVICE = 'Got it. Now let us understand your cover requirements.'
-const ACK_HOURS = 'Almost there — one last thing.'
+
+const ACK_HOURS: Record<string, string> = {
+  'day-shift': 'Good. Day cover is our most requested service.',
+  'night-shift': 'Noted. Night cover requires experienced officers — we have them.',
+  'weekend': 'Weekend cover arranged. We will match you with available officers.',
+  '247': '24/7 cover requires careful planning. We will discuss staffing in the call.',
+  'out-of-hours': 'Out of hours cover confirmed. We specialise in evening and weekend response.',
+}
 
 // ─── Service options by premises ─────────────────────────────────────────────
 const SERVICE_OPTIONS: Record<string, Array<{ value: string; label: string; desc: string }>> = {
@@ -124,13 +135,19 @@ export default function SecurityQualificationFlow() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            name: ans.name || 'Not captured',
+            email: ans.email || '',
+            company: ans.company || '',
             premises: ans.premises,
+            premisesType: ans.premises,
             service: ans.service,
+            serviceType: ans.service,
             hours: ans.hours,
             postcode: ans.postcode,
             preferredStart: ans.preferredStart,
+            startPreference: ans.preferredStart,
             contractLength: ans.contractLength,
-            serviceType: 'Security',
+            bookedSlot: ans.bookedSlot || '',
           }),
         })
         setBriefSubmitted(true)
@@ -146,6 +163,26 @@ export default function SecurityQualificationFlow() {
   useEffect(() => {
     const handleCalendly = (e: MessageEvent) => {
       if (e.data?.event === 'calendly.event_scheduled') {
+        const payload = e.data?.payload
+        const invitee = payload?.invitee
+        const eventTime = payload?.event?.start_time
+
+        // Extract invitee details and booking time
+        setAns(prev => ({
+          ...prev,
+          name: invitee?.name || prev.name || 'Not captured',
+          email: invitee?.email || prev.email || '',
+          bookedSlot: eventTime ? new Date(eventTime).toLocaleString('en-GB', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          }) : '',
+        }))
+
         go('thank-you')
       }
     }
@@ -291,17 +328,19 @@ export default function SecurityQualificationFlow() {
             When do you need cover?
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
-              { value: 'daytime', label: 'Daytime', desc: '8am – 6pm' },
-              { value: 'out-of-hours', label: 'Out of hours', desc: '6pm – 8am' },
-              { value: 'round-the-clock', label: 'Round the clock', desc: '24/7' },
+              { value: 'day-shift', label: 'Day shift', desc: '7am – 7pm', icon: 'ti-sun' },
+              { value: 'night-shift', label: 'Night shift', desc: '7pm – 7am', icon: 'ti-moon' },
+              { value: 'weekend', label: 'Weekend cover', desc: 'Saturday & Sunday', icon: 'ti-calendar-week' },
+              { value: '247', label: '24/7 round the clock', desc: 'Continuous cover', icon: 'ti-clock-24' },
+              { value: 'out-of-hours', label: 'Out of hours', desc: 'Evenings & weekends', icon: 'ti-clock-off' },
             ].map(opt => (
               <button
                 key={opt.value}
                 onClick={() => {
                   setAns({ ...ans, hours: opt.value })
-                  go('postcode', ACK_HOURS)
+                  go('postcode', ACK_HOURS[opt.value] || 'Almost there — one last thing.')
                 }}
                 className="group bg-navy-light border-2 border-white/10 rounded-xl p-6 text-left hover:border-[#4ecdc4] transition-all"
               >

@@ -226,15 +226,17 @@ ${bookedSlot ? `
 </td></tr></table>
 </body></html>`;
 
+  const validEmail = email && email !== 'Not captured' && email !== '' && email.includes('@');
+
   const results = await Promise.allSettled([
     resend.emails.send({
       from: FROM_ADDRESS,
       to: [SECURITY_INBOX],
-      replyTo: email,
+      replyTo: validEmail ? email : SECURITY_INBOX,
       subject: `New security enquiry — ${premisesType || 'General'} — ${postcode || 'London'}`,
       html: briefHtml,
     }),
-    email && email !== 'Not captured' && email !== ''
+    validEmail
       ? resend.emails.send({
           from: FROM_ADDRESS,
           to: [email],
@@ -248,8 +250,16 @@ ${bookedSlot ? `
   const teamResult = results[0];
   const clientResult = results[1];
 
+  console.log('Team email:', teamResult.status);
+  console.log('Client email:', clientResult.status);
+
   if (teamResult.status === 'rejected') {
+    console.error('Team email error:', teamResult.reason);
     throw new Error(`Team email failed: ${teamResult.reason}`);
+  }
+
+  if (clientResult.status === 'rejected') {
+    console.error('Client email error:', clientResult.reason);
   }
 
   return {
