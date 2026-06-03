@@ -1,111 +1,53 @@
-import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
+import { NextRequest, NextResponse } from 'next/server';
+import { sendEnquiryEmails } from '@/lib/email';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await request.json();
+    console.log('Security qualify API called:', {
+      name: body.name,
+      email: body.email,
+      postcode: body.postcode
+    });
 
-    const {
-      premises,
-      service,
-      hours,
-      postcode,
-      preferredStart,
-      contractLength,
-      serviceType,
-      name,
-      company,
-      email,
-    } = body
+    const result = await sendEnquiryEmails({
+      name: body.name || 'Not captured',
+      email: body.email || '',
+      company: body.company || '',
+      premisesType: body.premisesType || body.premises || body.sector || '',
+      serviceType: body.serviceType || body.service || '',
+      hours: body.hours || '',
+      postcode: body.postcode || '',
+      startPreference: body.startPreference || body.preferredStart || '',
+      contractLength: body.contractLength || '',
+      bookedSlot: body.bookedSlot || '',
+    });
 
-    // Send to CRM
-    const crmEndpoint = process.env.NEXT_PUBLIC_CRM_ENDPOINT || 'https://app.vigilservices.co.uk/enquiry'
-
-    try {
-      await fetch(crmEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          service_type: 'Cleaning',
-          premises_type: premises,
-          service_required: service,
-          hours_required: hours,
-          postcode,
-          preferred_start: preferredStart,
-          contract_length: contractLength,
-          name,
-          company,
-          email,
-          source: 'Cleaning Website Qualification Flow',
-          created_at: new Date().toISOString(),
-        }),
+    await fetch('https://app.vigilservices.co.uk/enquiry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: body.name,
+        email: body.email,
+        company: body.company,
+        service_type: 'Security',
+        lead_source: 'website',
+        interestedIn: body.serviceType || body.premisesType || 'Security services',
+        notes: `Premises: ${body.premisesType} | Service: ${body.serviceType} | Hours: ${body.hours} | Postcode: ${body.postcode} | Start: ${body.startPreference} | Contract: ${body.contractLength}`,
+        discovery_call_date: body.bookedSlot || null
       })
-    } catch (crmError) {
-      console.error('CRM submission error:', crmError)
-      // Don't fail the request if CRM is down
-    }
+    }).catch(err => console.error('CRM post failed:', err));
 
-    // Send emails via Resend
-    if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY not configured')
-    } else {
-      try {
-        const resend = new Resend(process.env.RESEND_API_KEY)
+    return NextResponse.json({
+      success: true,
+      ...result
+    });
 
-        // Email 1 - Team notification
-        await resend.emails.send({
-          from: 'Vigil Cleaning Services <cleaning@vigilservices.co.uk>',
-          to: 'cleaning@vigilservices.co.uk',
-          subject: `New cleaning enquiry — ${premises} — ${postcode}`,
-          html: `
-            <h2>New Cleaning Enquiry</h2>
-            <p><strong>Name:</strong> ${name || 'Not provided'}</p>
-            <p><strong>Company:</strong> ${company || 'Not provided'}</p>
-            <p><strong>Email:</strong> ${email || 'Not provided'}</p>
-            <p><strong>Premises Type:</strong> ${premises}</p>
-            <p><strong>Service Required:</strong> ${service}</p>
-            <p><strong>Hours:</strong> ${hours}</p>
-            <p><strong>Location:</strong> ${postcode}</p>
-            <p><strong>Preferred Start:</strong> ${preferredStart || 'Not specified'}</p>
-            <p><strong>Contract Length:</strong> ${contractLength || 'Not specified'}</p>
-            <p><strong>Source:</strong> Cleaning Website Qualification Flow</p>
-            <p><strong>Submitted:</strong> ${new Date().toLocaleString('en-GB')}</p>
-          `,
-        })
-
-        // Email 2 - Client acknowledgement (only if email provided)
-        if (email) {
-          await resend.emails.send({
-            from: 'Vigil Cleaning Services <cleaning@vigilservices.co.uk>',
-            to: email,
-            subject: 'Your enquiry is confirmed — Vigil Cleaning Services',
-            html: `
-              <p>Dear ${name || 'valued customer'},</p>
-              <p>Thank you for your enquiry with Vigil Cleaning Services.</p>
-              <p>We have received your brief and will review your requirements. A member of our team will be in touch within 24 hours.</p>
-              <p><strong>Brief summary:</strong></p>
-              <ul>
-                <li>Service: ${service}</li>
-                <li>Location: ${postcode}</li>
-                <li>Hours: ${hours}</li>
-              </ul>
-              <p>For urgent matters, please call 020 3098 6037 or reply to this email.</p>
-              <p>The Vigil Cleaning team</p>
-            `,
-          })
-        }
-      } catch (emailError) {
-        console.error('Email notification error:', emailError)
-        // Don't fail the request if email fails
-      }
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Qualification submission error:', error)
-    return NextResponse.json({ success: false, error: 'Submission failed' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Security qualify API error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
