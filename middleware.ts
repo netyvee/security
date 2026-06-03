@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const ADMIN_SESSION_COOKIE = 'vigil_admin_session';
-const PUBLIC_ADMIN_PATHS = ['/admin/login', '/api/admin/auth'];
+const PUBLIC_ADMIN_PATHS = ['/admin/login', '/api/admin/auth', '/api/admin/logout'];
 
 // Simple in-memory rate limiting (use Vercel KV in production)
 const ratelimit = new Map<string, { count: number; resetTime: number }>()
