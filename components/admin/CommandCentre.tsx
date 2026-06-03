@@ -1,23 +1,41 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Overview from './tabs/Overview'
 import SiteHealth from './tabs/SiteHealth'
 import SEOContent from './tabs/SEOContent'
+import PageSpeed from './tabs/PageSpeed'
 import LeadsSummary from './tabs/LeadsSummary'
 import Pages from './tabs/Pages'
+import Agents from './tabs/Agents'
+import Support from './tabs/Support'
 
-type TabType = 'overview' | 'health' | 'seo' | 'leads' | 'pages'
+type TabType = 'overview' | 'health' | 'seo' | 'pagespeed' | 'leads' | 'pages' | 'agents' | 'support'
 
 export default function CommandCentre() {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
+  const [autonomousMode, setAutonomousMode] = useState(true)
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+      router.push('/admin/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   const tabs: { id: TabType; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'health', label: 'Site Health' },
     { id: 'seo', label: 'SEO + Content' },
-    { id: 'leads', label: 'Leads Summary' },
+    { id: 'pagespeed', label: 'PageSpeed' },
+    { id: 'leads', label: 'Leads' },
     { id: 'pages', label: 'Pages' },
+    { id: 'agents', label: 'Agents' },
+    { id: 'support', label: 'Support' },
   ]
 
   return (
@@ -27,22 +45,35 @@ export default function CommandCentre() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">Command Centre</h1>
+              <h1 className="text-xl font-bold text-white tracking-wider">
+                VIGIL SECURITY — COMMAND CENTRE
+              </h1>
               <p className="mt-1 text-sm text-gray-400">
-                Vigil Security Services — Admin Dashboard
+                Autonomous Management System
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-sm text-gray-400">Last Updated</div>
-                <div className="text-sm font-medium text-white">
-                  {new Date().toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </div>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-400">Autonomous Mode</span>
+                <button
+                  onClick={() => setAutonomousMode(!autonomousMode)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    autonomousMode ? 'bg-[#4ecdc4]' : 'bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      autonomousMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
+              <button
+                onClick={handleLogout}
+                className="rounded-md border border-red-500/50 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -74,11 +105,14 @@ export default function CommandCentre() {
 
       {/* Tab Content */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {activeTab === 'overview' && <Overview />}
+        {activeTab === 'overview' && <Overview autonomousMode={autonomousMode} />}
         {activeTab === 'health' && <SiteHealth />}
         {activeTab === 'seo' && <SEOContent />}
+        {activeTab === 'pagespeed' && <PageSpeed />}
         {activeTab === 'leads' && <LeadsSummary />}
         {activeTab === 'pages' && <Pages />}
+        {activeTab === 'agents' && <Agents />}
+        {activeTab === 'support' && <Support />}
       </main>
     </div>
   )
