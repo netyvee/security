@@ -27,8 +27,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Rate limiting for form submissions
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  // Rate limiting for form submissions (excluding admin read-only APIs)
+  const adminReadOnlyAPIs = ['/api/health-check', '/api/email-health', '/api/agents/status', '/api/admin/logout', '/api/sitemap-ping'];
+  const isAdminReadOnly = adminReadOnlyAPIs.some(api => pathname === api);
+
+  if (request.nextUrl.pathname.startsWith('/api/') && !isAdminReadOnly) {
     const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'anonymous'
     const now = Date.now()
     const windowMs = 60 * 60 * 1000 // 1 hour
