@@ -32,10 +32,30 @@ export async function GET() {
     });
 
     const delivered = last24h.filter((e: any) => e.last_event === 'delivered').length;
-    const bounced = last24h.filter((e: any) => e.last_event === 'bounced').length;
-    const failed = last24h.filter((e: any) => e.last_event === 'failed').length;
+    const bouncedEmails = last24h.filter((e: any) => e.last_event === 'bounced');
+    const failedEmails = last24h.filter((e: any) => e.last_event === 'failed');
+    const bounced = bouncedEmails.length;
+    const failed = failedEmails.length;
     const total = last24h.length;
     const bounceRate = total > 0 ? ((bounced / total) * 100).toFixed(1) : '0.0';
+
+    const bouncedDetails = bouncedEmails.map((e: any) => ({
+      id: e.id,
+      to: e.to,
+      from: e.from,
+      subject: e.subject,
+      created_at: e.created_at,
+      last_event: e.last_event,
+    }));
+
+    const failedDetails = failedEmails.map((e: any) => ({
+      id: e.id,
+      to: e.to,
+      from: e.from,
+      subject: e.subject,
+      created_at: e.created_at,
+      last_event: e.last_event,
+    }));
 
     return NextResponse.json({
       domain_status: domain?.status || 'not_found',
@@ -44,6 +64,8 @@ export async function GET() {
       bounce_rate: `${bounceRate}%`,
       alert_threshold: '2%',
       needs_alert: parseFloat(bounceRate) > 2,
+      bounced_emails: bouncedDetails,
+      failed_emails: failedDetails,
       checked_at: new Date().toISOString(),
     });
   } catch (error: any) {
