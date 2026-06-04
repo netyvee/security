@@ -210,10 +210,10 @@ export default function Footer() {
             borderTop: "0.5px solid rgba(255,255,255,0.07)",
           }}
         >
-          <p className="text-[12px] text-[rgba(255,255,255,0.25)]">
-            © {year} Vigil Services Ltd. Company registered in England &amp; Wales.
+          <p className="text-[12px] text-[rgba(255,255,255,0.3)]">
+            © {year} Vigil Services Ltd · Company No. 11756806 · Ferguson House, 113 Cranbrook Road, Ilford IG1 4PU · Registered in England &amp; Wales
           </p>
-          <p className="text-[12px] text-[rgba(255,255,255,0.25)]">
+          <p className="text-[12px] text-[rgba(255,255,255,0.3)]">
             Vigil Security Services is a trading name of Vigil Services Ltd.
           </p>
         </div>

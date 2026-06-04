@@ -5,7 +5,6 @@ import Script from 'next/script'
 import Nav from '@/components/Nav'
 import TrustBar from '@/components/TrustBar'
 import Footer from '@/components/Footer'
-import SiteFooter from '@/components/SiteFooter'
 import FloatingCTA from '@/components/FloatingCTA'
 import Sidebar from '@/components/Sidebar'
 import LayoutClient from './layout-client'
@@ -77,7 +76,6 @@ export default function RootLayout({
         <TrustBar />
         <LayoutClient>{children}</LayoutClient>
         <Footer />
-        <SiteFooter />
         <FloatingCTA />
         <Sidebar />
       </body>
