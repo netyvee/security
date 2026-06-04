@@ -5,6 +5,7 @@ import Script from 'next/script'
 import Nav from '@/components/Nav'
 import TrustBar from '@/components/TrustBar'
 import Footer from '@/components/Footer'
+import SiteFooter from '@/components/SiteFooter'
 import FloatingCTA from '@/components/FloatingCTA'
 import Sidebar from '@/components/Sidebar'
 import LayoutClient from './layout-client'
@@ -62,7 +63,7 @@ export default function RootLayout({
         {/* Tabler Icons */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
       </head>
-      <body>
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -76,6 +77,7 @@ export default function RootLayout({
         <TrustBar />
         <LayoutClient>{children}</LayoutClient>
         <Footer />
+        <SiteFooter />
         <FloatingCTA />
         <Sidebar />
       </body>
