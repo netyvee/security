@@ -252,7 +252,17 @@ GMAIL_APP_PASSWORD=[owner to supply]
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=duhicmygg
 ANTHROPIC_API_KEY=[same key as cleaning site]
 CRM_ENDPOINT=https://app.vigilservices.co.uk/enquiry
+ADMIN_EMAIL=vigsecs@gmail.com
+ADMIN_PASSWORD=[owner to supply]
+ADMIN_SESSION_SECRET=[owner to supply]
 ```
+
+### Admin Security Configuration:
+- **Session timeout:** 5 minutes of inactivity (auto-refresh on activity)
+- **2FA via email OTP:** 6-digit code sent to ADMIN_EMAIL after correct password
+- **OTP expiry:** 5 minutes
+- **Rate limiting:** 3 failed OTP attempts = 15 minute lockout
+- **Password rate limiting:** 5 failed attempts = 1 hour lockout
 
 ### Post-Deployment Checks:
 1. Homepage qualification flow works

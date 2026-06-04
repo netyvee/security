@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const ADMIN_SESSION_COOKIE = 'vigil_admin_session';
-const PUBLIC_ADMIN_PATHS = ['/admin/login', '/api/admin/auth', '/api/admin/logout'];
+const PUBLIC_ADMIN_PATHS = ['/admin/login', '/api/admin/auth', '/api/admin/logout', '/api/admin/verify-otp'];
 
 // Simple in-memory rate limiting (use Vercel KV in production)
 const ratelimit = new Map<string, { count: number; resetTime: number }>()
@@ -20,10 +20,21 @@ export function middleware(request: NextRequest) {
       const sessionCookie = request.cookies.get(ADMIN_SESSION_COOKIE);
       const sessionSecret = process.env.ADMIN_SESSION_SECRET;
 
-      if (!sessionCookie || (sessionSecret && sessionCookie.value !== sessionSecret)) {
+      if (!sessionCookie || !sessionSecret || sessionCookie.value !== sessionSecret) {
         const loginUrl = new URL('/admin/login', request.url);
         return NextResponse.redirect(loginUrl);
       }
+
+      // Refresh session cookie on every authenticated request (activity tracking)
+      const response = NextResponse.next();
+      response.cookies.set(ADMIN_SESSION_COOKIE, sessionSecret, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 300, // 5 minutes
+        path: '/',
+      });
+      return response;
     }
   }
 
