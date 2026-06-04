@@ -139,7 +139,6 @@ ${bookedSlot ? `
 <p style="margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#4ecdc4;">Your Discovery Call</p>
 <p style="margin:8px 0 4px;font-size:20px;font-weight:700;color:#ffffff;">&#128197; ${bookedSlot}</p>
 <p style="margin:0 0 4px;font-size:13px;color:rgba(255,255,255,0.6);">Duration: 30 minutes &nbsp;·&nbsp; Phone call</p>
-<p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.4);">A separate confirmation has been sent by Calendly to your email.</p>
 </td></tr></table>
 ` : `
 <!-- NO BOOKING FALLBACK -->

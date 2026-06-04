@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { InlineWidget } from 'react-calendly'
+import BookingCalendar from './BookingCalendar'
 
 // ─── London validation (VERBATIM COPY - DO NOT MODIFY) ──────────────────────
 const londonPfx = ["E","EC","N","NW","SE","SW","W","WC","BR","CR","DA","EN","HA","IG","KT","RM","SM","TW","UB","WD"]
@@ -159,36 +159,6 @@ export default function SecurityQualificationFlow() {
     submitBrief()
   }, [screen, ans, briefSubmitted])
 
-  // Calendly event listener
-  useEffect(() => {
-    const handleCalendly = (e: MessageEvent) => {
-      if (e.data?.event === 'calendly.event_scheduled') {
-        const payload = e.data?.payload
-        const invitee = payload?.invitee
-        const eventTime = payload?.event?.start_time
-
-        // Extract invitee details and booking time
-        setAns(prev => ({
-          ...prev,
-          name: invitee?.name || prev.name || 'Not captured',
-          email: invitee?.email || prev.email || '',
-          bookedSlot: eventTime ? new Date(eventTime).toLocaleString('en-GB', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          }) : '',
-        }))
-
-        go('thank-you')
-      }
-    }
-    window.addEventListener('message', handleCalendly)
-    return () => window.removeEventListener('message', handleCalendly)
-  }, [go])
 
   // ─── Screens ─────────────────────────────────────────────────────────────────
 
@@ -433,8 +403,6 @@ export default function SecurityQualificationFlow() {
   }
 
   if (screen === 'result') {
-    const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/vigilsecurity/consultation'
-
     return (
       <div className="min-h-screen bg-navy pt-20 pb-12 px-6">
         <div className="max-w-4xl mx-auto">
@@ -514,20 +482,30 @@ export default function SecurityQualificationFlow() {
             <p className="text-white/50 text-sm">{TESTIMONIALS[ans.premises].cite}</p>
           </div>
 
-          {/* Calendly */}
+          {/* Booking calendar */}
           <div className="mb-6">
             <h3 className="text-white font-medium text-lg mb-4 text-center">Book your free discovery call</h3>
-            <div style={{ minHeight: '630px' }} className="calendly-inline-widget">
-              <InlineWidget
-                url={calendlyUrl}
-                styles={{ height: '630px' }}
-                pageSettings={{
-                  backgroundColor: 'ffffff',
-                  primaryColor: '4ecdc4',
-                  textColor: '0a1628'
-                }}
-              />
-            </div>
+            <BookingCalendar
+              division="security"
+              answers={{
+                premisesType: ans.premises,
+                serviceType: ans.service,
+                hours: ans.hours,
+                postcode: ans.postcode,
+                startPreference: ans.preferredStart,
+                contractLength: ans.contractLength
+              }}
+              onBookingComplete={(booking) => {
+                setAns(prev => ({
+                  ...prev,
+                  name: booking.name,
+                  email: booking.email,
+                  company: booking.company,
+                  bookedSlot: `${booking.date} at ${booking.time}`
+                }))
+                go('thank-you')
+              }}
+            />
           </div>
 
           {/* Ghost button */}
