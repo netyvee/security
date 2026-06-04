@@ -86,16 +86,16 @@ const TRUST_PILLS: Record<string, string> = {
 // ─── Testimonials ────────────────────────────────────────────────────────────
 const TESTIMONIALS: Record<string, { quote: string; cite: string }> = {
   commercial: {
-    quote: 'We needed a professional security team for our central London offices. Vigil has been flawless — discreet, reliable and visibly effective every day.',
-    cite: 'Facilities Director, Corporate office — EC2'
+    quote: "We needed a professional security team for our central London offices. Vigil has been flawless — discreet, reliable and visibly effective every day.",
+    cite: "Facilities Director, Corporate office — EC2"
   },
   construction: {
-    quote: 'Site security is non-negotiable for our projects. Vigil&apos;s officers show up on time, know what they&apos;re doing, and don&apos;t need micromanaging.',
-    cite: 'Project Manager, Main contractor — SE1'
+    quote: "Site security is non-negotiable for our projects. Vigil's officers show up on time, know what they're doing, and don't need micromanaging.",
+    cite: "Project Manager, Main contractor — SE1"
   },
   events: {
-    quote: 'Our events range from 200 to 2,000 attendees. Vigil&apos;s door supervisors are professional, licensed, and handle pressure calmly.',
-    cite: 'Events Director, Venue operator — W1'
+    quote: "Our events range from 200 to 2,000 attendees. Vigil's door supervisors are professional, licensed, and handle pressure calmly.",
+    cite: "Events Director, Venue operator — W1"
   },
 }
 
@@ -172,7 +172,7 @@ export default function SecurityQualificationFlow() {
             <em className="text-[#4ecdc4] not-italic italic">stays sharp, and reports everything</em>
           </h1>
           <p className="text-[rgba(255,255,255,0.65)] text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
-            Answer four quick questions and we&apos;ll match you to the right security programme for your premises.
+            Answer four quick questions and we'll match you to the right security programme for your premises.
           </p>
 
           {/* Trust pills */}
@@ -353,7 +353,7 @@ export default function SecurityQualificationFlow() {
           <button onClick={back} className="text-white/50 hover:text-white text-sm mb-6">← Back</button>
           <p className="section-tag mb-4">Question 4 of 4</p>
           <h2 className="font-display text-[clamp(28px,3vw,42px)] font-medium text-white mb-6">
-            What&apos;s the site postcode?
+            What's the site postcode?
           </h2>
           <p className="text-white/60 text-base mb-8">
             We serve all 32 Greater London boroughs. Enter your postcode to confirm coverage.
@@ -385,7 +385,7 @@ export default function SecurityQualificationFlow() {
             <span className="text-[#4ecdc4] text-2xl">📍</span>
           </div>
           <h2 className="font-display text-[clamp(28px,3vw,42px)] font-medium text-white mb-6">
-            We don&apos;t currently cover {pcVal}
+            We don't currently cover {pcVal}
           </h2>
           <p className="text-white/60 text-lg mb-8">
             Vigil Security operates exclusively within Greater London. Your postcode falls outside our service area.
@@ -411,10 +411,10 @@ export default function SecurityQualificationFlow() {
               {TRUST_PILLS[ans.premises]}
             </div>
             <h2 className="font-display text-[clamp(28px,3vw,42px)] font-medium text-white mb-4">
-              Perfect. Here&apos;s what happens next.
+              Perfect. Here's what happens next.
             </h2>
             <p className="text-white/60 text-lg">
-              Book a free discovery call below — we&apos;ll assess your requirements and provide a tailored quote.
+              Book a free discovery call below — we'll assess your requirements and provide a tailored quote.
             </p>
           </div>
 

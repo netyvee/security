@@ -101,7 +101,7 @@ export default function Footer() {
 
         <div className="max-w-6xl mx-auto mt-10 pt-6 border-t border-[rgba(255,255,255,0.06)] flex flex-col md:flex-row justify-between items-start gap-3">
           <p className="text-[12px] text-[rgba(255,255,255,0.35)]">
-            © {year} Vigil Security Services. Company registered in England &amp; Wales.
+            © {year} Vigil Security Services. Company registered in England & Wales.
           </p>
           <p className="text-[12px] text-[rgba(255,255,255,0.35)]">
             <a href="tel:+442039738892" className="hover:text-[#4ecdc4] transition-colors">020 3973 8892</a>
