@@ -46,9 +46,18 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Rate limiting for form submissions (excluding admin read-only APIs)
-  const adminReadOnlyAPIs = ['/api/health-check', '/api/email-health', '/api/agents/status', '/api/admin/logout', '/api/sitemap-ping'];
-  const isAdminReadOnly = adminReadOnlyAPIs.some(api => pathname === api);
+  // Rate limiting for form submissions (excluding admin read-only APIs and OAuth routes)
+  const adminReadOnlyAPIs = [
+    '/api/health-check',
+    '/api/email-health',
+    '/api/agents/status',
+    '/api/admin/logout',
+    '/api/sitemap-ping',
+    '/api/admin/gsc-auth',
+    '/api/admin/gsc-callback',
+    '/api/admin/gsc-token',
+  ];
+  const isAdminReadOnly = adminReadOnlyAPIs.some(api => pathname === api || pathname.startsWith(api));
 
   if (request.nextUrl.pathname.startsWith('/api/') && !isAdminReadOnly) {
     const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'anonymous'
