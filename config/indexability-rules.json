@@ -1,0 +1,82 @@
+{
+  "must_index": [
+    "/",
+    "/manned-guarding-london",
+    "/mobile-patrols-london",
+    "/construction-site-security-london",
+    "/event-security-london",
+    "/key-holding-london",
+    "/concierge-security-london",
+    "/cctv-monitoring-london",
+    "/alarm-response-london",
+    "/security-services-city-of-london",
+    "/security-services-canary-wharf",
+    "/security-services-westminster",
+    "/security-services-camden",
+    "/security-services-islington",
+    "/security-services-hackney",
+    "/security-services-southwark",
+    "/security-services-lambeth",
+    "/about-vigil-security-services",
+    "/contact",
+    "/faq"
+  ],
+  "must_noindex": [
+    "/admin",
+    "/admin/*",
+    "/api/*",
+    "/portal/*"
+  ],
+  "optional": [
+    "/privacy-policy",
+    "/cookie-policy",
+    "/accessibility-statement",
+    "/careers",
+    "/security-jobs-london"
+  ],
+  "forbidden_claims": [
+    "97%",
+    "98%",
+    "500+",
+    "32 boroughs",
+    "SIA Approved",
+    "ACS Registered",
+    "ACS Approved",
+    "BS7858 certified",
+    "ISO Certified",
+    "industry surveys",
+    "70% cut",
+    "satisfaction rate"
+  ],
+  "content_thresholds": {
+    "homepage": 300,
+    "service_page": 800,
+    "borough_page": 600,
+    "legal_page": 200,
+    "about_page": 400,
+    "faq_page": 300
+  },
+  "page_types": {
+    "/": "homepage",
+    "/manned-guarding-london": "service_page",
+    "/mobile-patrols-london": "service_page",
+    "/construction-site-security-london": "service_page",
+    "/event-security-london": "service_page",
+    "/key-holding-london": "service_page",
+    "/concierge-security-london": "service_page",
+    "/cctv-monitoring-london": "service_page",
+    "/alarm-response-london": "service_page",
+    "/security-services-*": "borough_page",
+    "/about-vigil-security-services": "about_page",
+    "/faq": "faq_page",
+    "/privacy-policy": "legal_page",
+    "/cookie-policy": "legal_page",
+    "/accessibility-statement": "legal_page"
+  },
+  "nap": {
+    "name": "Vigil Security Services",
+    "phone": "020 3973 8892",
+    "email": "security@vigilservices.co.uk",
+    "address": "Ferguson House, 113 Cranbrook Road, Ilford IG1 4PU"
+  }
+}

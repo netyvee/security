@@ -1,0 +1,20 @@
+{
+  "/security-guard/": "/manned-guarding-london",
+  "/services/retail-security/": "/manned-guarding-london",
+  "/services/temporary-security-cover/": "/manned-guarding-london",
+  "/vigil-security-services-security-services/concierge-security-services/": "/concierge-security-london",
+  "/professional-security-services/": "/manned-guarding-london",
+  "/corporate-security/": "/manned-guarding-london",
+  "/concierge-security/": "/concierge-security-london",
+  "/clients/retailers/": "/manned-guarding-london",
+  "/contact/": "/contact",
+  "/contact-us/": "/contact",
+  "/about/": "/about-vigil-security-services",
+  "/about-us/": "/about-vigil-security-services",
+  "/security-services/": "/manned-guarding-london",
+  "/mobile-patrol/": "/mobile-patrols-london",
+  "/key-holding/": "/key-holding-london",
+  "/cctv/": "/cctv-monitoring-london",
+  "/event-security/": "/event-security-london",
+  "/construction-security/": "/construction-site-security-london"
+}
