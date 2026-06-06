@@ -69,86 +69,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Store OTP with 5 minute expiry
-    otpStore.set('admin_otp', {
-      otp,
-      expires: Date.now() + 5 * 60 * 1000
-    });
-
-    // Send OTP via email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: gmailUser,
-        pass: gmailAppPassword,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"Vigil Security Services" <${gmailUser}>`,
-      to: adminEmail,
-      subject: 'Vigil Admin — Your login code',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f1f3d; color: #ffffff; border-radius: 8px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #4ecdc4; font-size: 24px; margin: 0;">VIGIL SECURITY SERVICES</h1>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 5px;">Admin Login Verification</p>
-          </div>
-
-          <div style="background-color: #0a1628; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
-            <p style="font-size: 16px; margin-bottom: 20px;">Your login code is:</p>
-            <div style="font-size: 36px; font-weight: bold; color: #4ecdc4; letter-spacing: 8px; padding: 15px; background-color: rgba(78,205,196,0.1); border-radius: 8px; display: inline-block;">
-              ${otp}
-            </div>
-            <p style="font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 20px;">Valid for 5 minutes</p>
-          </div>
-
-          <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6;">
-            <p><strong>Security Notice:</strong></p>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>Do not share this code with anyone</li>
-              <li>If you did not request this code, contact security@vigilservices.co.uk immediately</li>
-              <li>This code will expire in 5 minutes</li>
-            </ul>
-          </div>
-
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <p style="font-size: 12px; color: rgba(255,255,255,0.4);">
-              Vigil Security Services<br/>
-              Ferguson House, 113 Cranbrook Road, Ilford, IG1 4PU<br/>
-              020 3973 8892 | security@vigilservices.co.uk
-            </p>
-          </div>
-        </div>
-      `,
-      text: `
-VIGIL SECURITY SERVICES
-Admin Login Verification
-
-Your login code is: ${otp}
-
-Valid for 5 minutes.
-
-Do not share this code with anyone.
-If you did not request this code, contact security@vigilservices.co.uk immediately.
-
-Vigil Security Services
-Ferguson House, 113 Cranbrook Road, Ilford, IG1 4PU
-020 3973 8892 | security@vigilservices.co.uk
-      `,
-    });
+    // Direct session grant on correct password (OTP disabled)
+    const sessionSecret = process.env.ADMIN_SESSION_SECRET;
 
     console.log({
       timestamp: new Date().toISOString(),
       ip,
-      event: 'otp_sent',
-      email: adminEmail
+      event: 'session_granted',
+      userAgent: request.headers.get('user-agent')
     });
 
-    return NextResponse.json({ success: true, otpSent: true });
+    const response = NextResponse.json({
+      success: true,
+      redirectTo: '/admin',
+    });
+
+    response.cookies.set('vigil_admin_session', sessionSecret || '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7200, // 2 hours
+      path: '/',
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Auth error:', error);

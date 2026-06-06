@@ -1,1231 +1,874 @@
-'use client'
+'use client';
 
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect } from 'react';
 
-function SafeSection({
-  children,
-  fallback = null
-}: {
-  children: ReactNode;
-  fallback?: ReactNode;
-}) {
-  try {
-    return <>{children}</>;
-  } catch (e) {
-    console.error('Section render error:', e);
-    return <>{fallback}</>;
-  }
+const colors = {
+  navy: '#0a1628',
+  card: '#0f1f3d',
+  teal: '#4ecdc4',
+  red: '#ef4444',
+  amber: '#f59e0b',
+  green: '#22c55e',
+  text: 'rgba(255,255,255,0.9)',
+  muted: 'rgba(255,255,255,0.5)',
+  dim: 'rgba(255,255,255,0.2)',
+  border: 'rgba(78,205,196,0.2)',
+};
+
+function card(extra = {}): React.CSSProperties {
+  return {
+    background: colors.card,
+    border: `1px solid ${colors.border}`,
+    borderRadius: 12,
+    padding: '1.25rem',
+    marginBottom: '1rem',
+    ...extra,
+  };
 }
 
-interface PageResult {
-  url: string
-  status: number
-  title: string | null
-  canonical_ok: boolean
-  canonical_redirect?: boolean
-  noindex: boolean
-  word_count: number
-  page_type: string
-  in_sitemap: boolean
-  has_h1: boolean
-  forbidden_claims: string[]
-  nap_phone_ok: boolean
-  issue_count: number
-  page_rank?: number
-  page_size_kb?: number
+function label(text: string) {
+  return (
+    <p style={{
+      fontSize: 11,
+      fontWeight: 500,
+      letterSpacing: '0.07em',
+      textTransform: 'uppercase' as const,
+      color: colors.teal,
+      marginBottom: 10,
+    }}>{text}</p>
+  );
 }
 
-interface CWVResult {
-  url: string
-  mobile_score: number
-  desktop_score: number
-  lcp: number
-  cls: number
-  tbt: number
-  grade: 'good' | 'needs-improvement' | 'poor'
+function badge(text: string, color: string) {
+  return (
+    <span style={{
+      fontSize: 11,
+      padding: '2px 8px',
+      borderRadius: 10,
+      background: color + '22',
+      color,
+      fontWeight: 500,
+    }}>{text}</span>
+  );
 }
 
-interface GSCPage {
-  url: string
-  clicks: number
-  impressions: number
-  ctr: number
-  position: number
-}
-
-interface WriteLogEntry {
-  timestamp: string
-  operation: string
-  url: string
-  result: string
-  dryRun: boolean
-}
-
-interface Issue {
-  type: string
-  category: string
-  message: string
-  impact: number
-  url?: string
-}
-
-interface ModuleResults {
-  structured_data?: { errors: number; warnings: number }
-  sitemap_health?: { total_checked: number; redirecting: number; broken: number; ok: number }
-  images?: { broken: number; missing_alt: number; mixed_content: number }
-  social_tags?: { missing_og: number; twitter_issues: number }
-  links?: { pages_no_outgoing: number; http_links: number }
-  duplicates?: { duplicate_titles: number; duplicate_descs: number }
-  near_duplicates?: { exact_duplicates: number; near_duplicates: number }
-  headers?: { noindex_headers: number }
-  url_structure?: { double_slashes: number; uppercase: number }
-  robots_txt?: { accessible: boolean; has_sitemap_reference: boolean; admin_blocked: boolean; issues: number }
-  external_links?: { broken: number; http_links: number; timed_out: number }
-  crawl_depth?: {
-    depth_1_pages: number
-    depth_2_pages: number
-    depth_3_pages: number
-    unreachable_pages: number
-  }
-  pagerank?: {
-    top_5_pages: Array<{ url: string; score: number }>
-    bottom_5_pages: Array<{ url: string; score: number }>
-    average_score: number
-    under_linked_pages: number
-  }
-  core_web_vitals?: {
-    pages_tested: number
-    average_mobile_score: number
-    average_desktop_score: number
-    poor_lcp_pages: number
-    poor_cls_pages: number
-    poor_tbt_pages: number
-    results: CWVResult[]
-  }
-  gsc_data?: {
-    connected: boolean
-    date_range?: string
-    total_clicks_28d: number
-    total_impressions_28d: number
-    average_ctr: number
-    average_position: number
-    pages_with_data: number
-    top_5_pages?: GSCPage[]
-    all_pages?: GSCPage[]
-  }
-  changes?: {
-    title_changes: number
-    h1_changes: number
-    word_count_changes: number
-    canonical_changes: number
-    first_run: boolean
-  }
-  page_size?: {
-    oversized_pages: number
-    large_pages: number
-    average_size_kb: number
-  }
-}
-
-interface AuditResult {
-  tool: string
-  site: string
-  mode: string
-  score: number
-  grade: string
-  score_breakdown?: {
-    raw_score: number
-    calibrated_score: number
-    improvement_from_v4: number
-  }
-  summary: {
-    total_issues: number
-    errors: number
-    warnings: number
-    notices: number
-    pages_audited: number
-    sitemap_urls_found: number
-    wordpress_urls_checked: number
-    pages_crawled_recursively?: number
-    gsc_connected?: boolean
-    pagespeed_tested?: number
-    indexing_candidates?: number
-  }
-  by_category: Record<string, number>
-  critical_issues: Issue[]
-  warnings: Issue[]
-  page_results: PageResult[]
-  module_results?: ModuleResults
-  module_timings_ms?: Record<string, number>
-  write_operation_log?: WriteLogEntry[]
-  ahrefs_comparison?: {
-    checks_we_now_perform: string[]
-    checks_ahrefs_does_we_still_miss: string[]
-    our_advantage_over_ahrefs: string[]
-  }
-  duration_ms: number
-  checked_at: string
-}
-
-interface SetupStatus {
-  pagespeed_configured: boolean
-  gsc_connected: boolean
+function scoreColor(score: number): string {
+  if (score >= 70) return colors.green;
+  if (score >= 40) return colors.amber;
+  return colors.red;
 }
 
 export default function SiteHealth() {
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<AuditResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null)
-  const [mode, setMode] = useState<'dry_run' | 'live'>('dry_run')
-  const [showModeConfirm, setShowModeConfirm] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'dry_run' | 'live'>('dry_run');
+  const [setupStatus, setSetupStatus] = useState<any>(null);
+  const [confirmLive, setConfirmLive] = useState(false);
 
   useEffect(() => {
-    // Fetch setup status on mount
-    const checkSetup = async () => {
-      try {
-        const res = await fetch('/api/admin/setup-check')
-        if (res.ok) {
-          const data = await res.json()
-          setSetupStatus(data)
-        } else {
-          setSetupStatus({ pagespeed_configured: false, gsc_connected: false })
-        }
-      } catch (e) {
-        console.error('Setup check failed:', e)
-        setSetupStatus({ pagespeed_configured: false, gsc_connected: false })
-      }
-    }
-    checkSetup()
-  }, [])
+    fetch('/api/admin/setup-check')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d && setSetupStatus(d))
+      .catch(() => {});
+  }, []);
 
-  const runAudit = async (auditMode: 'dry_run' | 'live' = mode) => {
-    setLoading(true)
-    setError(null)
+  const runAudit = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`/api/health-check?mode=${auditMode}`)
-      if (!res.ok) {
-        throw new Error(`Failed to run audit: ${res.status}`)
-      }
-      const data = await res.json()
-      setResult(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const res = await fetch(
+        `/api/health-check?mode=${mode}`,
+        { signal: AbortSignal.timeout(60000) }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setResult(data);
+    } catch (e: any) {
+      setError(e.message || 'Audit failed');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleModeToggle = (newMode: 'dry_run' | 'live') => {
-    if (newMode === 'live') {
-      setShowModeConfirm(true)
-    } else {
-      setMode(newMode)
-    }
-  }
-
-  const confirmLiveMode = () => {
-    setMode('live')
-    setShowModeConfirm(false)
-    runAudit('live')
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-6">
-          <h2 className="mb-2 text-xl font-semibold text-red-400">Error</h2>
-          <p className="text-sm text-red-300">{error}</p>
-          <button
-            onClick={() => runAudit()}
-            className="mt-4 rounded-lg bg-[#4ecdc4] px-4 py-2 text-sm font-medium text-white hover:bg-[#3db5ad]"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/10 border-t-[#4ecdc4]"></div>
-        <p className="text-lg text-white/60">Auditing {result?.summary.pages_audited || '16+' } pages...</p>
-      </div>
-    )
-  }
-
-  if (!result) {
-    return (
-      <div className="space-y-6">
-        {/* STEP 13 — Setup Status Bar */}
-        {setupStatus && (
-          <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-4">
-            <div className="mb-2 text-sm font-medium text-white/80">Integration Status</div>
-            <div className="flex flex-wrap gap-2">
-              <div className={`rounded-full px-3 py-1 text-xs font-medium ${setupStatus.pagespeed_configured ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                {setupStatus.pagespeed_configured ? '✓' : '✗'} PageSpeed API
-              </div>
-              {setupStatus.gsc_connected ? (
-                <div className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400">
-                  ✓ Google Search Console
-                </div>
-              ) : (
-                <a
-                  href="/api/admin/gsc-auth"
-                  className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 hover:bg-red-500/30"
-                >
-                  ✗ Google Search Console (click to connect)
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 12 — Mode Toggle */}
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-4">
-          <div className="mb-3 text-sm font-medium text-white/80">Audit Mode</div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => handleModeToggle('dry_run')}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                mode === 'dry_run'
-                  ? 'border-2 border-[#4ecdc4] bg-[#4ecdc4]/10 text-[#4ecdc4]'
-                  : 'border border-white/20 bg-white/5 text-white/60 hover:bg-white/10'
-              }`}
-            >
-              Dry Run
-            </button>
-            <button
-              onClick={() => handleModeToggle('live')}
-              title="Live mode submits pages to Google for indexing. Maximum 10 submissions per run."
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                mode === 'live'
-                  ? 'border-2 border-red-500 bg-red-500/10 text-red-400'
-                  : 'border border-white/20 bg-white/5 text-white/60 hover:bg-white/10'
-              }`}
-            >
-              Live Mode
-            </button>
-          </div>
-          {mode === 'live' && (
-            <div className="mt-2 text-xs text-red-400">
-              ⚠️ Live mode will submit eligible pages to Google for indexing (max 10 per run)
-            </div>
-          )}
-        </div>
-
-        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
-          <p className="text-lg text-white/60">Click Run Audit to analyse the site</p>
-          <button
-            onClick={() => runAudit()}
-            className="rounded-lg bg-[#4ecdc4] px-6 py-3 text-base font-medium text-white hover:bg-[#3db5ad]"
-          >
-            Run Audit
-          </button>
-        </div>
-
-        {/* Mode Confirmation Dialog */}
-        {showModeConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-            <div className="w-full max-w-md rounded-lg border border-red-500/20 bg-[#0a1628] p-6">
-              <h3 className="mb-3 text-xl font-semibold text-white">Switch to Live Mode?</h3>
-              <p className="mb-6 text-sm text-white/60">
-                This will submit eligible pages to Google for indexing. Maximum 10 per run.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowModeConfirm(false)}
-                  className="flex-1 rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmLiveMode}
-                  className="flex-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
-                >
-                  Confirm Live Mode
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  const scoreColor = (result?.score ?? 0) >= 90 ? '#22c55e' : (result?.score ?? 0) >= 70 ? '#f59e0b' : '#ef4444'
+  const score = result?.score ?? 0;
+  const grade = result?.grade ?? '-';
+  const summary = result?.summary ?? {};
+  const issues = result?.critical_issues ?? [];
+  const warnings = result?.warnings ?? [];
+  const pages = result?.page_results ?? [];
+  const byCategory = result?.by_category ?? {};
+  const moduleResults = result?.module_results ?? {};
+  const timings = result?.module_timings_ms ?? {};
+  const ahrefs = result?.ahrefs_comparison ?? {};
+  const writeLog = result?.write_operation_log ?? [];
+  const pagerank = moduleResults?.pagerank ?? null;
+  const cwv = moduleResults?.core_web_vitals ?? null;
+  const gsc = moduleResults?.gsc_data ?? null;
+  const changes = moduleResults?.changes ?? null;
+  const pageSizeData = moduleResults?.page_size ?? null;
 
   return (
-    <div className="space-y-6">
-      {/* STEP 13 — Setup Status Bar */}
+    <div style={{ color: colors.text, fontFamily: 'sans-serif' }}>
+
+      {/* SETUP STATUS BAR */}
       {setupStatus && (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-4">
-          <div className="mb-2 text-sm font-medium text-white/80">Integration Status</div>
-          <div className="flex flex-wrap gap-2">
-            <div className={`rounded-full px-3 py-1 text-xs font-medium ${setupStatus.pagespeed_configured ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-              {setupStatus.pagespeed_configured ? '✓' : '✗'} PageSpeed API
-            </div>
-            {setupStatus.gsc_connected ? (
-              <div className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400">
-                ✓ Google Search Console
-              </div>
-            ) : (
-              <a
-                href="/api/admin/gsc-auth"
-                className="rounded-full bg-red-500/20 px-3 py-1 text-xs font-medium text-red-400 hover:bg-red-500/30"
-              >
-                ✗ Google Search Console (click to connect)
-              </a>
-            )}
-          </div>
+        <div style={{
+          display: 'flex',
+          gap: 8,
+          flexWrap: 'wrap' as const,
+          marginBottom: '1rem',
+          padding: '0.75rem 1rem',
+          background: colors.card,
+          borderRadius: 8,
+          border: `1px solid ${colors.border}`,
+        }}>
+          {Object.entries(setupStatus?.checks ?? {}).map(
+            ([key, val]: [string, any]) => (
+              <span key={key} style={{
+                fontSize: 11,
+                padding: '3px 10px',
+                borderRadius: 12,
+                background: val.status === 'ok'
+                  ? colors.green + '22'
+                  : colors.red + '22',
+                color: val.status === 'ok'
+                  ? colors.green
+                  : colors.red,
+              }}>
+                {val.status === 'ok' ? '✓' : '✗'}{' '}
+                {key.replace(/_/g, ' ')}
+              </span>
+            )
+          )}
         </div>
       )}
 
-      {/* STEP 12 — Mode Toggle */}
-      <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-4">
-        <div className="mb-3 text-sm font-medium text-white/80">Audit Mode</div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => handleModeToggle('dry_run')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-              mode === 'dry_run'
-                ? 'border-2 border-[#4ecdc4] bg-[#4ecdc4]/10 text-[#4ecdc4]'
-                : 'border border-white/20 bg-white/5 text-white/60 hover:bg-white/10'
-            }`}
-          >
-            Dry Run
-          </button>
-          <button
-            onClick={() => handleModeToggle('live')}
-            title="Live mode submits pages to Google for indexing. Maximum 10 submissions per run."
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-              mode === 'live'
-                ? 'border-2 border-red-500 bg-red-500/10 text-red-400'
-                : 'border border-white/20 bg-white/5 text-white/60 hover:bg-white/10'
-            }`}
-          >
-            Live Mode
-          </button>
-        </div>
-        {mode === 'live' && (
-          <div className="mt-2 text-xs text-red-400">
-            ⚠️ Live mode will submit eligible pages to Google for indexing (max 10 per run)
-          </div>
+      {/* MODE TOGGLE + RUN BUTTON */}
+      <div style={{
+        display: 'flex',
+        gap: 8,
+        alignItems: 'center',
+        marginBottom: '1.25rem',
+        flexWrap: 'wrap' as const,
+      }}>
+        <button
+          onClick={() => setMode('dry_run')}
+          style={{
+            padding: '6px 16px',
+            borderRadius: 8,
+            border: `1px solid ${mode === 'dry_run' ? colors.teal : colors.dim}`,
+            background: mode === 'dry_run' ? colors.teal + '22' : 'transparent',
+            color: mode === 'dry_run' ? colors.teal : colors.muted,
+            cursor: 'pointer',
+            fontSize: 13,
+          }}
+        >Dry Run</button>
+        <button
+          onClick={() => setConfirmLive(true)}
+          style={{
+            padding: '6px 16px',
+            borderRadius: 8,
+            border: `1px solid ${mode === 'live' ? colors.red : colors.dim}`,
+            background: mode === 'live' ? colors.red + '22' : 'transparent',
+            color: mode === 'live' ? colors.red : colors.muted,
+            cursor: 'pointer',
+            fontSize: 13,
+          }}
+        >Live Mode</button>
+        <button
+          onClick={runAudit}
+          disabled={loading}
+          style={{
+            padding: '8px 24px',
+            borderRadius: 8,
+            border: 'none',
+            background: loading ? colors.dim : colors.teal,
+            color: loading ? colors.muted : colors.navy,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontWeight: 600,
+            fontSize: 14,
+            marginLeft: 8,
+          }}
+        >
+          {loading ? 'Auditing...' : 'Run Audit'}
+        </button>
+        {result && (
+          <span style={{ fontSize: 12, color: colors.muted }}>
+            Last run: {new Date(result.checked_at).toLocaleTimeString()}
+            {' · '}{result.duration_ms}ms
+            {' · '}{result.tool}
+          </span>
         )}
       </div>
 
-      {/* SECTION A — Score Header */}
-      <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <div className="text-6xl font-bold" style={{ color: scoreColor }}>
-                {result?.score ?? 0}
-              </div>
-              <div className="text-sm text-white/40">Score</div>
-            </div>
-            <div className="text-center">
-              <div className="text-6xl font-bold text-white">{result?.grade ?? '-'}</div>
-              <div className="text-sm text-white/40">Grade</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm text-white/60">
-              Last checked: {result?.checked_at ? new Date(result.checked_at).toLocaleString() : 'N/A'}
-            </div>
-            <div className="text-sm text-white/40">Duration: {result?.duration_ms ?? 0}ms</div>
-            <button
-              onClick={() => runAudit()}
-              className="mt-2 rounded-lg bg-[#4ecdc4] px-4 py-2 text-sm font-medium text-white hover:bg-[#3db5ad]"
-            >
-              Run Audit
-            </button>
-          </div>
-        </div>
-
-        {/* STEP 3 — Additional Summary Pills */}
-        <div className="flex flex-wrap gap-2 border-t border-white/10 pt-4">
-          {result?.summary?.pages_crawled_recursively !== undefined && (
-            <div className="rounded-full bg-white/5 px-3 py-1 text-xs text-white/80">
-              Pages crawled: {result.summary.pages_crawled_recursively}
-            </div>
-          )}
-          {result?.summary?.gsc_connected !== undefined && (
-            <div className={`rounded-full px-3 py-1 text-xs ${result.summary.gsc_connected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-              <span className="mr-1">{result.summary.gsc_connected ? '●' : '●'}</span>
-              GSC {result.summary.gsc_connected ? 'connected' : 'not connected'}
-            </div>
-          )}
-          {result?.summary?.pagespeed_tested !== undefined && result.summary.pagespeed_tested > 0 && (
-            <div className="rounded-full bg-white/5 px-3 py-1 text-xs text-white/80">
-              PageSpeed: {result.summary.pagespeed_tested} pages tested
-            </div>
-          )}
-          <div className={`rounded-full px-3 py-1 text-xs font-medium ${result?.mode === 'live' ? 'bg-red-500/20 text-red-400' : 'bg-white/5 text-white/60'}`}>
-            Mode: {result?.mode === 'live' ? 'LIVE' : 'DRY RUN'}
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION B — Summary Cards */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-4">
-          <div className="text-2xl font-bold text-white">{result.summary.total_issues}</div>
-          <div className="text-sm text-white/60">Total Issues</div>
-        </div>
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
-          <div className="text-2xl font-bold text-red-400">{result.summary.errors}</div>
-          <div className="text-sm text-red-300">Errors</div>
-        </div>
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4">
-          <div className="text-2xl font-bold text-amber-400">{result.summary.warnings}</div>
-          <div className="text-sm text-amber-300">Warnings</div>
-        </div>
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-4">
-          <div className="text-2xl font-bold text-white">{result.summary.pages_audited}</div>
-          <div className="text-sm text-white/60">Pages Audited</div>
-        </div>
-      </div>
-
-      {/* SECTION B2 — Module Status Grid */}
-      {result.module_results && (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-          <h2 className="mb-4 text-xl font-semibold text-white">Module Status</h2>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {/* Structured Data */}
-            {result.module_results.structured_data && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">Structured Data</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.structured_data.errors} errors, {result.module_results.structured_data.warnings} warnings
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* Sitemap Health */}
-            {result.module_results.sitemap_health && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">Sitemap Health</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.sitemap_health.total_checked} checked, {result.module_results.sitemap_health.redirecting} redirecting
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* Images */}
-            {result.module_results.images && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">Images</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.images.broken} broken, {result.module_results.images.missing_alt} missing alt
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* Social Tags */}
-            {result.module_results.social_tags && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">Social Tags</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.social_tags.missing_og} missing OG
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* Robots.txt */}
-            {result.module_results.robots_txt && (
-              <div className={`rounded-lg border-l-4 p-3 ${result.module_results.robots_txt.accessible ? 'border-[#4ecdc4] bg-[#162849]' : 'border-red-500 bg-red-500/10'}`}>
-                <div className="text-xs font-medium text-white/60">Robots.txt</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.robots_txt.accessible ? 'accessible' : 'not accessible'}
-                </div>
-                <div className={`text-xs ${result.module_results.robots_txt.accessible ? 'text-green-400' : 'text-red-400'}`}>
-                  {result.module_results.robots_txt.accessible ? '✓ active' : '✗ error'}
-                </div>
-              </div>
-            )}
-
-            {/* External Links */}
-            {result.module_results.external_links && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">External Links</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.external_links.broken} broken
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* Crawl Depth */}
-            {result.module_results.crawl_depth && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">Crawl Depth</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.crawl_depth.depth_1_pages} at depth 1, {result.module_results.crawl_depth.depth_2_pages} at depth 2
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* PageRank */}
-            {result.module_results.pagerank && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">PageRank</div>
-                <div className="mt-1 text-sm text-white">
-                  avg score {result.module_results.pagerank.average_score.toFixed(1)}/100
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* Core Web Vitals */}
-            <div className={`rounded-lg border-l-4 p-3 ${result.module_results.core_web_vitals ? 'border-[#4ecdc4] bg-[#162849]' : 'border-white/20 bg-white/5'}`}>
-              <div className="text-xs font-medium text-white/60">Core Web Vitals</div>
-              <div className="mt-1 text-sm text-white">
-                {result.module_results.core_web_vitals
-                  ? `avg mobile ${result.module_results.core_web_vitals.average_mobile_score.toFixed(0)}/100`
-                  : 'not configured'}
-              </div>
-              <div className={`text-xs ${result.module_results.core_web_vitals ? 'text-green-400' : 'text-white/40'}`}>
-                {result.module_results.core_web_vitals ? '✓ active' : '— not configured'}
-              </div>
-            </div>
-
-            {/* GSC Data */}
-            <div className={`rounded-lg border-l-4 p-3 ${result.module_results.gsc_data?.connected ? 'border-[#4ecdc4] bg-[#162849]' : 'border-white/20 bg-white/5'}`}>
-              <div className="text-xs font-medium text-white/60">GSC Data</div>
-              <div className="mt-1 text-sm text-white">
-                {result.module_results.gsc_data?.connected
-                  ? `${result.module_results.gsc_data.total_clicks_28d} clicks, ${result.module_results.gsc_data.total_impressions_28d} impr.`
-                  : 'not connected'}
-              </div>
-              <div className={`text-xs ${result.module_results.gsc_data?.connected ? 'text-green-400' : 'text-white/40'}`}>
-                {result.module_results.gsc_data?.connected ? '✓ active' : '— not connected'}
-              </div>
-            </div>
-
-            {/* Changes */}
-            {result.module_results.changes && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">Changes</div>
-                <div className="mt-1 text-sm text-white">
-                  {result.module_results.changes.title_changes + result.module_results.changes.h1_changes + result.module_results.changes.word_count_changes} changes detected
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
-
-            {/* Page Size */}
-            {result.module_results.page_size && (
-              <div className="rounded-lg border-l-4 border-[#4ecdc4] bg-[#162849] p-3">
-                <div className="text-xs font-medium text-white/60">Page Size</div>
-                <div className="mt-1 text-sm text-white">
-                  avg {result.module_results.page_size.average_size_kb.toFixed(0)}kb
-                </div>
-                <div className="text-xs text-green-400">✓ active</div>
-              </div>
-            )}
+      {/* LIVE MODE CONFIRM */}
+      {confirmLive && (
+        <div style={{
+          ...card(),
+          border: `1px solid ${colors.red}`,
+          marginBottom: '1rem',
+        }}>
+          <p style={{ color: colors.red, fontWeight: 500, marginBottom: 8 }}>
+            Switch to Live Mode?
+          </p>
+          <p style={{ fontSize: 13, color: colors.muted, marginBottom: 12 }}>
+            This submits eligible pages to Google for indexing.
+            Maximum 10 submissions per run.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => {
+              setMode('live');
+              setConfirmLive(false);
+            }} style={{
+              padding: '6px 16px',
+              borderRadius: 8,
+              border: 'none',
+              background: colors.red,
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: 13,
+            }}>Confirm Live Mode</button>
+            <button onClick={() => setConfirmLive(false)} style={{
+              padding: '6px 16px',
+              borderRadius: 8,
+              border: `1px solid ${colors.dim}`,
+              background: 'transparent',
+              color: colors.muted,
+              cursor: 'pointer',
+              fontSize: 13,
+            }}>Cancel</button>
           </div>
         </div>
       )}
 
-      {/* SECTION C — Issues by Category */}
-      <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-        <h2 className="mb-4 text-xl font-semibold text-white">Issues by Category</h2>
-        <div className="space-y-3">
-          {Object.entries(result?.by_category || {})
-            .sort((a, b) => b[1] - a[1])
-            .map(([category, count]) => {
-              const isError = result.critical_issues.filter(i => i.category === category).length > count / 2
-              const barColor = isError ? '#ef4444' : '#f59e0b'
-              const maxCount = Math.max(...Object.values(result.by_category))
-              const width = (count / maxCount) * 100
+      {/* ERROR */}
+      {error && (
+        <div style={{
+          ...card(),
+          border: `1px solid ${colors.red}`,
+        }}>
+          <p style={{ color: colors.red }}>
+            ✗ Audit failed: {error}
+          </p>
+        </div>
+      )}
 
-              return (
-                <div key={category} className="flex items-center gap-3">
-                  <div className="w-48 text-sm text-white/80">{category}</div>
-                  <div className="flex-1">
-                    <div className="h-8 overflow-hidden rounded-lg bg-white/5">
-                      <div
-                        className="h-full transition-all"
-                        style={{ width: `${width}%`, backgroundColor: barColor }}
-                      ></div>
+      {/* LOADING */}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '3rem' }}>
+          <p style={{ color: colors.teal, fontSize: 16 }}>
+            Auditing {summary.pages_audited || '...'} pages...
+          </p>
+          <p style={{ color: colors.muted, fontSize: 13, marginTop: 8 }}>
+            Running {ahrefs?.checks_we_now_perform?.length || 38} checks
+          </p>
+        </div>
+      )}
+
+      {/* RESULTS */}
+      {result && !loading && (
+        <>
+          {/* SECTION A — SCORE */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10, marginBottom: '1.25rem' }}>
+            <div style={{ ...card({ textAlign: 'center' }) }}>
+              <div style={{
+                fontSize: 42,
+                fontWeight: 700,
+                color: scoreColor(score),
+                lineHeight: 1,
+              }}>{score}</div>
+              <div style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}>Score / 100</div>
+            </div>
+            <div style={{ ...card({ textAlign: 'center' }) }}>
+              <div style={{ fontSize: 42, fontWeight: 700, color: scoreColor(score), lineHeight: 1 }}>{grade}</div>
+              <div style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}>Grade</div>
+            </div>
+            <div style={{ ...card({ textAlign: 'center' }) }}>
+              <div style={{ fontSize: 28, fontWeight: 700, color: colors.red, lineHeight: 1 }}>{summary.errors ?? 0}</div>
+              <div style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}>Errors</div>
+            </div>
+            <div style={{ ...card({ textAlign: 'center' }) }}>
+              <div style={{ fontSize: 28, fontWeight: 700, color: colors.amber, lineHeight: 1 }}>{summary.warnings ?? 0}</div>
+              <div style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}>Warnings</div>
+            </div>
+            <div style={{ ...card({ textAlign: 'center' }) }}>
+              <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1 }}>{summary.pages_audited ?? 0}</div>
+              <div style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}>Pages audited</div>
+            </div>
+            <div style={{ ...card({ textAlign: 'center' }) }}>
+              <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1 }}>{summary.total_issues ?? 0}</div>
+              <div style={{ fontSize: 12, color: colors.muted, marginTop: 4 }}>Total issues</div>
+            </div>
+          </div>
+
+          {/* SECTION B — ISSUES BY CATEGORY */}
+          {Object.keys(byCategory).length > 0 && (
+            <>
+              {label('Issues by category')}
+              <div style={card()}>
+                {Object.entries(byCategory)
+                  .sort(([,a],[,b]) => (b as number) - (a as number))
+                  .map(([cat, count]) => (
+                    <div key={cat} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      marginBottom: 8,
+                    }}>
+                      <div style={{
+                        width: 140,
+                        fontSize: 12,
+                        color: colors.muted,
+                        flexShrink: 0,
+                      }}>{cat}</div>
+                      <div style={{
+                        flex: 1,
+                        height: 5,
+                        background: 'rgba(255,255,255,0.1)',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${Math.min(100, ((count as number) / (summary.total_issues || 1)) * 100 * 3)}%`,
+                          background: (count as number) > 10 ? colors.red : colors.amber,
+                          borderRadius: 3,
+                        }} />
+                      </div>
+                      <div style={{
+                        fontSize: 12,
+                        color: colors.muted,
+                        width: 24,
+                        textAlign: 'right',
+                        flexShrink: 0,
+                      }}>{count as number}</div>
                     </div>
+                  ))}
+              </div>
+            </>
+          )}
+
+          {/* SECTION C — CRITICAL ERRORS */}
+          {issues.length > 0 && (
+            <>
+              {label(`Critical errors — ${issues.length}`)}
+              <div style={card()}>
+                {issues.map((issue: any, i: number) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    gap: 8,
+                    padding: '6px 0',
+                    borderBottom: i < issues.length - 1
+                      ? `1px solid ${colors.dim}`
+                      : 'none',
+                    fontSize: 12,
+                    alignItems: 'flex-start',
+                  }}>
+                    <span style={{
+                      fontSize: 10,
+                      padding: '2px 6px',
+                      borderRadius: 8,
+                      background: colors.red + '22',
+                      color: colors.red,
+                      whiteSpace: 'nowrap' as const,
+                      flexShrink: 0,
+                    }}>{issue.category}</span>
+                    <span style={{ flex: 1, color: colors.text, lineHeight: 1.5 }}>
+                      {issue.message}
+                    </span>
+                    <span style={{ color: colors.red, flexShrink: 0 }}>
+                      -{issue.impact}pts
+                    </span>
                   </div>
-                  <div className="w-12 text-right text-sm font-medium text-white">{count}</div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* SECTION D — WARNINGS */}
+          {warnings.length > 0 && (
+            <>
+              {label(`Warnings — ${warnings.length}`)}
+              <div style={card()}>
+                {warnings.map((w: any, i: number) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    gap: 8,
+                    padding: '6px 0',
+                    borderBottom: i < warnings.length - 1
+                      ? `1px solid ${colors.dim}`
+                      : 'none',
+                    fontSize: 12,
+                    alignItems: 'flex-start',
+                  }}>
+                    <span style={{
+                      fontSize: 10,
+                      padding: '2px 6px',
+                      borderRadius: 8,
+                      background: colors.amber + '22',
+                      color: colors.amber,
+                      whiteSpace: 'nowrap' as const,
+                      flexShrink: 0,
+                    }}>{w.category}</span>
+                    <span style={{ flex: 1, color: colors.text, lineHeight: 1.5 }}>
+                      {w.message}
+                    </span>
+                    <span style={{ color: colors.amber, flexShrink: 0 }}>
+                      -{w.impact}pts
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* SECTION E — PAGERANK */}
+          {pagerank && (
+            <>
+              {label('Internal PageRank distribution')}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 10,
+                marginBottom: '1rem',
+              }}>
+                <div style={card()}>
+                  <p style={{ fontSize: 12, color: colors.teal, marginBottom: 10 }}>
+                    Top 5 — highest authority
+                  </p>
+                  {(pagerank.top_5_pages || []).map((p: any) => (
+                    <div key={p.url} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      marginBottom: 8,
+                    }}>
+                      <div style={{
+                        flex: 1,
+                        fontSize: 11,
+                        color: colors.muted,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap' as const,
+                      }}>
+                        {p.url.replace('https://security.vigilservices.co.uk', '') || '/'}
+                      </div>
+                      <div style={{
+                        width: 60,
+                        height: 4,
+                        background: 'rgba(255,255,255,0.1)',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          width: `${p.score}%`,
+                          height: '100%',
+                          background: p.score > 60 ? colors.green : p.score > 30 ? colors.amber : colors.red,
+                          borderRadius: 2,
+                        }} />
+                      </div>
+                      <div style={{
+                        fontSize: 11,
+                        color: p.score > 60 ? colors.green : p.score > 30 ? colors.amber : colors.red,
+                        width: 28,
+                        textAlign: 'right' as const,
+                      }}>{p.score}</div>
+                    </div>
+                  ))}
                 </div>
-              )
-            })}
-        </div>
-      </div>
-
-      {/* SECTION C2 — PageRank League Table */}
-      {result.module_results?.pagerank && (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-          <h2 className="mb-2 text-xl font-semibold text-white">Internal Authority — PageRank Distribution</h2>
-          <p className="mb-4 text-sm text-white/60">Higher score = more internal links pointing to this page</p>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Top 5 Pages */}
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-green-400">Top 5 Pages by PageRank</h3>
-              <div className="space-y-2">
-                {result.module_results.pagerank.top_5_pages.map((page, i) => {
-                  const path = page.url.replace('https://security.vigilservices.co.uk', '') || '/'
-                  const barColor = page.score > 60 ? '#22c55e' : page.score > 30 ? '#f59e0b' : '#ef4444'
-                  return (
-                    <div key={i} className="rounded-lg bg-[#162849] p-3">
-                      <div className="mb-1 flex items-center justify-between text-xs">
-                        <span className="text-white/80">{path}</span>
-                        <span className="font-medium text-white">{page.score.toFixed(1)}</span>
+                <div style={card()}>
+                  <p style={{ fontSize: 12, color: colors.red, marginBottom: 10 }}>
+                    Bottom 5 — under-linked
+                  </p>
+                  {(pagerank.bottom_5_pages || []).map((p: any) => (
+                    <div key={p.url} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      marginBottom: 8,
+                    }}>
+                      <div style={{
+                        flex: 1,
+                        fontSize: 11,
+                        color: colors.muted,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap' as const,
+                      }}>
+                        {p.url.replace('https://security.vigilservices.co.uk', '') || '/'}
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-white/5">
-                        <div
-                          className="h-full transition-all"
-                          style={{ width: `${page.score}%`, backgroundColor: barColor }}
-                        ></div>
+                      <div style={{
+                        width: 60,
+                        height: 4,
+                        background: 'rgba(255,255,255,0.1)',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          width: `${p.score}%`,
+                          height: '100%',
+                          background: colors.red,
+                          borderRadius: 2,
+                        }} />
                       </div>
+                      <div style={{
+                        fontSize: 11,
+                        color: colors.red,
+                        width: 28,
+                        textAlign: 'right' as const,
+                      }}>{p.score}</div>
                     </div>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
+          )}
 
-            {/* Bottom 5 Pages */}
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-amber-400">Bottom 5 Pages (Under-linked)</h3>
-              <div className="space-y-2">
-                {result.module_results.pagerank.bottom_5_pages.map((page, i) => {
-                  const path = page.url.replace('https://security.vigilservices.co.uk', '') || '/'
-                  const barColor = page.score < 20 ? '#ef4444' : '#f59e0b'
-                  return (
-                    <div key={i} className="rounded-lg bg-[#162849] p-3">
-                      <div className="mb-1 flex items-center justify-between text-xs">
-                        <span className="flex items-center gap-1 text-white/80">
-                          {page.score < 20 && <span className="text-red-400">⚠️</span>}
-                          {path}
-                        </span>
-                        <span className="font-medium text-white">{page.score.toFixed(1)}</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-white/5">
-                        <div
-                          className="h-full transition-all"
-                          style={{ width: `${page.score}%`, backgroundColor: barColor }}
-                        ></div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+          {/* SECTION F — CORE WEB VITALS */}
+          {label('Core Web Vitals')}
+          {(!cwv || cwv.pages_tested === 0) ? (
+            <div style={{
+              ...card(),
+              border: `1px solid ${colors.dim}`,
+              opacity: 0.7,
+            }}>
+              <p style={{ color: colors.muted, fontSize: 13 }}>
+                Not configured — add PAGESPEED_API_KEY to Vercel
+              </p>
+              <a href="/api/admin/setup-check" target="_blank" style={{
+                color: colors.teal,
+                fontSize: 12,
+              }}>
+                Run setup check →
+              </a>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* SECTION C3 — Core Web Vitals */}
-      {result.module_results?.core_web_vitals ? (
-        result.module_results.core_web_vitals.pages_tested > 0 ? (
-          <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-            <h2 className="mb-4 text-xl font-semibold text-white">Core Web Vitals</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+          ) : (
+            <div style={{ ...card(), overflowX: 'auto' as const }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr className="border-b border-white/10 text-left">
-                    <th className="pb-3 font-medium text-white/80">Page</th>
-                    <th className="pb-3 font-medium text-white/80">Mobile Score</th>
-                    <th className="pb-3 font-medium text-white/80">Desktop Score</th>
-                    <th className="pb-3 font-medium text-white/80">LCP</th>
-                    <th className="pb-3 font-medium text-white/80">CLS</th>
-                    <th className="pb-3 font-medium text-white/80">TBT</th>
-                    <th className="pb-3 font-medium text-white/80">Grade</th>
+                  <tr>
+                    {['Page','Mobile','Desktop','LCP','CLS','TBT','Grade'].map(h => (
+                      <th key={h} style={{
+                        textAlign: 'left' as const,
+                        padding: '4px 8px',
+                        color: colors.muted,
+                        borderBottom: `1px solid ${colors.dim}`,
+                        fontWeight: 500,
+                      }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {result.module_results.core_web_vitals.results.map((cwv, i) => {
-                    const path = cwv.url.replace('https://security.vigilservices.co.uk', '') || '/'
-                    const lcpColor = cwv.lcp <= 2500 ? '#22c55e' : cwv.lcp <= 4000 ? '#f59e0b' : '#ef4444'
-                    const clsColor = cwv.cls <= 0.1 ? '#22c55e' : cwv.cls <= 0.25 ? '#f59e0b' : '#ef4444'
-                    const tbtColor = cwv.tbt <= 200 ? '#22c55e' : cwv.tbt <= 600 ? '#f59e0b' : '#ef4444'
-                    const gradeColor = cwv.grade === 'good' ? '#22c55e' : cwv.grade === 'needs-improvement' ? '#f59e0b' : '#ef4444'
-
-                    return (
-                      <tr key={i} className="border-b border-white/5">
-                        <td className="py-3 text-white/80">{path}</td>
-                        <td className="py-3 text-white">{cwv.mobile_score}</td>
-                        <td className="py-3 text-white">{cwv.desktop_score}</td>
-                        <td className="py-3" style={{ color: lcpColor }}>
-                          {cwv.lcp.toFixed(0)}ms
-                        </td>
-                        <td className="py-3" style={{ color: clsColor }}>
-                          {cwv.cls.toFixed(3)}
-                        </td>
-                        <td className="py-3" style={{ color: tbtColor }}>
-                          {cwv.tbt.toFixed(0)}ms
-                        </td>
-                        <td className="py-3">
-                          <span
-                            className="rounded px-2 py-1 text-xs font-medium"
-                            style={{ backgroundColor: `${gradeColor}20`, color: gradeColor }}
-                          >
-                            {cwv.grade}
-                          </span>
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {(cwv.results || []).map((r: any) => (
+                    <tr key={r.url}>
+                      <td style={{ padding: '6px 8px', color: colors.muted }}>
+                        {r.url.replace('https://security.vigilservices.co.uk', '') || '/'}
+                      </td>
+                      <td style={{ padding: '6px 8px', color: scoreColor(r.mobile_score) }}>
+                        {r.mobile_score}
+                      </td>
+                      <td style={{ padding: '6px 8px', color: scoreColor(r.desktop_score) }}>
+                        {r.desktop_score}
+                      </td>
+                      <td style={{ padding: '6px 8px', color: r.lcp > 4 ? colors.red : r.lcp > 2.5 ? colors.amber : colors.green }}>
+                        {r.lcp}s
+                      </td>
+                      <td style={{ padding: '6px 8px', color: r.cls > 0.25 ? colors.red : r.cls > 0.1 ? colors.amber : colors.green }}>
+                        {r.cls}
+                      </td>
+                      <td style={{ padding: '6px 8px', color: r.tbt > 600 ? colors.red : r.tbt > 200 ? colors.amber : colors.green }}>
+                        {r.tbt}ms
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        {badge(
+                          r.grade,
+                          r.grade === 'good' ? colors.green : r.grade === 'needs-improvement' ? colors.amber : colors.red
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-          </div>
-        ) : null
-      ) : (
-        <div className="rounded-lg border border-white/20 bg-white/5 p-6">
-          <h2 className="mb-2 text-xl font-semibold text-white/60">Core Web Vitals — Not configured</h2>
-          <p className="text-sm text-white/40">
-            Add <code className="rounded bg-white/10 px-1 py-0.5">PAGESPEED_API_KEY</code> to Vercel to enable real performance data per page
-          </p>
-          <a
-            href="/api/admin/setup-check"
-            className="mt-3 inline-block rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/20"
-          >
-            Check setup status
-          </a>
-        </div>
-      )}
+          )}
 
-      {/* SECTION C4 — GSC Search Performance */}
-      {result.module_results?.gsc_data?.connected ? (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-          <h2 className="mb-4 text-xl font-semibold text-white">Google Search Console — Search Performance</h2>
+          {/* SECTION G — GSC DATA */}
+          {label('Google Search Console')}
+          {(!gsc || !gsc.connected) ? (
+            <div style={{
+              ...card(),
+              border: `1px solid ${colors.dim}`,
+              opacity: 0.7,
+            }}>
+              <p style={{ color: colors.muted, fontSize: 13, marginBottom: 8 }}>
+                Not connected — complete OAuth to unlock search performance data
+              </p>
+              <a href="/api/admin/gsc-auth" style={{
+                display: 'inline-block',
+                padding: '6px 16px',
+                borderRadius: 8,
+                border: `1px solid ${colors.teal}`,
+                color: colors.teal,
+                fontSize: 12,
+                textDecoration: 'none',
+              }}>Connect GSC →</a>
+            </div>
+          ) : (
+            <>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4,1fr)',
+                gap: 10,
+                marginBottom: '1rem',
+              }}>
+                {[
+                  { label: 'Clicks (28d)', value: gsc.total_clicks_28d ?? 0 },
+                  { label: 'Impressions (28d)', value: gsc.total_impressions_28d ?? 0 },
+                  { label: 'Avg CTR', value: `${gsc.average_ctr ?? 0}%` },
+                  { label: 'Avg Position', value: gsc.average_position ?? 0 },
+                ].map(m => (
+                  <div key={m.label} style={{ ...card({ textAlign: 'center' }) }}>
+                    <div style={{ fontSize: 22, fontWeight: 700 }}>{m.value}</div>
+                    <div style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>{m.label}</div>
+                  </div>
+                ))}
+              </div>
+              {(gsc.top_5_pages || []).length > 0 && (
+                <div style={{ ...card(), overflowX: 'auto' as const }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <thead>
+                      <tr>
+                        {['Page','Clicks','Impressions','CTR','Position'].map(h => (
+                          <th key={h} style={{
+                            textAlign: 'left' as const,
+                            padding: '4px 8px',
+                            color: colors.muted,
+                            borderBottom: `1px solid ${colors.dim}`,
+                          }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(gsc.top_5_pages || []).map((p: any) => (
+                        <tr key={p.url}>
+                          <td style={{ padding: '6px 8px', color: colors.muted }}>
+                            {p.url.replace('https://security.vigilservices.co.uk', '') || '/'}
+                          </td>
+                          <td style={{ padding: '6px 8px' }}>{p.clicks}</td>
+                          <td style={{ padding: '6px 8px' }}>{p.impressions}</td>
+                          <td style={{ padding: '6px 8px' }}>{p.ctr}%</td>
+                          <td style={{ padding: '6px 8px', color: p.position <= 3 ? colors.green : p.position <= 10 ? colors.amber : colors.red }}>
+                            {p.position}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
 
-          {/* Top Metrics */}
-          <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="rounded-lg bg-[#162849] p-4">
-              <div className="text-2xl font-bold text-white">{result.module_results.gsc_data.total_clicks_28d}</div>
-              <div className="text-xs text-white/60">Total Clicks (28d)</div>
-            </div>
-            <div className="rounded-lg bg-[#162849] p-4">
-              <div className="text-2xl font-bold text-white">{result.module_results.gsc_data.total_impressions_28d}</div>
-              <div className="text-xs text-white/60">Total Impressions (28d)</div>
-            </div>
-            <div className="rounded-lg bg-[#162849] p-4">
-              <div className="text-2xl font-bold text-white">{(result.module_results.gsc_data.average_ctr * 100).toFixed(1)}%</div>
-              <div className="text-xs text-white/60">Average CTR</div>
-            </div>
-            <div className="rounded-lg bg-[#162849] p-4">
-              <div className="text-2xl font-bold text-white">{result.module_results.gsc_data.average_position.toFixed(1)}</div>
-              <div className="text-xs text-white/60">Average Position</div>
-            </div>
-          </div>
-
-          {/* Top 5 Pages */}
-          {result.module_results.gsc_data.top_5_pages && result.module_results.gsc_data.top_5_pages.length > 0 && (
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-white/80">Top 5 Pages</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+          {/* SECTION H — PAGE RESULTS */}
+          {pages.length > 0 && (
+            <>
+              {label(`Page results — ${pages.length} pages`)}
+              <div style={{ ...card(), overflowX: 'auto' as const }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                   <thead>
-                    <tr className="border-b border-white/10 text-left">
-                      <th className="pb-3 font-medium text-white/80">Page</th>
-                      <th className="pb-3 font-medium text-white/80">Clicks</th>
-                      <th className="pb-3 font-medium text-white/80">Impressions</th>
-                      <th className="pb-3 font-medium text-white/80">CTR</th>
-                      <th className="pb-3 font-medium text-white/80">Position</th>
+                    <tr>
+                      {['Page','Status','Canon','H1','Words','Sitemap','Issues','PR'].map(h => (
+                        <th key={h} style={{
+                          textAlign: 'left' as const,
+                          padding: '4px 8px',
+                          color: colors.muted,
+                          borderBottom: `1px solid ${colors.dim}`,
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap' as const,
+                        }}>{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {result.module_results.gsc_data.top_5_pages.map((page, i) => {
-                      const path = page.url.replace('https://security.vigilservices.co.uk', '') || '/'
-                      const posColor = page.position <= 3 ? '#22c55e' : page.position <= 10 ? '#f59e0b' : '#ef4444'
-
-                      return (
-                        <tr key={i} className="border-b border-white/5">
-                          <td className="py-3 text-white/80">{path}</td>
-                          <td className="py-3 text-white">{page.clicks}</td>
-                          <td className="py-3 text-white">{page.impressions}</td>
-                          <td className="py-3 text-white">{(page.ctr * 100).toFixed(1)}%</td>
-                          <td className="py-3">
-                            <span
-                              className="rounded px-2 py-1 text-xs font-medium"
-                              style={{ backgroundColor: `${posColor}20`, color: posColor }}
-                            >
-                              {page.position.toFixed(1)}
-                            </span>
-                          </td>
-                        </tr>
-                      )
-                    })}
+                    {pages.map((p: any) => (
+                      <tr key={p.url} style={{
+                        borderBottom: `1px solid ${colors.dim}`,
+                      }}>
+                        <td style={{ padding: '5px 8px', color: colors.muted, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                          {p.url.replace('https://security.vigilservices.co.uk', '') || '/'}
+                        </td>
+                        <td style={{ padding: '5px 8px', color: p.status === 200 ? colors.green : colors.red }}>
+                          {p.status}
+                        </td>
+                        <td style={{ padding: '5px 8px', color: p.canonical_ok ? colors.green : colors.red }}>
+                          {p.canonical_ok ? '✓' : '✗'}
+                        </td>
+                        <td style={{ padding: '5px 8px', color: p.has_h1 ? colors.green : colors.red }}>
+                          {p.has_h1 ? '✓' : '✗'}
+                        </td>
+                        <td style={{ padding: '5px 8px', color: p.word_count > 300 ? colors.green : colors.amber }}>
+                          {p.word_count ?? 0}
+                        </td>
+                        <td style={{ padding: '5px 8px', color: p.in_sitemap ? colors.green : colors.muted }}>
+                          {p.in_sitemap ? '✓' : '—'}
+                        </td>
+                        <td style={{ padding: '5px 8px', color: (p.issue_count ?? 0) > 0 ? colors.red : colors.green }}>
+                          {p.issue_count ?? 0}
+                        </td>
+                        <td style={{ padding: '5px 8px', color: (p.page_rank ?? 0) > 60 ? colors.green : (p.page_rank ?? 0) > 30 ? colors.amber : colors.red }}>
+                          {p.page_rank ?? '—'}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
-            </div>
+            </>
           )}
-        </div>
-      ) : (
-        <div className="rounded-lg border border-white/20 bg-white/5 p-6">
-          <h2 className="mb-2 text-xl font-semibold text-white/60">Google Search Console — Not connected</h2>
-          <p className="mb-4 text-sm text-white/40">
-            Visit /api/admin/gsc-auth to connect your Google account and unlock search performance data per page
-          </p>
-          <a
-            href="/api/admin/gsc-auth"
-            className="inline-block rounded-lg bg-[#4ecdc4] px-4 py-2 text-sm font-medium text-white hover:bg-[#3db5ad]"
-          >
-            Connect GSC
-          </a>
-        </div>
-      )}
 
-      {/* SECTION D — Critical Errors */}
-      {result.critical_issues.length > 0 && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-6">
-          <h2 className="mb-4 text-xl font-semibold text-red-400">Critical Errors</h2>
-          <div className="space-y-2">
-            {(result?.critical_issues || []).map((issue, i) => (
-              <div key={i} className="rounded-lg border-l-4 border-red-500 bg-[#0f1f3d] p-4">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
-                    {issue.category}
-                  </span>
-                  <span className="text-xs font-medium text-red-400">-{issue.impact} points</span>
-                </div>
-                <div className="text-sm text-white">{issue.message}</div>
-                {issue.url && (
-                  <div className="mt-1 text-xs text-white/40">{issue.url}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* SECTION E — Warnings */}
-      {result.warnings.length > 0 && (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-6">
-          <h2 className="mb-4 text-xl font-semibold text-amber-400">Warnings</h2>
-          <div className="space-y-2">
-            {(result?.warnings || []).map((issue, i) => (
-              <div key={i} className="rounded-lg border-l-4 border-amber-500 bg-[#0f1f3d] p-4">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">
-                    {issue.category}
-                  </span>
-                  <span className="text-xs font-medium text-amber-400">-{issue.impact} points</span>
-                </div>
-                <div className="text-sm text-white">{issue.message}</div>
-                {issue.url && (
-                  <div className="mt-1 text-xs text-white/40">{issue.url}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* SECTION F — Page Results Table (with PageRank and Size columns) */}
-      <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-        <h2 className="mb-4 text-xl font-semibold text-white">Page Results</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/10 text-left">
-                <th className="pb-3 font-medium text-white/80">Page</th>
-                <th className="pb-3 font-medium text-white/80">Status</th>
-                <th className="pb-3 font-medium text-white/80">Canonical</th>
-                <th className="pb-3 font-medium text-white/80">H1</th>
-                <th className="pb-3 font-medium text-white/80">Words</th>
-                <th className="pb-3 font-medium text-white/80">PageRank</th>
-                <th className="pb-3 font-medium text-white/80">Size KB</th>
-                <th className="pb-3 font-medium text-white/80">Sitemap</th>
-                <th className="pb-3 font-medium text-white/80">Issues</th>
-                <th className="pb-3 font-medium text-white/80">NAP Phone</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(result?.page_results || []).map((page, i) => {
-                const path = page.url.replace('https://security.vigilservices.co.uk', '') || '/'
-                const statusColor = page.status === 200 ? '#22c55e' : '#ef4444'
-                const wordCountColor = page.word_count >= 2500 ? '#22c55e' : page.word_count >= 1200 ? '#f59e0b' : '#ef4444'
-
-                const prColor = page.page_rank
-                  ? (page.page_rank > 60 ? '#22c55e' : page.page_rank > 30 ? '#f59e0b' : '#ef4444')
-                  : '#ffffff40'
-
-                const sizeColor = page.page_size_kb
-                  ? (page.page_size_kb < 100 ? '#22c55e' : page.page_size_kb < 500 ? '#f59e0b' : '#ef4444')
-                  : '#ffffff40'
-
-                return (
-                  <tr key={i} className="border-b border-white/5">
-                    <td className="py-3 text-white/80">{path}</td>
-                    <td className="py-3">
-                      <span className="rounded px-2 py-1 text-xs font-medium" style={{ backgroundColor: `${statusColor}20`, color: statusColor }}>
-                        {page.status}
-                      </span>
-                    </td>
-                    <td className="py-3 text-center">
-                      {page.canonical_ok ? '✓' : '✗'}
-                    </td>
-                    <td className="py-3 text-center">
-                      {page.has_h1 ? '✓' : '✗'}
-                    </td>
-                    <td className="py-3">
-                      <span style={{ color: wordCountColor }}>{page.word_count}</span>
-                    </td>
-                    <td className="py-3">
-                      <span style={{ color: prColor }}>
-                        {page.page_rank !== undefined ? `${page.page_rank.toFixed(1)}` : '—'}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <span style={{ color: sizeColor }}>
-                        {page.page_size_kb !== undefined ? `${page.page_size_kb.toFixed(0)}` : '—'}
-                      </span>
-                    </td>
-                    <td className="py-3 text-center">
-                      {page.in_sitemap ? '✓' : '✗'}
-                    </td>
-                    <td className="py-3 text-center">
-                      {page.issue_count > 0 ? (
-                        <span className="rounded bg-red-500/20 px-2 py-1 text-xs font-medium text-red-400">
-                          {page.issue_count}
-                        </span>
-                      ) : (
-                        <span className="text-green-400">0</span>
-                      )}
-                    </td>
-                    <td className="py-3 text-center">
-                      {page.nap_phone_ok ? '✓' : '✗'}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* SECTION F2 — Module Timings */}
-      {result.module_timings_ms && Object.keys(result.module_timings_ms).length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-          <h2 className="mb-4 text-xl font-semibold text-white">Audit Performance — Time per Module</h2>
-          <div className="space-y-2">
-            {Object.entries(result.module_timings_ms)
-              .sort((a, b) => b[1] - a[1])
-              .map(([module, ms]) => {
-                const barColor = ms < 1000 ? '#22c55e' : ms < 3000 ? '#f59e0b' : '#ef4444'
-                const maxMs = Math.max(...Object.values(result?.module_timings_ms || {}))
-                const width = (ms / maxMs) * 100
-
-                return (
-                  <div key={module} className="flex items-center gap-3">
-                    <div className="w-48 text-sm text-white/80">{module}</div>
-                    <div className="flex-1">
-                      <div className="h-6 overflow-hidden rounded-lg bg-white/5">
-                        <div
-                          className="h-full transition-all"
-                          style={{ width: `${width}%`, backgroundColor: barColor }}
-                        ></div>
-                      </div>
+          {/* SECTION I — MODULE TIMINGS */}
+          {Object.keys(timings).length > 0 && (
+            <>
+              {label('Module timings')}
+              <div style={card()}>
+                {Object.entries(timings).map(([mod, ms]) => (
+                  <div key={mod} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 6,
+                  }}>
+                    <div style={{ width: 140, fontSize: 11, color: colors.muted, flexShrink: 0 }}>
+                      {mod.replace(/_/g, ' ')}
                     </div>
-                    <div className="w-20 text-right text-sm font-medium text-white">{ms}ms</div>
-                  </div>
-                )
-              })}
-          </div>
-          <div className="mt-4 border-t border-white/10 pt-3 text-right text-sm text-white/60">
-            Total audit duration: {result.duration_ms}ms
-          </div>
-        </div>
-      )}
-
-      {/* SECTION F3 — Write Operation Log */}
-      {result.write_operation_log && result.write_operation_log.length > 0 ? (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-          <h2 className="mb-4 text-xl font-semibold text-white">Write Operation Log</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-left">
-                  <th className="pb-3 font-medium text-white/80">Timestamp</th>
-                  <th className="pb-3 font-medium text-white/80">Operation</th>
-                  <th className="pb-3 font-medium text-white/80">URL</th>
-                  <th className="pb-3 font-medium text-white/80">Result</th>
-                  <th className="pb-3 font-medium text-white/80">Mode</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.write_operation_log.map((entry, i) => {
-                  const rowColor = entry.result === 'SUCCESS'
-                    ? 'bg-green-500/5'
-                    : entry.result === 'FAILED'
-                    ? 'bg-red-500/5'
-                    : 'bg-white/5'
-                  const textColor = entry.result === 'SUCCESS'
-                    ? '#22c55e'
-                    : entry.result === 'FAILED'
-                    ? '#ef4444'
-                    : '#ffffff60'
-
-                  return (
-                    <tr key={i} className={`border-b border-white/5 ${rowColor}`}>
-                      <td className="py-3 text-white/60">{new Date(entry.timestamp).toLocaleTimeString()}</td>
-                      <td className="py-3 text-white/80">{entry.operation}</td>
-                      <td className="py-3 text-white/60">{entry.url.replace('https://security.vigilservices.co.uk', '') || '/'}</td>
-                      <td className="py-3" style={{ color: textColor }}>
-                        {entry.result}
-                      </td>
-                      <td className="py-3">
-                        <span className={`rounded px-2 py-1 text-xs font-medium ${entry.dryRun ? 'bg-white/10 text-white/60' : 'bg-red-500/20 text-red-400'}`}>
-                          {entry.dryRun ? 'DRY RUN' : 'LIVE'}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : result.mode === 'dry_run' ? (
-        <div className="rounded-lg border border-white/20 bg-white/5 p-6">
-          <h2 className="mb-2 text-xl font-semibold text-white/60">Write Operation Log</h2>
-          <p className="text-sm text-white/40">
-            No write operations in this audit run. Run in live mode to submit pages for indexing.
-          </p>
-        </div>
-      ) : null}
-
-      {/* SECTION G — Ahrefs Comparison (updated with V6 capabilities) */}
-      {result.ahrefs_comparison && (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-          <h2 className="mb-4 text-xl font-semibold text-white">Ahrefs Comparison</h2>
-          <div className="mb-2 text-sm text-white/60">38 checks performed</div>
-          <div className="grid gap-6 md:grid-cols-4">
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-green-400">Checks We Perform</h3>
-              <ul className="space-y-2">
-                {result?.ahrefs_comparison?.checks_we_now_perform.map((check, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-white/80">
-                    <span className="text-green-400">✓</span>
-                    <span>{check}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-white/40">Checks We Still Miss</h3>
-              <ul className="space-y-2">
-                {result?.ahrefs_comparison?.checks_ahrefs_does_we_still_miss.map((check, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-white/40">
-                    <span>−</span>
-                    <span>{check}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-[#4ecdc4]">Our Advantage</h3>
-              <ul className="space-y-2">
-                {result?.ahrefs_comparison?.our_advantage_over_ahrefs.map((check, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-white/80">
-                    <span className="text-[#4ecdc4]">✓</span>
-                    <span>{check}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-[#4ecdc4]">V6 New Capabilities</h3>
-              <ul className="space-y-2">
-                {[
-                  'Recursive crawler',
-                  'PageRank estimator',
-                  'Core Web Vitals (when configured)',
-                  'GSC integration (when connected)',
-                  'Automated indexing'
-                ].map((check, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-white/80">
-                    <span className="text-[#4ecdc4]">✓</span>
-                    <span>{check}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SECTION H — WordPress Redirect Health (if data available) */}
-      {result.summary.wordpress_urls_checked > 0 && (
-        <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
-          <h2 className="mb-4 text-xl font-semibold text-white">WordPress Redirect Health</h2>
-          <div className="text-sm text-white/60">
-            Checked {result.summary.wordpress_urls_checked} old WordPress URLs
-          </div>
-          <div className="mt-4 space-y-2">
-            {result.critical_issues
-              .filter(i => i.category === 'WordPress Migration')
-              .concat(result.warnings.filter(i => i.category === 'WordPress Migration'))
-              .map((issue, i) => {
-                const statusColor = issue.type === 'error' ? '#ef4444' : '#f59e0b'
-                const statusLabel = issue.message.includes('404')
-                  ? '404 — Lost Authority'
-                  : issue.message.includes('200')
-                  ? '200 — Duplicate Content Risk'
-                  : '301 — Redirected'
-
-                return (
-                  <div key={i} className="rounded-lg bg-[#162849] p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-white/80">
-                        {issue.url?.replace('https://security.vigilservices.co.uk', '')}
-                      </div>
-                      <div
-                        className="rounded px-2 py-1 text-xs font-medium"
-                        style={{ backgroundColor: `${statusColor}20`, color: statusColor }}
-                      >
-                        {statusLabel}
-                      </div>
+                    <div style={{
+                      flex: 1,
+                      height: 4,
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        width: `${Math.min(100, ((ms as number) / 5000) * 100)}%`,
+                        height: '100%',
+                        background: (ms as number) > 3000 ? colors.red : (ms as number) > 1000 ? colors.amber : colors.green,
+                        borderRadius: 2,
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: colors.muted, width: 50, textAlign: 'right' as const }}>
+                      {ms as number}ms
                     </div>
                   </div>
-                )
-              })}
-          </div>
-        </div>
+                ))}
+                <div style={{
+                  borderTop: `1px solid ${colors.dim}`,
+                  paddingTop: 8,
+                  marginTop: 4,
+                  fontSize: 12,
+                  color: colors.teal,
+                }}>
+                  Total: {result.duration_ms}ms
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* SECTION J — WRITE LOG */}
+          {writeLog.length > 0 && (
+            <>
+              {label('Write operation log')}
+              <div style={card()}>
+                {writeLog.map((entry: any, i: number) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    gap: 8,
+                    padding: '5px 0',
+                    borderBottom: i < writeLog.length - 1 ? `1px solid ${colors.dim}` : 'none',
+                    fontSize: 11,
+                  }}>
+                    <span style={{ color: colors.muted, flexShrink: 0 }}>
+                      {new Date(entry.timestamp).toLocaleTimeString()}
+                    </span>
+                    <span style={{ color: colors.teal, flexShrink: 0 }}>
+                      {entry.operation}
+                    </span>
+                    <span style={{ flex: 1, color: colors.muted, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {entry.url.replace('https://security.vigilservices.co.uk', '')}
+                    </span>
+                    <span style={{
+                      color: entry.result.includes('SUCCESS') ? colors.green : entry.dryRun ? colors.muted : colors.red,
+                      flexShrink: 0,
+                    }}>
+                      {entry.dryRun ? 'DRY RUN' : entry.result}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* SECTION K — AHREFS COMPARISON */}
+          {ahrefs.checks_we_now_perform && (
+            <>
+              {label('Ahrefs comparison')}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr 1fr',
+                gap: 10,
+                marginBottom: '1rem',
+              }}>
+                <div style={card()}>
+                  <p style={{ fontSize: 12, color: colors.teal, marginBottom: 8 }}>
+                    We perform ({(ahrefs.checks_we_now_perform || []).length})
+                  </p>
+                  {(ahrefs.checks_we_now_perform || []).map((c: string, i: number) => (
+                    <p key={i} style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>
+                      ✓ {c}
+                    </p>
+                  ))}
+                </div>
+                <div style={card()}>
+                  <p style={{ fontSize: 12, color: colors.muted, marginBottom: 8 }}>
+                    Still missing ({(ahrefs.checks_ahrefs_does_we_still_miss || []).length})
+                  </p>
+                  {(ahrefs.checks_ahrefs_does_we_still_miss || []).map((c: string, i: number) => (
+                    <p key={i} style={{ fontSize: 11, color: colors.dim, marginBottom: 4 }}>
+                      — {c}
+                    </p>
+                  ))}
+                </div>
+                <div style={card()}>
+                  <p style={{ fontSize: 12, color: colors.green, marginBottom: 8 }}>
+                    Our advantage ({(ahrefs.our_advantage_over_ahrefs || []).length})
+                  </p>
+                  {(ahrefs.our_advantage_over_ahrefs || []).map((c: string, i: number) => (
+                    <p key={i} style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>
+                      ★ {c}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </>
       )}
 
-      {/* Mode Confirmation Dialog */}
-      {showModeConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="w-full max-w-md rounded-lg border border-red-500/20 bg-[#0a1628] p-6">
-            <h3 className="mb-3 text-xl font-semibold text-white">Switch to Live Mode?</h3>
-            <p className="mb-6 text-sm text-white/60">
-              This will submit eligible pages to Google for indexing. Maximum 10 per run.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowModeConfirm(false)}
-                className="flex-1 rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmLiveMode}
-                className="flex-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
-              >
-                Confirm Live Mode
-              </button>
-            </div>
-          </div>
+      {/* EMPTY STATE */}
+      {!result && !loading && !error && (
+        <div style={{
+          textAlign: 'center',
+          padding: '4rem 2rem',
+          color: colors.muted,
+        }}>
+          <p style={{ fontSize: 16, marginBottom: 8 }}>
+            Site Health Auditor
+          </p>
+          <p style={{ fontSize: 13 }}>
+            Click Run Audit to analyse {result?.site || 'the site'}
+          </p>
         </div>
       )}
     </div>
-  )
+  );
 }

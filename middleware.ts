@@ -39,7 +39,7 @@ export function middleware(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 300, // 5 minutes
+        maxAge: 7200, // 2 hours
         path: '/',
       });
       return response;

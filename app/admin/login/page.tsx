@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 type LoginStep = 'password' | 'otp';
 
 export default function AdminLogin() {
+  const router = useRouter();
   const [step, setStep] = useState<LoginStep>('password');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -34,10 +36,16 @@ export default function AdminLogin() {
 
       const data = await response.json();
 
-      if (data.success && data.otpSent) {
-        setStep('otp');
-        setResendCooldown(30);
-        setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+      if (data.success) {
+        if (data.redirectTo) {
+          // Direct login (OTP disabled) — use replace to prevent back button loop
+          router.replace(data.redirectTo);
+        } else if (data.otpSent) {
+          // OTP flow (legacy fallback)
+          setStep('otp');
+          setResendCooldown(30);
+          setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+        }
       } else {
         setError(data.error || 'Invalid password — access denied');
       }
