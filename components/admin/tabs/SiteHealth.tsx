@@ -1,6 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
+
+function SafeSection({
+  children,
+  fallback = null
+}: {
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
+  try {
+    return <>{children}</>;
+  } catch (e) {
+    console.error('Section render error:', e);
+    return <>{fallback}</>;
+  }
+}
 
 interface PageResult {
   url: string
@@ -167,10 +182,21 @@ export default function SiteHealth() {
 
   useEffect(() => {
     // Fetch setup status on mount
-    fetch('/api/admin/setup-check')
-      .then(res => res.json())
-      .then(data => setSetupStatus(data))
-      .catch(() => setSetupStatus({ pagespeed_configured: false, gsc_connected: false }))
+    const checkSetup = async () => {
+      try {
+        const res = await fetch('/api/admin/setup-check')
+        if (res.ok) {
+          const data = await res.json()
+          setSetupStatus(data)
+        } else {
+          setSetupStatus({ pagespeed_configured: false, gsc_connected: false })
+        }
+      } catch (e) {
+        console.error('Setup check failed:', e)
+        setSetupStatus({ pagespeed_configured: false, gsc_connected: false })
+      }
+    }
+    checkSetup()
   }, [])
 
   const runAudit = async (auditMode: 'dry_run' | 'live' = mode) => {
@@ -329,7 +355,7 @@ export default function SiteHealth() {
     )
   }
 
-  const scoreColor = result.score >= 90 ? '#22c55e' : result.score >= 70 ? '#f59e0b' : '#ef4444'
+  const scoreColor = (result?.score ?? 0) >= 90 ? '#22c55e' : (result?.score ?? 0) >= 70 ? '#f59e0b' : '#ef4444'
 
   return (
     <div className="space-y-6">
@@ -396,20 +422,20 @@ export default function SiteHealth() {
           <div className="flex items-center gap-6">
             <div className="text-center">
               <div className="text-6xl font-bold" style={{ color: scoreColor }}>
-                {result.score}
+                {result?.score ?? 0}
               </div>
               <div className="text-sm text-white/40">Score</div>
             </div>
             <div className="text-center">
-              <div className="text-6xl font-bold text-white">{result.grade}</div>
+              <div className="text-6xl font-bold text-white">{result?.grade ?? '-'}</div>
               <div className="text-sm text-white/40">Grade</div>
             </div>
           </div>
           <div className="text-right">
             <div className="text-sm text-white/60">
-              Last checked: {new Date(result.checked_at).toLocaleString()}
+              Last checked: {result?.checked_at ? new Date(result.checked_at).toLocaleString() : 'N/A'}
             </div>
-            <div className="text-sm text-white/40">Duration: {result.duration_ms}ms</div>
+            <div className="text-sm text-white/40">Duration: {result?.duration_ms ?? 0}ms</div>
             <button
               onClick={() => runAudit()}
               className="mt-2 rounded-lg bg-[#4ecdc4] px-4 py-2 text-sm font-medium text-white hover:bg-[#3db5ad]"
@@ -421,24 +447,24 @@ export default function SiteHealth() {
 
         {/* STEP 3 — Additional Summary Pills */}
         <div className="flex flex-wrap gap-2 border-t border-white/10 pt-4">
-          {result.summary.pages_crawled_recursively !== undefined && (
+          {result?.summary?.pages_crawled_recursively !== undefined && (
             <div className="rounded-full bg-white/5 px-3 py-1 text-xs text-white/80">
               Pages crawled: {result.summary.pages_crawled_recursively}
             </div>
           )}
-          {result.summary.gsc_connected !== undefined && (
+          {result?.summary?.gsc_connected !== undefined && (
             <div className={`rounded-full px-3 py-1 text-xs ${result.summary.gsc_connected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
               <span className="mr-1">{result.summary.gsc_connected ? '●' : '●'}</span>
               GSC {result.summary.gsc_connected ? 'connected' : 'not connected'}
             </div>
           )}
-          {result.summary.pagespeed_tested !== undefined && result.summary.pagespeed_tested > 0 && (
+          {result?.summary?.pagespeed_tested !== undefined && result.summary.pagespeed_tested > 0 && (
             <div className="rounded-full bg-white/5 px-3 py-1 text-xs text-white/80">
               PageSpeed: {result.summary.pagespeed_tested} pages tested
             </div>
           )}
-          <div className={`rounded-full px-3 py-1 text-xs font-medium ${result.mode === 'live' ? 'bg-red-500/20 text-red-400' : 'bg-white/5 text-white/60'}`}>
-            Mode: {result.mode === 'live' ? 'LIVE' : 'DRY RUN'}
+          <div className={`rounded-full px-3 py-1 text-xs font-medium ${result?.mode === 'live' ? 'bg-red-500/20 text-red-400' : 'bg-white/5 text-white/60'}`}>
+            Mode: {result?.mode === 'live' ? 'LIVE' : 'DRY RUN'}
           </div>
         </div>
       </div>
@@ -613,7 +639,7 @@ export default function SiteHealth() {
       <div className="rounded-lg border border-white/10 bg-[#0f1f3d] p-6">
         <h2 className="mb-4 text-xl font-semibold text-white">Issues by Category</h2>
         <div className="space-y-3">
-          {Object.entries(result.by_category)
+          {Object.entries(result?.by_category || {})
             .sort((a, b) => b[1] - a[1])
             .map(([category, count]) => {
               const isError = result.critical_issues.filter(i => i.category === category).length > count / 2
@@ -861,7 +887,7 @@ export default function SiteHealth() {
         <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-6">
           <h2 className="mb-4 text-xl font-semibold text-red-400">Critical Errors</h2>
           <div className="space-y-2">
-            {result.critical_issues.map((issue, i) => (
+            {(result?.critical_issues || []).map((issue, i) => (
               <div key={i} className="rounded-lg border-l-4 border-red-500 bg-[#0f1f3d] p-4">
                 <div className="mb-1 flex items-center gap-2">
                   <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
@@ -884,7 +910,7 @@ export default function SiteHealth() {
         <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-6">
           <h2 className="mb-4 text-xl font-semibold text-amber-400">Warnings</h2>
           <div className="space-y-2">
-            {result.warnings.map((issue, i) => (
+            {(result?.warnings || []).map((issue, i) => (
               <div key={i} className="rounded-lg border-l-4 border-amber-500 bg-[#0f1f3d] p-4">
                 <div className="mb-1 flex items-center gap-2">
                   <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">
@@ -922,7 +948,7 @@ export default function SiteHealth() {
               </tr>
             </thead>
             <tbody>
-              {result.page_results.map((page, i) => {
+              {(result?.page_results || []).map((page, i) => {
                 const path = page.url.replace('https://security.vigilservices.co.uk', '') || '/'
                 const statusColor = page.status === 200 ? '#22c55e' : '#ef4444'
                 const wordCountColor = page.word_count >= 2500 ? '#22c55e' : page.word_count >= 1200 ? '#f59e0b' : '#ef4444'
@@ -994,7 +1020,7 @@ export default function SiteHealth() {
               .sort((a, b) => b[1] - a[1])
               .map(([module, ms]) => {
                 const barColor = ms < 1000 ? '#22c55e' : ms < 3000 ? '#f59e0b' : '#ef4444'
-                const maxMs = Math.max(...Object.values(result.module_timings_ms || {}))
+                const maxMs = Math.max(...Object.values(result?.module_timings_ms || {}))
                 const width = (ms / maxMs) * 100
 
                 return (
@@ -1085,7 +1111,7 @@ export default function SiteHealth() {
             <div>
               <h3 className="mb-3 text-sm font-semibold text-green-400">Checks We Perform</h3>
               <ul className="space-y-2">
-                {result.ahrefs_comparison.checks_we_now_perform.map((check, i) => (
+                {result?.ahrefs_comparison?.checks_we_now_perform.map((check, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-white/80">
                     <span className="text-green-400">✓</span>
                     <span>{check}</span>
@@ -1096,7 +1122,7 @@ export default function SiteHealth() {
             <div>
               <h3 className="mb-3 text-sm font-semibold text-white/40">Checks We Still Miss</h3>
               <ul className="space-y-2">
-                {result.ahrefs_comparison.checks_ahrefs_does_we_still_miss.map((check, i) => (
+                {result?.ahrefs_comparison?.checks_ahrefs_does_we_still_miss.map((check, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-white/40">
                     <span>−</span>
                     <span>{check}</span>
@@ -1107,7 +1133,7 @@ export default function SiteHealth() {
             <div>
               <h3 className="mb-3 text-sm font-semibold text-[#4ecdc4]">Our Advantage</h3>
               <ul className="space-y-2">
-                {result.ahrefs_comparison.our_advantage_over_ahrefs.map((check, i) => (
+                {result?.ahrefs_comparison?.our_advantage_over_ahrefs.map((check, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-white/80">
                     <span className="text-[#4ecdc4]">✓</span>
                     <span>{check}</span>
