@@ -356,7 +356,20 @@ async function checkOrphanedPages(
   return issues;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // IP restriction for health check endpoint
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
+    || request.headers.get('x-real-ip')
+    || '0.0.0.0';
+
+  const allowed = ['2.125.44.78', '2a02:c7c:5380:9f00:34fc:2068:5d61:7495', '::1', '127.0.0.1'];
+  if (!allowed.some(a => ip === a || ip.startsWith(a))) {
+    return NextResponse.json(
+      { error: 'Forbidden' },
+      { status: 403 }
+    );
+  }
+
   const start = Date.now();
 
   let rules: any = {};
