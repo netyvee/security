@@ -32,7 +32,11 @@
     "/cookie-policy",
     "/accessibility-statement",
     "/careers",
-    "/security-jobs-london"
+    "/security-jobs-london",
+    "/terms-of-service",
+    "/modern-slavery-statement",
+    "/environmental-commitment",
+    "/equal-opportunities-employer-policy"
   ],
   "forbidden_claims": [
     "97%",
@@ -52,9 +56,10 @@
     "homepage": 300,
     "service_page": 800,
     "borough_page": 600,
-    "legal_page": 200,
+    "legal_page": 150,
     "about_page": 400,
-    "faq_page": 300
+    "faq_page": 300,
+    "careers_page": 250
   },
   "page_types": {
     "/": "homepage",
@@ -69,9 +74,15 @@
     "/security-services-*": "borough_page",
     "/about-vigil-security-services": "about_page",
     "/faq": "faq_page",
+    "/careers": "careers_page",
+    "/security-jobs-london": "careers_page",
+    "/cleaning-jobs-near-me": "careers_page",
     "/privacy-policy": "legal_page",
     "/cookie-policy": "legal_page",
-    "/accessibility-statement": "legal_page"
+    "/accessibility-statement": "legal_page",
+    "/terms-of-service": "legal_page",
+    "/modern-slavery-statement": "legal_page",
+    "/environmental-commitment": "legal_page"
   },
   "nap": {
     "name": "Vigil Security Services",
