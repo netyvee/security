@@ -363,8 +363,8 @@ async function auditImages(html: string, url: string, pageIndex: number): Promis
   return { broken, missing_alt, mixed_content, issues };
 }
 
-// MODULE 4 — OG/SOCIAL TAGS COMPLETENESS
-function checkOpenGraph(html: string, url: string): {
+// MODULE 4 — OG/SOCIAL TAGS COMPLETENESS (REFINEMENT 2: Indexability-aware scoring)
+function checkOpenGraph(html: string, url: string, isIndexable: boolean): {
   missing_og: number;
   twitter_issues: number;
   issues: AuditIssue[];
@@ -373,17 +373,12 @@ function checkOpenGraph(html: string, url: string): {
   let missing_og = 0;
   let twitter_issues = 0;
 
-  const requiredOG = [
-    'og:title',
-    'og:description',
-    'og:image',
-    'og:url',
-    'og:type',
-    'og:site_name',
-    'og:locale',
-  ];
+  const requiredOG = isIndexable
+    ? ['og:title', 'og:description', 'og:image', 'og:url', 'og:type', 'og:site_name', 'og:locale']
+    : ['og:title', 'og:description'];
 
   const canonical = extractCanonical(html);
+  const impactMultiplier = isIndexable ? 1 : 0.5;
 
   requiredOG.forEach(prop => {
     const ogMatch = html.match(
@@ -396,28 +391,28 @@ function checkOpenGraph(html: string, url: string): {
         type: 'warning',
         category: 'Social Tags',
         message: `Missing OG tag: ${prop}`,
-        impact: 2,
+        impact: Math.floor(2 * impactMultiplier),
         url
       });
     } else {
       const content = ogMatch[1];
 
-      if (prop === 'og:image' && !content.startsWith('https://')) {
+      if (prop === 'og:image' && !content.startsWith('https://') && isIndexable) {
         issues.push({
           type: 'error',
           category: 'Social Tags',
           message: 'og:image must use HTTPS',
-          impact: 3,
+          impact: Math.floor(3 * impactMultiplier),
           url
         });
       }
 
-      if (prop === 'og:url' && canonical && content !== canonical) {
+      if (prop === 'og:url' && canonical && content !== canonical && isIndexable) {
         issues.push({
           type: 'warning',
           category: 'Social Tags',
           message: 'og:url does not match canonical',
-          impact: 3,
+          impact: Math.floor(3 * impactMultiplier),
           url
         });
       }
@@ -428,7 +423,7 @@ function checkOpenGraph(html: string, url: string): {
     /<meta[^>]*name=["']twitter:card["'][^>]*content=["']([^"']+)["']/i
   );
 
-  if (twitterCardMatch && twitterCardMatch[1] === 'summary') {
+  if (twitterCardMatch && twitterCardMatch[1] === 'summary' && isIndexable) {
     twitter_issues++;
     issues.push({
       type: 'warning',
@@ -664,6 +659,357 @@ function checkURLStructure(url: string): {
   return { double_slashes, uppercase, issues };
 }
 
+// MODULE 9 — ROBOTS.TXT VALIDATOR
+async function validateRobotsTxt(): Promise<{
+  accessible: boolean;
+  has_sitemap_reference: boolean;
+  admin_blocked: boolean;
+  content: string;
+  issues: AuditIssue[];
+}> {
+  const issues: AuditIssue[] = [];
+  let accessible = false;
+  let has_sitemap_reference = false;
+  let admin_blocked = false;
+  let content = '';
+
+  try {
+    const res = await fetch(`${BASE_URL}/robots.txt`, {
+      headers: { 'User-Agent': 'VigilAuditor/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (res.status !== 200) {
+      issues.push({
+        type: 'error',
+        category: 'Robots.txt',
+        message: `robots.txt not accessible — returns ${res.status}`,
+        impact: 10
+      });
+      return { accessible, has_sitemap_reference, admin_blocked, content, issues };
+    }
+
+    accessible = true;
+    content = await res.text();
+
+    // Check for sitemap reference
+    if (/^Sitemap:/im.test(content)) {
+      has_sitemap_reference = true;
+      const sitemapMatch = content.match(/^Sitemap:\s*(.+)$/im);
+      if (sitemapMatch) {
+        const sitemapUrl = sitemapMatch[1].trim();
+        if (!sitemapUrl.startsWith(BASE_URL)) {
+          issues.push({
+            type: 'error',
+            category: 'Robots.txt',
+            message: 'Sitemap URL in robots.txt points to wrong domain',
+            impact: 5
+          });
+        }
+      }
+    } else {
+      issues.push({
+        type: 'warning',
+        category: 'Robots.txt',
+        message: 'robots.txt does not reference sitemap',
+        impact: 3
+      });
+    }
+
+    // Check for blanket disallow
+    const lines = content.split('\n');
+    let currentUserAgent = '';
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (/^User-agent:/i.test(trimmed)) {
+        currentUserAgent = trimmed.replace(/^User-agent:\s*/i, '');
+      }
+      if (trimmed === 'Disallow: /' && currentUserAgent === '*') {
+        issues.push({
+          type: 'error',
+          category: 'Robots.txt',
+          message: 'robots.txt blocks all crawlers — Disallow: / found',
+          impact: 20
+        });
+      }
+    }
+
+    // Check admin and API blocking
+    if (/Disallow:.*\/admin/i.test(content)) {
+      admin_blocked = true;
+    } else {
+      issues.push({
+        type: 'warning',
+        category: 'Robots.txt',
+        message: 'Sensitive path not blocked in robots.txt: /admin',
+        impact: 2
+      });
+    }
+
+    if (!/Disallow:.*\/api\//i.test(content)) {
+      issues.push({
+        type: 'warning',
+        category: 'Robots.txt',
+        message: 'Sensitive path not blocked in robots.txt: /api/',
+        impact: 2
+      });
+    }
+
+    // Check for syntax errors
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const validStarts = ['User-agent:', 'Disallow:', 'Allow:', 'Sitemap:', 'Crawl-delay:'];
+      if (!validStarts.some(s => trimmed.startsWith(s))) {
+        issues.push({
+          type: 'warning',
+          category: 'Robots.txt',
+          message: `Possible syntax error in robots.txt: ${trimmed.substring(0, 50)}...`,
+          impact: 2
+        });
+        break;
+      }
+    }
+  } catch {
+    issues.push({
+      type: 'error',
+      category: 'Robots.txt',
+      message: 'robots.txt unreachable — timeout or network error',
+      impact: 10
+    });
+  }
+
+  return { accessible, has_sitemap_reference, admin_blocked, content, issues };
+}
+
+// MODULE 10 — BROKEN EXTERNAL LINK CHECKER
+async function checkExternalLinks(html: string, url: string, pageIndex: number): Promise<{
+  broken: number;
+  http_links: number;
+  timed_out: number;
+  issues: AuditIssue[];
+}> {
+  const issues: AuditIssue[] = [];
+  let broken = 0;
+  let http_links = 0;
+  let timed_out = 0;
+
+  if (pageIndex >= 8) {
+    return { broken, http_links, timed_out, issues };
+  }
+
+  const links = html.match(/href=["'](https?:\/\/[^"']+)["']/gi) || [];
+  const externalLinks = links
+    .map(l => l.replace(/href=["']|["']/g, ''))
+    .filter(l => !l.startsWith(BASE_URL))
+    .filter(l => !l.includes('google.com/maps'))
+    .filter(l => !l.includes('linkedin.com'))
+    .filter(l => !l.includes('facebook.com'))
+    .filter(l => !l.includes('twitter.com'))
+    .filter(l => !l.includes('instagram.com'))
+    .slice(0, 10);
+
+  const results = await Promise.allSettled(
+    externalLinks.map(async (href) => {
+      try {
+        const res = await Promise.race([
+          fetch(href, {
+            method: 'HEAD',
+            headers: { 'User-Agent': 'VigilAuditor/1.0' },
+            signal: AbortSignal.timeout(5000),
+          }),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
+        return { href, status: (res as Response).status };
+      } catch {
+        return { href, status: 0 };
+      }
+    })
+  );
+
+  results.forEach((result) => {
+    if (result.status === 'fulfilled') {
+      const { href, status } = result.value;
+
+      if (status === 404) {
+        broken++;
+        issues.push({
+          type: 'error',
+          category: 'External Links',
+          message: `Broken external link: ${href.substring(0, 50)}...`,
+          impact: 3,
+          url
+        });
+      } else if (status === 0) {
+        timed_out++;
+        issues.push({
+          type: 'warning',
+          category: 'External Links',
+          message: `External link timed out — may be broken: ${href.substring(0, 50)}...`,
+          impact: 1,
+          url
+        });
+      }
+
+      if (href.startsWith('http://')) {
+        http_links++;
+        issues.push({
+          type: 'warning',
+          category: 'External Links',
+          message: `External link uses HTTP not HTTPS: ${href.substring(0, 50)}...`,
+          impact: 2,
+          url
+        });
+      }
+    }
+  });
+
+  return { broken, http_links, timed_out, issues };
+}
+
+// MODULE 11 — CRAWL DEPTH CALCULATOR
+async function calculateCrawlDepth(baseUrl: string, pagesToCheck: string[]): Promise<{
+  depth_1: string[];
+  depth_2: string[];
+  depth_3: string[];
+  unreachable: string[];
+  issues: AuditIssue[];
+}> {
+  const issues: AuditIssue[] = [];
+  const depth_1: string[] = [];
+  const depth_2: string[] = [];
+  const depth_3: string[] = [];
+  const unreachable: string[] = [];
+
+  const discovered = new Map<string, number>();
+  discovered.set(baseUrl, 0);
+
+  try {
+    // Fetch homepage
+    const { html: homeHtml } = await fetchPage(baseUrl);
+    const homeLinks = homeHtml.match(/href=["']([^"'#?]+)["']/g) || [];
+    const depth1Urls: string[] = Array.from(new Set<string>(
+      homeLinks
+        .map((m: string) => m.replace(/href=["']|["']/g, ''))
+        .filter((l: string) => l.startsWith('/') || l.startsWith(baseUrl))
+        .map((l: string) => l.startsWith('/') ? `${baseUrl}${l}` : l)
+        .map((l: string) => l.replace(/\/$/, ''))
+    )).slice(0, 15);
+
+    depth1Urls.forEach(u => {
+      if (!discovered.has(u)) {
+        discovered.set(u, 1);
+        depth_1.push(u);
+      }
+    });
+
+    // Fetch depth 1 pages
+    const depth1Results = await Promise.allSettled(
+      depth_1.slice(0, 10).map(async (url) => {
+        try {
+          const result = await Promise.race([
+            fetchPage(url),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          ]);
+          return { url, html: (result as any).html };
+        } catch {
+          return { url, html: '' };
+        }
+      })
+    );
+
+    depth1Results.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value.html) {
+        const links = result.value.html.match(/href=["']([^"'#?]+)["']/g) || [];
+        const depth2Urls: string[] = Array.from(new Set<string>(
+          links
+            .map((m: string) => m.replace(/href=["']|["']/g, ''))
+            .filter((l: string) => l.startsWith('/') || l.startsWith(baseUrl))
+            .map((l: string) => l.startsWith('/') ? `${baseUrl}${l}` : l)
+            .map((l: string) => l.replace(/\/$/, ''))
+        )).slice(0, 10);
+
+        depth2Urls.forEach(u => {
+          if (!discovered.has(u)) {
+            discovered.set(u, 2);
+            depth_2.push(u);
+          }
+        });
+      }
+    });
+
+    // Fetch depth 2 pages
+    const depth2Results = await Promise.allSettled(
+      depth_2.slice(0, 5).map(async (url) => {
+        try {
+          const result = await Promise.race([
+            fetchPage(url),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          ]);
+          return { url, html: (result as any).html };
+        } catch {
+          return { url, html: '' };
+        }
+      })
+    );
+
+    depth2Results.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value.html) {
+        const links = result.value.html.match(/href=["']([^"'#?]+)["']/g) || [];
+        const depth3Urls: string[] = Array.from(new Set<string>(
+          links
+            .map((m: string) => m.replace(/href=["']|["']/g, ''))
+            .filter((l: string) => l.startsWith('/') || l.startsWith(baseUrl))
+            .map((l: string) => l.startsWith('/') ? `${baseUrl}${l}` : l)
+            .map((l: string) => l.replace(/\/$/, ''))
+        )).slice(0, 10);
+
+        depth3Urls.forEach(u => {
+          if (!discovered.has(u)) {
+            discovered.set(u, 3);
+            depth_3.push(u);
+          }
+        });
+      }
+    });
+
+    // Check which pages are unreachable
+    pagesToCheck.forEach(url => {
+      const depth = discovered.get(url);
+      const path = url.replace(baseUrl, '');
+      const mustIndex = path === '/' || path.includes('/manned-guarding') || path.includes('/mobile-patrols');
+
+      if (depth === 3 && mustIndex) {
+        issues.push({
+          type: 'warning',
+          category: 'Crawl Depth',
+          message: `Page requires 3 clicks from homepage: ${path}`,
+          impact: 2,
+          url
+        });
+      } else if (depth === undefined && mustIndex) {
+        unreachable.push(url);
+        issues.push({
+          type: 'error',
+          category: 'Crawl Depth',
+          message: `Page not reachable within 3 clicks: ${path} — crawler may miss it`,
+          impact: 5,
+          url
+        });
+      }
+    });
+  } catch {
+    issues.push({
+      type: 'notice',
+      category: 'Crawl Depth',
+      message: 'Could not complete crawl depth analysis — timeout or error',
+      impact: 0
+    });
+  }
+
+  return { depth_1, depth_2, depth_3, unreachable, issues };
+}
+
 async function auditPage(
   url: string,
   sitemapUrls: string[],
@@ -841,8 +1187,8 @@ async function auditPage(
   const imgResult = await auditImages(html, url, pageIndex);
   issues.push(...imgResult.issues);
 
-  // MODULE 4: Open Graph
-  const ogResult = checkOpenGraph(html, url);
+  // MODULE 4: Open Graph (REFINEMENT 2: indexability-aware)
+  const ogResult = checkOpenGraph(html, url, !noindex);
   issues.push(...ogResult.issues);
 
   // MODULE 5: Outgoing Links
@@ -856,6 +1202,10 @@ async function auditPage(
   // MODULE 8: URL Structure
   const urlResult = checkURLStructure(url);
   issues.push(...urlResult.issues);
+
+  // MODULE 10: External Links (first 8 pages only)
+  const extLinkResult = await checkExternalLinks(html, url, pageIndex);
+  issues.push(...extLinkResult.issues);
 
   return {
     url, status, canonical,
@@ -929,6 +1279,7 @@ async function checkOrphanedPages(
 
 export async function GET() {
   const start = Date.now();
+  const timings: Record<string, number> = {};
 
   let rules: any = {};
   let redirectMap: Record<string, string> = {};
@@ -947,9 +1298,16 @@ export async function GET() {
     redirectMap = {};
   }
 
+  // MODULE 9: Robots.txt validation
+  let t0 = Date.now();
+  const robotsResult = await validateRobotsTxt();
+  timings['robots_txt'] = Date.now() - t0;
+
+  // REFINEMENT 1: Dynamic page discovery
+  t0 = Date.now();
   const sitemapUrls = await getSitemapUrls();
 
-  const pagesToAudit = [
+  const priorityPages = [
     `${BASE_URL}`,
     `${BASE_URL}/manned-guarding-london`,
     `${BASE_URL}/mobile-patrols-london`,
@@ -964,19 +1322,68 @@ export async function GET() {
     `${BASE_URL}/security-services-westminster`,
     `${BASE_URL}/security-services-camden`,
     `${BASE_URL}/security-services-islington`,
+    `${BASE_URL}/security-services-hackney`,
+    `${BASE_URL}/security-services-southwark`,
+    `${BASE_URL}/security-services-lambeth`,
+    `${BASE_URL}/security-services-greenwich`,
     `${BASE_URL}/about-vigil-security-services`,
     `${BASE_URL}/faq`,
+    `${BASE_URL}/careers`,
+    `${BASE_URL}/contact`,
   ];
 
+  // Crawl homepage for additional pages
+  let discoveredPages: string[] = [];
+  try {
+    const { html: homeHtml } = await fetchPage(BASE_URL);
+    const homeLinks = homeHtml.match(/href=["']([^"'#?]+)["']/g) || [];
+    discoveredPages = Array.from(new Set<string>(
+      homeLinks
+        .map((m: string) => m.replace(/href=["']|["']/g, ''))
+        .filter((l: string) => l.startsWith('/') || l.startsWith(BASE_URL))
+        .map((l: string) => l.startsWith('/') ? `${BASE_URL}${l}` : l)
+        .map((l: string) => l.replace(/\/$/, ''))
+    ));
+  } catch {
+    // Fallback if homepage crawl fails
+  }
+
+  const pagesToAudit = Array.from(
+    new Set<string>([
+      ...priorityPages,
+      ...sitemapUrls,
+      ...discoveredPages,
+    ])
+  ).map((u: string) => u.replace(/\/$/, ''))
+   .filter((u: string) =>
+     u.startsWith(BASE_URL) &&
+     !u.includes('/admin') &&
+     !u.includes('/api/') &&
+     !u.includes('?')
+   )
+   .slice(0, 50);
+
+  timings['page_discovery'] = Date.now() - t0;
+
+  // MODULE 11: Crawl depth calculation
+  t0 = Date.now();
+  const crawlDepthResult = await calculateCrawlDepth(BASE_URL, pagesToAudit);
+  timings['crawl_depth'] = Date.now() - t0;
+
   const allIssues: any[] = [];
+  allIssues.push(...robotsResult.issues);
+  allIssues.push(...crawlDepthResult.issues);
+
   const pageResults: any[] = [];
 
+  t0 = Date.now();
   for (let i = 0; i < pagesToAudit.length; i++) {
     const url = pagesToAudit[i];
     const result = await auditPage(url, sitemapUrls, rules, i);
     pageResults.push(result);
     if (result.issues) allIssues.push(...result.issues);
   }
+  timings['page_audit'] = Date.now() - t0;
 
   const wpIssues = await checkWordPressRedirects(redirectMap);
   allIssues.push(...wpIssues);
@@ -985,12 +1392,16 @@ export async function GET() {
   allIssues.push(...orphanIssues);
 
   // MODULE 6: Duplicate detection
+  t0 = Date.now();
   const duplicateResult = checkDuplicates(pageResults);
   allIssues.push(...duplicateResult.issues);
+  timings['duplicates'] = Date.now() - t0;
 
   // MODULE 2: Sitemap health
+  t0 = Date.now();
   const sitemapHealth = await checkSitemapHealth(sitemapUrls);
   allIssues.push(...sitemapHealth.issues);
+  timings['sitemap_health'] = Date.now() - t0;
 
   let score = 100;
   for (const issue of allIssues) {
@@ -1013,7 +1424,7 @@ export async function GET() {
   const ogIssues = allIssues.filter(i => i.category === 'Social Tags').length;
 
   return NextResponse.json({
-    tool: 'Vigil Advanced SEO Auditor v3.0',
+    tool: 'Vigil Advanced SEO Auditor v4.0',
     site: 'security.vigilservices.co.uk',
     score,
     grade: score >= 90 ? 'A' : score >= 70 ? 'B' :
@@ -1043,6 +1454,11 @@ export async function GET() {
         'Duplicate title and meta description detection',
         'HTTP response header validation',
         'URL structure issues (uppercase, double slashes)',
+        'Robots.txt syntax and configuration validation',
+        'Broken external link detection',
+        'Crawl depth analysis (3-level BFS from homepage)',
+        'Dynamic page discovery from sitemap + crawl',
+        'Indexability-aware OG tag scoring',
       ],
       checks_ahrefs_does_we_still_miss: [
         'JavaScript rendering (requires headless browser)',
@@ -1063,6 +1479,8 @@ export async function GET() {
         'Pre-deployment validation capability',
         'Structured data schema validation per business type',
         'Real-time sitemap health monitoring',
+        'Robots.txt configuration validation',
+        'Crawl depth measurement and optimization',
       ],
     },
     summary: {
@@ -1109,7 +1527,31 @@ export async function GET() {
         double_slashes: allIssues.filter(i => i.category === 'URL Structure' && i.message.includes('Double slash')).length,
         uppercase: allIssues.filter(i => i.category === 'URL Structure' && i.message.includes('Uppercase')).length,
       },
+      robots_txt: {
+        accessible: robotsResult.accessible,
+        has_sitemap_reference: robotsResult.has_sitemap_reference,
+        admin_blocked: robotsResult.admin_blocked,
+        issues: robotsResult.issues.length,
+      },
+      external_links: {
+        broken: allIssues.filter(i => i.category === 'External Links' && i.message.includes('Broken')).length,
+        http_links: allIssues.filter(i => i.category === 'External Links' && i.message.includes('HTTP not HTTPS')).length,
+        timed_out: allIssues.filter(i => i.category === 'External Links' && i.message.includes('timed out')).length,
+      },
+      crawl_depth: {
+        depth_1_pages: crawlDepthResult.depth_1.length,
+        depth_2_pages: crawlDepthResult.depth_2.length,
+        depth_3_pages: crawlDepthResult.depth_3.length,
+        unreachable_pages: crawlDepthResult.unreachable.length,
+        depth_map: {
+          depth_1: crawlDepthResult.depth_1.map(u => u.replace(BASE_URL, '')),
+          depth_2: crawlDepthResult.depth_2.map(u => u.replace(BASE_URL, '')),
+          depth_3: crawlDepthResult.depth_3.map(u => u.replace(BASE_URL, '')),
+          unreachable: crawlDepthResult.unreachable.map(u => u.replace(BASE_URL, '')),
+        },
+      },
     },
+    module_timings_ms: timings,
     by_category: byCategory,
     critical_issues: errors.slice(0, 20),
     warnings: warnings.slice(0, 20),
