@@ -4,6 +4,6 @@ export const TOKEN_STORE: {
   expires_at: number;
 } = {
   access_token: null,
-  refresh_token: null,
+  refresh_token: process.env.GSC_REFRESH_TOKEN || null,
   expires_at: 0,
 };

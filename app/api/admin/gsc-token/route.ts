@@ -5,7 +5,10 @@ export async function GET() {
   const clientId = process.env.GSC_CLIENT_ID;
   const clientSecret = process.env.GSC_CLIENT_SECRET;
 
-  if (!TOKEN_STORE.refresh_token) {
+  const refreshToken = TOKEN_STORE.refresh_token ||
+    process.env.GSC_REFRESH_TOKEN || null;
+
+  if (!refreshToken) {
     return NextResponse.json({
       connected: false,
       message: 'Not authorised — visit /api/admin/gsc-auth to connect',
@@ -24,7 +27,7 @@ export async function GET() {
           body: new URLSearchParams({
             client_id: clientId || '',
             client_secret: clientSecret || '',
-            refresh_token: TOKEN_STORE.refresh_token,
+            refresh_token: refreshToken,
             grant_type: 'refresh_token',
           }),
         }

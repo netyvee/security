@@ -64,6 +64,8 @@ export async function GET(request: NextRequest) {
     TOKEN_STORE.expires_at = Date.now() +
       (tokens.expires_in * 1000);
 
+    console.log('GSC_REFRESH_TOKEN=' + tokens.refresh_token);
+
     return new NextResponse(
       `<!DOCTYPE html>
       <html>
@@ -96,8 +98,12 @@ export async function GET(request: NextRequest) {
       </head>
       <body>
         <h1>✓ GSC Connected</h1>
-        <p>Google Search Console access granted successfully.</p>
-        <p>Refresh token stored. GSC data will now appear in audits.</p>
+        <p>Google Search Console access granted.</p>
+        <div style="background:#0f1f3d;border:1px solid #4ecdc4;border-radius:8px;padding:16px;margin:16px 0;max-width:600px;word-break:break-all;text-align:left;">
+          <p style="color:#4ecdc4;font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Refresh Token — Copy this to Vercel</p>
+          <p style="color:#fff;font-size:12px;font-family:monospace;">${tokens.refresh_token}</p>
+        </div>
+        <p style="font-size:12px;color:rgba(255,255,255,0.4);">Add this as GSC_REFRESH_TOKEN in Vercel environment variables then redeploy.</p>
         <a href="/admin">Return to Command Centre</a>
       </body>
       </html>`,
