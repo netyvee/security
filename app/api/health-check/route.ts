@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 
 const BASE_URL = 'https://security.vigilservices.co.uk';
 
+interface AuditIssue {
+  type: string;
+  category: string;
+  message: string;
+  impact: number;
+  url?: string;
+}
+
 async function fetchPage(url: string) {
   try {
     const res = await fetch(url, {
@@ -9,9 +17,9 @@ async function fetchPage(url: string) {
       signal: AbortSignal.timeout(10000),
     });
     const html = await res.text();
-    return { status: res.status, html, ok: res.ok };
+    return { status: res.status, html, ok: res.ok, headers: res.headers };
   } catch {
-    return { status: 0, html: '', ok: false };
+    return { status: 0, html: '', ok: false, headers: new Headers() };
   }
 }
 
@@ -118,13 +126,552 @@ async function getSitemapUrls(): Promise<string[]> {
   }
 }
 
+// MODULE 1 — STRUCTURED DATA VALIDATION
+function validateStructuredData(html: string, url: string): AuditIssue[] {
+  const issues: AuditIssue[] = [];
+  const scripts = html.match(
+    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  ) || [];
+
+  const requiredByType: Record<string, string[]> = {
+    'SecurityService': ['name', 'url', 'telephone', 'address'],
+    'CleaningService': ['name', 'url', 'telephone', 'address'],
+    'LocalBusiness': ['name', 'url', 'telephone', 'address'],
+    'Organization': ['name', 'url'],
+    'WebSite': ['name', 'url'],
+    'BreadcrumbList': ['itemListElement'],
+    'FAQPage': ['mainEntity'],
+    'Service': ['name', 'serviceType'],
+    'PostalAddress': ['streetAddress', 'addressLocality', 'postalCode', 'addressCountry'],
+  };
+
+  if (scripts.length === 0) {
+    const mustIndex = url === BASE_URL || url.includes('/manned-guarding') || url.includes('/mobile-patrols');
+    if (mustIndex) {
+      issues.push({
+        type: 'warning',
+        category: 'Structured Data',
+        message: 'No structured data found on indexable page',
+        impact: 4,
+        url
+      });
+    }
+    return issues;
+  }
+
+  if (scripts.length > 3) {
+    issues.push({
+      type: 'warning',
+      category: 'Structured Data',
+      message: `${scripts.length} JSON-LD blocks found — consider consolidating`,
+      impact: 1,
+      url
+    });
+  }
+
+  scripts.forEach((scriptTag) => {
+    const content = scriptTag.replace(/<script[^>]*>|<\/script>/gi, '').trim();
+    let schema: any;
+
+    try {
+      schema = JSON.parse(content);
+    } catch {
+      issues.push({
+        type: 'error',
+        category: 'Structured Data',
+        message: 'Invalid JSON-LD — cannot parse',
+        impact: 8,
+        url
+      });
+      return;
+    }
+
+    const schemaType = schema['@type'];
+    if (!schemaType) {
+      issues.push({
+        type: 'error',
+        category: 'Structured Data',
+        message: 'JSON-LD missing @type',
+        impact: 5,
+        url
+      });
+      return;
+    }
+
+    const required = requiredByType[schemaType] || [];
+    required.forEach(prop => {
+      if (!schema[prop]) {
+        issues.push({
+          type: 'error',
+          category: 'Structured Data',
+          message: `JSON-LD @type "${schemaType}" missing required property: "${prop}"`,
+          impact: 5,
+          url
+        });
+      }
+    });
+
+    if (schema.address && typeof schema.address === 'string') {
+      issues.push({
+        type: 'warning',
+        category: 'Structured Data',
+        message: 'address should be PostalAddress object not string',
+        impact: 3,
+        url
+      });
+    }
+
+    if (schema.telephone && !/^[\+\d\s\-\(\)]{7,}$/.test(schema.telephone)) {
+      issues.push({
+        type: 'warning',
+        category: 'Structured Data',
+        message: 'telephone format may be invalid',
+        impact: 2,
+        url
+      });
+    }
+  });
+
+  return issues;
+}
+
+// MODULE 2 — SITEMAP REDIRECT DETECTION
+async function checkSitemapHealth(sitemapUrls: string[]): Promise<{
+  total_checked: number;
+  redirecting: number;
+  broken: number;
+  ok: number;
+  issues: AuditIssue[];
+}> {
+  const issues: AuditIssue[] = [];
+  const urlsToCheck = sitemapUrls.slice(0, 20);
+  let redirecting = 0;
+  let broken = 0;
+  let ok = 0;
+
+  const results = await Promise.allSettled(
+    urlsToCheck.map(async (url) => {
+      try {
+        const result = await Promise.race([
+          fetchNoRedirect(url),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
+        return { url, ...result };
+      } catch {
+        return { url, status: 0, location: null };
+      }
+    })
+  );
+
+  results.forEach((result) => {
+    if (result.status === 'fulfilled') {
+      const { url, status, location } = result.value;
+
+      if (status === 404) {
+        broken++;
+        issues.push({
+          type: 'error',
+          category: 'Sitemap',
+          message: `Sitemap URL returns 404: ${url}`,
+          impact: 10,
+          url
+        });
+      } else if (status === 301 || status === 308) {
+        redirecting++;
+        issues.push({
+          type: 'error',
+          category: 'Sitemap',
+          message: `Sitemap URL redirects (${status}): ${url} → ${location}`,
+          impact: 5,
+          url
+        });
+      } else if (status === 200) {
+        ok++;
+      }
+    }
+  });
+
+  return {
+    total_checked: urlsToCheck.length,
+    redirecting,
+    broken,
+    ok,
+    issues
+  };
+}
+
+// MODULE 3 — IMAGE AUDIT
+async function auditImages(html: string, url: string, pageIndex: number): Promise<{
+  broken: number;
+  missing_alt: number;
+  mixed_content: number;
+  issues: AuditIssue[];
+}> {
+  const issues: AuditIssue[] = [];
+  let broken = 0;
+  let missing_alt = 0;
+  let mixed_content = 0;
+
+  if (pageIndex >= 5) {
+    return { broken, missing_alt, mixed_content, issues };
+  }
+
+  const imgTags = html.match(/<img[^>]+>/gi) || [];
+  const imagesToCheck = imgTags.slice(0, 10);
+
+  imagesToCheck.forEach((imgTag) => {
+    const srcMatch = imgTag.match(/src=["']([^"']+)["']/i);
+    const altMatch = imgTag.match(/alt=["']([^"']*)["']/i);
+    const widthMatch = imgTag.match(/width=["']?[^"'\s]+/i);
+    const heightMatch = imgTag.match(/height=["']?[^"'\s]+/i);
+
+    const src = srcMatch ? srcMatch[1] : '';
+
+    if (!altMatch || !altMatch[1]) {
+      missing_alt++;
+      issues.push({
+        type: 'warning',
+        category: 'Images',
+        message: `Image missing alt text: ${src.substring(0, 50)}...`,
+        impact: 2,
+        url
+      });
+    }
+
+    if (url.startsWith('https://') && src.startsWith('http://')) {
+      mixed_content++;
+      issues.push({
+        type: 'error',
+        category: 'Images',
+        message: `Mixed content: HTTP image on HTTPS page: ${src.substring(0, 50)}...`,
+        impact: 8,
+        url
+      });
+    }
+
+    if (!widthMatch || !heightMatch) {
+      issues.push({
+        type: 'warning',
+        category: 'Images',
+        message: `Image missing width/height — causes layout shift: ${src.substring(0, 50)}...`,
+        impact: 2,
+        url
+      });
+    }
+  });
+
+  return { broken, missing_alt, mixed_content, issues };
+}
+
+// MODULE 4 — OG/SOCIAL TAGS COMPLETENESS
+function checkOpenGraph(html: string, url: string): {
+  missing_og: number;
+  twitter_issues: number;
+  issues: AuditIssue[];
+} {
+  const issues: AuditIssue[] = [];
+  let missing_og = 0;
+  let twitter_issues = 0;
+
+  const requiredOG = [
+    'og:title',
+    'og:description',
+    'og:image',
+    'og:url',
+    'og:type',
+    'og:site_name',
+    'og:locale',
+  ];
+
+  const canonical = extractCanonical(html);
+
+  requiredOG.forEach(prop => {
+    const ogMatch = html.match(
+      new RegExp(`<meta[^>]*property=["']${prop}["'][^>]*content=["']([^"']+)["']`, 'i')
+    );
+
+    if (!ogMatch) {
+      missing_og++;
+      issues.push({
+        type: 'warning',
+        category: 'Social Tags',
+        message: `Missing OG tag: ${prop}`,
+        impact: 2,
+        url
+      });
+    } else {
+      const content = ogMatch[1];
+
+      if (prop === 'og:image' && !content.startsWith('https://')) {
+        issues.push({
+          type: 'error',
+          category: 'Social Tags',
+          message: 'og:image must use HTTPS',
+          impact: 3,
+          url
+        });
+      }
+
+      if (prop === 'og:url' && canonical && content !== canonical) {
+        issues.push({
+          type: 'warning',
+          category: 'Social Tags',
+          message: 'og:url does not match canonical',
+          impact: 3,
+          url
+        });
+      }
+    }
+  });
+
+  const twitterCardMatch = html.match(
+    /<meta[^>]*name=["']twitter:card["'][^>]*content=["']([^"']+)["']/i
+  );
+
+  if (twitterCardMatch && twitterCardMatch[1] === 'summary') {
+    twitter_issues++;
+    issues.push({
+      type: 'warning',
+      category: 'Social Tags',
+      message: 'twitter:card should be summary_large_image for better CTR',
+      impact: 1,
+      url
+    });
+  }
+
+  return { missing_og, twitter_issues, issues };
+}
+
+// MODULE 5 — OUTGOING LINK HEALTH
+function checkOutgoingLinks(html: string, url: string, mustIndex: boolean): {
+  pages_no_outgoing: number;
+  http_links: number;
+  issues: AuditIssue[];
+} {
+  const issues: AuditIssue[] = [];
+  let pages_no_outgoing = 0;
+  let http_links = 0;
+
+  const links = html.match(/<a[^>]+href=["']([^"']+)["']/gi) || [];
+  const hrefs = links.map(l => {
+    const m = l.match(/href=["']([^"']+)["']/i);
+    return m ? m[1] : '';
+  }).filter(h => h && !h.startsWith('#') && !h.startsWith('mailto:') && !h.startsWith('tel:'));
+
+  const internalLinks = hrefs.filter(h => h.startsWith('/') || h.startsWith(BASE_URL));
+  const externalLinks = hrefs.filter(h => h.startsWith('http') && !h.startsWith(BASE_URL));
+
+  if (internalLinks.length === 0 && mustIndex) {
+    pages_no_outgoing++;
+    issues.push({
+      type: 'error',
+      category: 'Links',
+      message: 'Page has no outgoing internal links',
+      impact: 5,
+      url
+    });
+  }
+
+  const isServicePage = url.includes('/manned-guarding') || url.includes('/mobile-patrols') ||
+    url.includes('/construction-site') || url.includes('/event-security') ||
+    url.includes('/key-holding') || url.includes('/concierge') ||
+    url.includes('/cctv-monitoring') || url.includes('/alarm-response');
+
+  if (isServicePage && internalLinks.length < 3) {
+    issues.push({
+      type: 'warning',
+      category: 'Links',
+      message: `Low internal link count: ${internalLinks.length} links — recommend minimum 3`,
+      impact: 2,
+      url
+    });
+  }
+
+  externalLinks.forEach(href => {
+    if (href.startsWith('http://')) {
+      http_links++;
+      issues.push({
+        type: 'warning',
+        category: 'Links',
+        message: `Outgoing link uses HTTP not HTTPS: ${href.substring(0, 50)}...`,
+        impact: 2,
+        url
+      });
+    }
+  });
+
+  return { pages_no_outgoing, http_links, issues };
+}
+
+// MODULE 6 — DUPLICATE TITLE AND META DETECTION
+function checkDuplicates(pageResults: any[]): {
+  duplicate_titles: number;
+  duplicate_descs: number;
+  issues: AuditIssue[];
+} {
+  const issues: AuditIssue[] = [];
+  const titleMap = new Map<string, string[]>();
+  const descMap = new Map<string, string[]>();
+
+  pageResults.forEach(result => {
+    if (result.title) {
+      const urls = titleMap.get(result.title) || [];
+      urls.push(result.url);
+      titleMap.set(result.title, urls);
+    }
+    if (result.meta_description) {
+      const urls = descMap.get(result.meta_description) || [];
+      urls.push(result.url);
+      descMap.set(result.meta_description, urls);
+    }
+  });
+
+  let duplicate_titles = 0;
+  let duplicate_descs = 0;
+
+  titleMap.forEach((urls, title) => {
+    if (urls.length > 1) {
+      duplicate_titles++;
+      const displayUrls = urls.map(u => u.replace(BASE_URL, '')).join(', ');
+      issues.push({
+        type: 'error',
+        category: 'Duplicate Content',
+        message: `Duplicate title tag across ${urls.length} pages: "${title.substring(0, 50)}..." — found on: ${displayUrls}`,
+        impact: 6
+      });
+    }
+  });
+
+  descMap.forEach((urls, desc) => {
+    if (urls.length > 1) {
+      duplicate_descs++;
+      const displayUrls = urls.map(u => u.replace(BASE_URL, '')).join(', ');
+      issues.push({
+        type: 'warning',
+        category: 'Duplicate Content',
+        message: `Duplicate meta description across ${urls.length} pages`,
+        impact: 4
+      });
+    }
+  });
+
+  return { duplicate_titles, duplicate_descs, issues };
+}
+
+// MODULE 7 — RESPONSE HEADER VALIDATION
+async function checkHeaders(url: string): Promise<{
+  noindex_headers: number;
+  issues: AuditIssue[];
+}> {
+  const issues: AuditIssue[] = [];
+  let noindex_headers = 0;
+
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'VigilAuditor/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const xRobotsTag = res.headers.get('x-robots-tag');
+    if (xRobotsTag && xRobotsTag.toLowerCase().includes('noindex')) {
+      noindex_headers++;
+      issues.push({
+        type: 'error',
+        category: 'Headers',
+        message: 'X-Robots-Tag: noindex found in HTTP header',
+        impact: 15,
+        url
+      });
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (contentType && !contentType.includes('text/html')) {
+      issues.push({
+        type: 'warning',
+        category: 'Headers',
+        message: `Unexpected Content-Type: ${contentType}`,
+        impact: 3,
+        url
+      });
+    }
+
+    const xFrameOptions = res.headers.get('x-frame-options');
+    const csp = res.headers.get('content-security-policy');
+    if (!xFrameOptions && !csp) {
+      issues.push({
+        type: 'notice',
+        category: 'Headers',
+        message: 'Missing security headers — consider adding X-Frame-Options',
+        impact: 0,
+        url
+      });
+    }
+  } catch {
+    // Timeout or error — skip header checks
+  }
+
+  return { noindex_headers, issues };
+}
+
+// MODULE 8 — URL STRUCTURE ISSUES
+function checkURLStructure(url: string): {
+  double_slashes: number;
+  uppercase: number;
+  issues: AuditIssue[];
+} {
+  const issues: AuditIssue[] = [];
+  let double_slashes = 0;
+  let uppercase = 0;
+
+  const path = url.replace(BASE_URL, '');
+
+  if (path.includes('//')) {
+    double_slashes++;
+    issues.push({
+      type: 'error',
+      category: 'URL Structure',
+      message: `Double slash in URL: ${url}`,
+      impact: 3,
+      url
+    });
+  }
+
+  if (/[A-Z]/.test(path)) {
+    uppercase++;
+    issues.push({
+      type: 'warning',
+      category: 'URL Structure',
+      message: `Uppercase letters in URL: ${url}`,
+      impact: 2,
+      url
+    });
+  }
+
+  const queryMatch = url.match(/\?(.+)/);
+  if (queryMatch) {
+    const params = queryMatch[1].split('&');
+    if (params.length > 2) {
+      issues.push({
+        type: 'warning',
+        category: 'URL Structure',
+        message: `Multiple URL parameters: ${url}`,
+        impact: 2,
+        url
+      });
+    }
+  }
+
+  return { double_slashes, uppercase, issues };
+}
+
 async function auditPage(
   url: string,
   sitemapUrls: string[],
-  rules: any
+  rules: any,
+  pageIndex: number
 ) {
   const issues: any[] = [];
-  const { status, html } = await fetchPage(url);
+  const { status, html, headers } = await fetchPage(url);
   const path = url.replace(BASE_URL, '') || '/';
 
   if (status === 0) {
@@ -286,6 +833,30 @@ async function auditPage(
       message: 'Priority page missing from sitemap', impact: 3 });
   }
 
+  // MODULE 1: Structured Data
+  const sdIssues = validateStructuredData(html, url);
+  issues.push(...sdIssues);
+
+  // MODULE 3: Images (first 5 pages only)
+  const imgResult = await auditImages(html, url, pageIndex);
+  issues.push(...imgResult.issues);
+
+  // MODULE 4: Open Graph
+  const ogResult = checkOpenGraph(html, url);
+  issues.push(...ogResult.issues);
+
+  // MODULE 5: Outgoing Links
+  const linkResult = checkOutgoingLinks(html, url, mustIndex);
+  issues.push(...linkResult.issues);
+
+  // MODULE 7: Headers
+  const headerResult = await checkHeaders(url);
+  issues.push(...headerResult.issues);
+
+  // MODULE 8: URL Structure
+  const urlResult = checkURLStructure(url);
+  issues.push(...urlResult.issues);
+
   return {
     url, status, canonical,
     title, meta_description: metaDesc,
@@ -400,8 +971,9 @@ export async function GET() {
   const allIssues: any[] = [];
   const pageResults: any[] = [];
 
-  for (const url of pagesToAudit) {
-    const result = await auditPage(url, sitemapUrls, rules);
+  for (let i = 0; i < pagesToAudit.length; i++) {
+    const url = pagesToAudit[i];
+    const result = await auditPage(url, sitemapUrls, rules, i);
     pageResults.push(result);
     if (result.issues) allIssues.push(...result.issues);
   }
@@ -411,6 +983,14 @@ export async function GET() {
 
   const orphanIssues = await checkOrphanedPages(sitemapUrls);
   allIssues.push(...orphanIssues);
+
+  // MODULE 6: Duplicate detection
+  const duplicateResult = checkDuplicates(pageResults);
+  allIssues.push(...duplicateResult.issues);
+
+  // MODULE 2: Sitemap health
+  const sitemapHealth = await checkSitemapHealth(sitemapUrls);
+  allIssues.push(...sitemapHealth.issues);
 
   let score = 100;
   for (const issue of allIssues) {
@@ -427,8 +1007,13 @@ export async function GET() {
     return acc;
   }, {});
 
+  // Calculate module-specific metrics
+  const structuredDataErrors = allIssues.filter(i => i.category === 'Structured Data' && i.type === 'error').length;
+  const brokenImages = allIssues.filter(i => i.category === 'Images' && i.message.includes('Broken')).length;
+  const ogIssues = allIssues.filter(i => i.category === 'Social Tags').length;
+
   return NextResponse.json({
-    tool: 'Vigil Advanced SEO Auditor v2.0',
+    tool: 'Vigil Advanced SEO Auditor v3.0',
     site: 'security.vigilservices.co.uk',
     score,
     grade: score >= 90 ? 'A' : score >= 70 ? 'B' :
@@ -450,6 +1035,14 @@ export async function GET() {
         'Sitemap coverage',
         'WordPress URL redirect health',
         'Orphaned page detection',
+        'JSON-LD structured data validation',
+        'Sitemap redirect and 404 detection',
+        'Image alt text and mixed content audit',
+        'Open Graph and Twitter Card validation',
+        'Outgoing link health and HTTPS check',
+        'Duplicate title and meta description detection',
+        'HTTP response header validation',
+        'URL structure issues (uppercase, double slashes)',
       ],
       checks_ahrefs_does_we_still_miss: [
         'JavaScript rendering (requires headless browser)',
@@ -468,6 +1061,8 @@ export async function GET() {
         'WordPress migration URL tracking',
         'Division-specific indexability rules',
         'Pre-deployment validation capability',
+        'Structured data schema validation per business type',
+        'Real-time sitemap health monitoring',
       ],
     },
     summary: {
@@ -478,6 +1073,42 @@ export async function GET() {
       pages_audited: pageResults.length,
       sitemap_urls_found: sitemapUrls.length,
       wordpress_urls_checked: Object.keys(redirectMap).length,
+    },
+    module_results: {
+      structured_data: {
+        errors: structuredDataErrors,
+        warnings: allIssues.filter(i => i.category === 'Structured Data' && i.type === 'warning').length,
+      },
+      sitemap_health: {
+        total_checked: sitemapHealth.total_checked,
+        redirecting: sitemapHealth.redirecting,
+        broken: sitemapHealth.broken,
+        ok: sitemapHealth.ok,
+      },
+      images: {
+        broken: brokenImages,
+        missing_alt: allIssues.filter(i => i.category === 'Images' && i.message.includes('missing alt')).length,
+        mixed_content: allIssues.filter(i => i.category === 'Images' && i.message.includes('Mixed content')).length,
+      },
+      social_tags: {
+        missing_og: allIssues.filter(i => i.category === 'Social Tags' && i.message.includes('Missing OG')).length,
+        twitter_issues: allIssues.filter(i => i.category === 'Social Tags' && i.message.includes('twitter')).length,
+      },
+      links: {
+        pages_no_outgoing: allIssues.filter(i => i.category === 'Links' && i.message.includes('no outgoing')).length,
+        http_links: allIssues.filter(i => i.category === 'Links' && i.message.includes('HTTP not HTTPS')).length,
+      },
+      duplicates: {
+        duplicate_titles: duplicateResult.duplicate_titles,
+        duplicate_descs: duplicateResult.duplicate_descs,
+      },
+      headers: {
+        noindex_headers: allIssues.filter(i => i.category === 'Headers' && i.message.includes('noindex')).length,
+      },
+      url_structure: {
+        double_slashes: allIssues.filter(i => i.category === 'URL Structure' && i.message.includes('Double slash')).length,
+        uppercase: allIssues.filter(i => i.category === 'URL Structure' && i.message.includes('Uppercase')).length,
+      },
     },
     by_category: byCategory,
     critical_issues: errors.slice(0, 20),
