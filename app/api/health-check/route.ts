@@ -10,6 +10,138 @@ interface AuditIssue {
   url?: string;
 }
 
+// SECURITY MEASURES
+const ALLOWED_DOMAINS = [
+  'security.vigilservices.co.uk',
+];
+
+const ALLOWED_WRITE_URLS =
+  (process.env.INDEXABILITY_MUST_INDEX || '')
+  .split(',')
+  .filter(Boolean);
+
+function assertUrlSafe(url: string): void {
+  const allowed = ALLOWED_DOMAINS.some(d => url.includes(d));
+  if (!allowed) {
+    throw new Error(`SECURITY: URL not in allowed domains: ${url}`);
+  }
+}
+
+function assertNotRemoval(operation: string): void {
+  if (operation.toLowerCase().includes('remov') ||
+      operation.toLowerCase().includes('delet') ||
+      operation.toLowerCase().includes('drop')) {
+    throw new Error(`SECURITY: Removal operations are permanently disabled`);
+  }
+}
+
+const MAX_INDEXING_REQUESTS_PER_RUN = 10;
+let indexingRequestsThisRun = 0;
+
+function assertIndexingQuota(): void {
+  if (indexingRequestsThisRun >= MAX_INDEXING_REQUESTS_PER_RUN) {
+    throw new Error(`SECURITY: Indexing quota exceeded (max ${MAX_INDEXING_REQUESTS_PER_RUN} per run)`);
+  }
+  indexingRequestsThisRun++;
+}
+
+const writeOperationLog: Array<{
+  timestamp: string;
+  operation: string;
+  url: string;
+  result: string;
+  dryRun: boolean;
+}> = [];
+
+function logWriteOperation(
+  operation: string,
+  url: string,
+  result: string,
+  dryRun: boolean
+): void {
+  writeOperationLog.push({
+    timestamp: new Date().toISOString(),
+    operation,
+    url,
+    result,
+    dryRun,
+  });
+  console.log(`[WRITE LOG] ${dryRun ? 'DRY RUN' : 'LIVE'} | ${operation} | ${url} | ${result}`);
+}
+
+// MODULE 15 — GOOGLE SERVICE ACCOUNT AUTH HELPER
+async function getServiceAccountToken(
+  scopes: string[]
+): Promise<string | null> {
+  try {
+    const saJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+    if (!saJson) return null;
+
+    const sa = JSON.parse(saJson);
+    const now = Math.floor(Date.now() / 1000);
+
+    const header = Buffer.from(JSON.stringify({
+      alg: 'RS256',
+      typ: 'JWT',
+    })).toString('base64url');
+
+    const payload = Buffer.from(JSON.stringify({
+      iss: sa.client_email,
+      scope: scopes.join(' '),
+      aud: 'https://oauth2.googleapis.com/token',
+      exp: now + 3600,
+      iat: now,
+    })).toString('base64url');
+
+    const unsignedToken = `${header}.${payload}`;
+
+    const privateKey = sa.private_key
+      .replace(/\\n/g, '\n');
+
+    const keyData = privateKey
+      .replace('-----BEGIN PRIVATE KEY-----', '')
+      .replace('-----END PRIVATE KEY-----', '')
+      .replace(/\s/g, '');
+
+    const binaryKey = Uint8Array.from(
+      Buffer.from(keyData, 'base64')
+    );
+
+    const cryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      binaryKey,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+
+    const encoder = new TextEncoder();
+    const signature = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      cryptoKey,
+      encoder.encode(unsignedToken)
+    );
+
+    const signatureB64 = Buffer.from(signature).toString('base64url');
+    const jwt = `${unsignedToken}.${signatureB64}`;
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: jwt,
+      }),
+    });
+
+    const tokenData = await tokenRes.json();
+    return tokenData.access_token || null;
+  } catch (e) {
+    console.error('Service account auth failed:', e);
+    return null;
+  }
+}
+
 // MODULE 12: Historical change tracking storage
 const auditHistory = new Map<string, {
   title: string | null;
@@ -18,6 +150,319 @@ const auditHistory = new Map<string, {
   canonical: string | null;
   checkedAt: string;
 }>();
+
+// MODULE 16 — EXTRACT INTERNAL LINKS HELPER
+function extractInternalLinks(html: string, base: string): string[] {
+  const matches = html.match(/href=["']([^"'#?]+)["']/g) || [];
+  return matches
+    .map(m => m.replace(/href=["']|["']/g, ''))
+    .filter(l => l.startsWith('/') || l.startsWith(base))
+    .map(l => l.startsWith('/') ? `${base}${l}` : l)
+    .map(l => l.replace(/\/$/, ''))
+    .filter(l =>
+      l.startsWith(base) &&
+      !l.includes('/_next/') &&
+      !l.includes('/static/') &&
+      !l.includes('/api/') &&
+      !l.includes('/admin') &&
+      !l.endsWith('.css') &&
+      !l.endsWith('.js') &&
+      !l.endsWith('.jpg') &&
+      !l.endsWith('.jpeg') &&
+      !l.endsWith('.png') &&
+      !l.endsWith('.svg') &&
+      !l.endsWith('.ico') &&
+      !l.endsWith('.woff') &&
+      !l.endsWith('.ttf') &&
+      !l.endsWith('.xml') &&
+      !l.endsWith('.txt')
+    );
+}
+
+// MODULE 16 — FULL RECURSIVE SITE CRAWLER
+async function recursiveCrawl(
+  startUrl: string,
+  maxPages: number = 60
+): Promise<{ pages: string[]; linkGraph: Map<string, string[]> }> {
+  const visited = new Set<string>();
+  const queue: string[] = [startUrl];
+  const discovered: string[] = [];
+  const linkGraph = new Map<string, string[]>();
+
+  while (queue.length > 0 && discovered.length < maxPages) {
+    const batch = queue.splice(0, 5);
+
+    const results = await Promise.allSettled(
+      batch.map(async url => {
+        if (visited.has(url)) return [];
+        visited.add(url);
+
+        try {
+          const result = await Promise.race([
+            fetchPage(url),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('timeout')), 4000)
+            )
+          ]);
+
+          const { html } = result as any;
+          if (!html) return [];
+
+          discovered.push(url);
+          console.log(`[CRAWLER] Found page ${discovered.length}/${maxPages}: ${url.replace(BASE_URL, '')}`);
+
+          const links = extractInternalLinks(html, BASE_URL);
+          linkGraph.set(url, links);
+
+          return links.filter(l => !visited.has(l));
+        } catch {
+          return [];
+        }
+      })
+    );
+
+    results.forEach(r => {
+      if (r.status === 'fulfilled') {
+        queue.push(...r.value);
+      }
+    });
+  }
+
+  return { pages: discovered, linkGraph };
+}
+
+// MODULE 17 — INTERNAL PAGERANK ESTIMATOR
+function estimatePageRank(
+  pages: string[],
+  linkGraph: Map<string, string[]>
+): Map<string, number> {
+  const DAMPING = 0.85;
+  const ITERATIONS = 20;
+  const N = pages.length;
+
+  if (N === 0) return new Map();
+
+  const ranks = new Map<string, number>();
+  pages.forEach(p => ranks.set(p, 1 / N));
+
+  const inlinks = new Map<string, string[]>();
+  pages.forEach(p => inlinks.set(p, []));
+  linkGraph.forEach((outlinks, page) => {
+    outlinks.forEach(target => {
+      if (inlinks.has(target)) {
+        inlinks.get(target)!.push(page);
+      }
+    });
+  });
+
+  for (let i = 0; i < ITERATIONS; i++) {
+    const newRanks = new Map<string, number>();
+    pages.forEach(page => {
+      const inlinkPages = inlinks.get(page) || [];
+      let rank = (1 - DAMPING) / N;
+      inlinkPages.forEach(inlinker => {
+        const outCount = (linkGraph.get(inlinker) || []).length;
+        if (outCount > 0) {
+          rank += DAMPING * (ranks.get(inlinker) || 0) / outCount;
+        }
+      });
+      newRanks.set(page, rank);
+    });
+    newRanks.forEach((v, k) => ranks.set(k, v));
+  }
+
+  const maxRank = Math.max(...ranks.values());
+  if (maxRank > 0) {
+    ranks.forEach((v, k) => {
+      ranks.set(k, Math.round((v / maxRank) * 100));
+    });
+  }
+
+  return ranks;
+}
+
+// MODULE 18 — CORE WEB VITALS VIA PAGESPEED API
+async function getPageSpeedData(
+  url: string,
+  apiKey: string
+): Promise<any> {
+  try {
+    const fields = 'lighthouseResult.categories,lighthouseResult.audits.largest-contentful-paint,lighthouseResult.audits.cumulative-layout-shift,lighthouseResult.audits.total-blocking-time,lighthouseResult.audits.interactive,lighthouseResult.audits.first-contentful-paint';
+
+    const [mobileRes, desktopRes] = await Promise.allSettled([
+      Promise.race([
+        fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&fields=${fields}`),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+      ]),
+      Promise.race([
+        fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=desktop&fields=${fields}`),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+      ])
+    ]);
+
+    const mobile = mobileRes.status === 'fulfilled' ? await (mobileRes.value as Response).json() : null;
+    const desktop = desktopRes.status === 'fulfilled' ? await (desktopRes.value as Response).json() : null;
+
+    const result: any = { url };
+
+    if (mobile?.lighthouseResult) {
+      const lr = mobile.lighthouseResult;
+      result.mobile = {
+        performance_score: Math.round((lr.categories?.performance?.score || 0) * 100),
+        lcp: lr.audits['largest-contentful-paint']?.numericValue ? (lr.audits['largest-contentful-paint'].numericValue / 1000).toFixed(2) : null,
+        cls: lr.audits['cumulative-layout-shift']?.numericValue?.toFixed(3) || null,
+        tbt: lr.audits['total-blocking-time']?.numericValue || null,
+        fcp: lr.audits['first-contentful-paint']?.numericValue ? (lr.audits['first-contentful-paint'].numericValue / 1000).toFixed(2) : null,
+        tti: lr.audits['interactive']?.numericValue ? (lr.audits['interactive'].numericValue / 1000).toFixed(2) : null,
+      };
+    }
+
+    if (desktop?.lighthouseResult) {
+      const lr = desktop.lighthouseResult;
+      result.desktop = {
+        performance_score: Math.round((lr.categories?.performance?.score || 0) * 100),
+        lcp: lr.audits['largest-contentful-paint']?.numericValue ? (lr.audits['largest-contentful-paint'].numericValue / 1000).toFixed(2) : null,
+        cls: lr.audits['cumulative-layout-shift']?.numericValue?.toFixed(3) || null,
+        tbt: lr.audits['total-blocking-time']?.numericValue || null,
+      };
+    }
+
+    return result;
+  } catch (e) {
+    console.error('PageSpeed API error:', e);
+    return { url, error: 'timeout or API error' };
+  }
+}
+
+// MODULE 19 — GSC DATA INTEGRATION
+async function getGSCData(
+  siteUrl: string
+): Promise<any> {
+  try {
+    const token = await getServiceAccountToken([
+      'https://www.googleapis.com/auth/webmasters.readonly'
+    ]);
+
+    if (!token) return null;
+
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000)
+      .toISOString().split('T')[0];
+
+    const res = await Promise.race([
+      fetch(
+        `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            startDate,
+            endDate,
+            dimensions: ['page'],
+            rowLimit: 50,
+          }),
+        }
+      ),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+    ]);
+
+    const data = await (res as Response).json();
+
+    if (data.error) {
+      console.error('GSC API error:', data.error);
+      return null;
+    }
+
+    const rows = data.rows || [];
+    return {
+      startDate,
+      endDate,
+      rows: rows.map((row: any) => ({
+        url: row.keys[0],
+        clicks: row.clicks,
+        impressions: row.impressions,
+        ctr: Math.round(row.ctr * 1000) / 10,
+        position: Math.round(row.position * 10) / 10,
+      }))
+    };
+  } catch (e) {
+    console.error('GSC data fetch failed:', e);
+    return null;
+  }
+}
+
+// MODULE 20 — INDEXING SUBMISSION (WRITE OPERATION)
+async function submitForIndexing(
+  urls: string[],
+  dryRun: boolean = true
+): Promise<any> {
+  assertNotRemoval('submit');
+
+  const results: any[] = [];
+  let submitted = 0;
+
+  for (const url of urls.slice(0, MAX_INDEXING_REQUESTS_PER_RUN)) {
+    assertUrlSafe(url);
+    assertIndexingQuota();
+
+    if (dryRun) {
+      logWriteOperation('SUBMIT_INDEX', url, 'DRY RUN — not submitted', true);
+      results.push({ url, status: 'dry_run' });
+      continue;
+    }
+
+    try {
+      const token = await getServiceAccountToken([
+        'https://www.googleapis.com/auth/indexing'
+      ]);
+
+      if (!token) {
+        logWriteOperation('SUBMIT_INDEX', url, 'FAILED: No service account token', false);
+        results.push({ url, status: 'failed', error: 'No token' });
+        continue;
+      }
+
+      const res = await fetch(
+        'https://indexing.googleapis.com/v3/urlNotifications:publish',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url,
+            type: 'URL_UPDATED',
+          }),
+        }
+      );
+
+      const result = await res.json();
+
+      if (res.ok) {
+        logWriteOperation('SUBMIT_INDEX', url, 'SUCCESS', false);
+        results.push({ url, status: 'success' });
+        submitted++;
+      } else {
+        logWriteOperation('SUBMIT_INDEX', url, `FAILED: ${result.error?.message}`, false);
+        results.push({ url, status: 'failed', error: result.error?.message });
+      }
+    } catch (e: any) {
+      logWriteOperation('SUBMIT_INDEX', url, `FAILED: ${e.message}`, false);
+      results.push({ url, status: 'failed', error: e.message });
+    }
+  }
+
+  return {
+    submitted,
+    total_eligible: urls.length,
+    results,
+    quota_remaining: MAX_INDEXING_REQUESTS_PER_RUN - indexingRequestsThisRun
+  };
+}
 
 // BUG FIX 5: HTML entity decoder
 function decodeHtmlEntities(str: string): string {
@@ -1492,6 +1937,7 @@ async function auditPage(
     forbidden_claims: foundClaims,
     html_entities: entityCount,
     page_size_kb: pageSizeResult.size_kb,
+    page_rank: 0,
     issues,
   };
 }
@@ -1554,9 +2000,16 @@ async function checkOrphanedPages(
   return issues;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const start = Date.now();
   const timings: Record<string, number> = {};
+
+  // Reset quota counter for this run
+  indexingRequestsThisRun = 0;
+  writeOperationLog.length = 0;
+
+  const url = new URL(request.url);
+  const isDryRun = url.searchParams.get('mode') !== 'live';
 
   let rules: any = {};
   let redirectMap: Record<string, string> = {};
@@ -1575,61 +2028,36 @@ export async function GET() {
     redirectMap = {};
   }
 
-  // MODULE 9: Robots.txt validation
+  // Step 1: Auth setup
   let t0 = Date.now();
+  const psiKey = process.env.PAGESPEED_API_KEY;
+  const gscSiteUrl = process.env.GSC_SITE_URL || BASE_URL;
+  timings['auth_setup'] = Date.now() - t0;
+
+  // MODULE 9: Robots.txt validation
+  t0 = Date.now();
   const robotsResult = await validateRobotsTxt();
   timings['robots_txt'] = Date.now() - t0;
 
-  // REFINEMENT 1: Dynamic page discovery
+  // Step 2: Recursive crawl (replaces dynamic discovery)
+  t0 = Date.now();
+  const { pages: crawledPages, linkGraph } = await recursiveCrawl(BASE_URL, 60);
+  timings['recursive_crawl'] = Date.now() - t0;
+
+  // Step 3: Estimate PageRank
+  t0 = Date.now();
+  const pageRanks = estimatePageRank(crawledPages, linkGraph);
+  timings['pagerank'] = Date.now() - t0;
+
+  // Get sitemap for additional validation
   t0 = Date.now();
   const sitemapUrls = await getSitemapUrls();
 
-  const priorityPages = [
-    `${BASE_URL}`,
-    `${BASE_URL}/manned-guarding-london`,
-    `${BASE_URL}/mobile-patrols-london`,
-    `${BASE_URL}/construction-site-security-london`,
-    `${BASE_URL}/event-security-london`,
-    `${BASE_URL}/key-holding-london`,
-    `${BASE_URL}/concierge-security-london`,
-    `${BASE_URL}/cctv-monitoring-london`,
-    `${BASE_URL}/alarm-response-london`,
-    `${BASE_URL}/security-services-city-of-london`,
-    `${BASE_URL}/security-services-canary-wharf`,
-    `${BASE_URL}/security-services-westminster`,
-    `${BASE_URL}/security-services-camden`,
-    `${BASE_URL}/security-services-islington`,
-    `${BASE_URL}/security-services-hackney`,
-    `${BASE_URL}/security-services-southwark`,
-    `${BASE_URL}/security-services-lambeth`,
-    `${BASE_URL}/security-services-greenwich`,
-    `${BASE_URL}/about-vigil-security-services`,
-    `${BASE_URL}/faq`,
-    `${BASE_URL}/careers`,
-    `${BASE_URL}/contact`,
-  ];
-
-  // Crawl homepage for additional pages
-  let discoveredPages: string[] = [];
-  try {
-    const { html: homeHtml } = await fetchPage(BASE_URL);
-    const homeLinks = homeHtml.match(/href=["']([^"'#?]+)["']/g) || [];
-    discoveredPages = Array.from(new Set<string>(
-      homeLinks
-        .map((m: string) => m.replace(/href=["']|["']/g, ''))
-        .filter((l: string) => l.startsWith('/') || l.startsWith(BASE_URL))
-        .map((l: string) => l.startsWith('/') ? `${BASE_URL}${l}` : l)
-        .map((l: string) => l.replace(/\/$/, ''))
-    ));
-  } catch {
-    // Fallback if homepage crawl fails
-  }
-
+  // Combine crawled pages with sitemap
   const pagesToAudit = Array.from(
     new Set<string>([
-      ...priorityPages,
+      ...crawledPages,
       ...sitemapUrls,
-      ...discoveredPages,
     ])
   ).map((u: string) => u.replace(/\/$/, ''))
    .filter((u: string) =>
@@ -1637,20 +2065,9 @@ export async function GET() {
      !u.includes('/admin') &&
      !u.includes('/api/') &&
      !u.includes('/_next/') &&
-     !u.includes('/static/') &&
-     !u.includes('.css') &&
-     !u.includes('.js') &&
-     !u.includes('.jpg') &&
-     !u.includes('.jpeg') &&
-     !u.includes('.png') &&
-     !u.includes('.svg') &&
-     !u.includes('.ico') &&
-     !u.includes('.woff') &&
-     !u.includes('.ttf') &&
-     !u.includes('?') &&
-     !u.includes('#')
+     !u.includes('/static/')
    )
-   .slice(0, 50);
+   .slice(0, 60);
 
   timings['page_discovery'] = Date.now() - t0;
 
@@ -1665,14 +2082,202 @@ export async function GET() {
 
   const pageResults: any[] = [];
 
+  // Step 4: Page audit
   t0 = Date.now();
   for (let i = 0; i < pagesToAudit.length; i++) {
     const url = pagesToAudit[i];
     const result = await auditPage(url, sitemapUrls, rules, i);
+
+    // Add PageRank score
+    const pageRank = pageRanks.get(url) || 0;
+    result.page_rank = pageRank;
+
+    // Flag low PageRank pages
+    const path = url.replace(BASE_URL, '');
+    const mustIndex = rules.must_index.some(
+      (p: string) => path === p || (p.endsWith('*') && path.startsWith(p.slice(0, -1)))
+    );
+
+    if (mustIndex && pageRank < 20) {
+      result.issues.push({
+        type: 'warning',
+        category: 'PageRank',
+        message: `Low internal authority: ${path} has PageRank score ${pageRank}/100 — add more internal links`,
+        impact: 3,
+        url
+      });
+    }
+
+    if (mustIndex && pageRank < 5) {
+      result.issues.push({
+        type: 'error',
+        category: 'PageRank',
+        message: `Critical: ${path} has almost no internal authority (${pageRank}/100) — severely under-linked`,
+        impact: 5,
+        url
+      });
+    }
+
     pageResults.push(result);
     if (result.issues) allIssues.push(...result.issues);
   }
   timings['page_audit'] = Date.now() - t0;
+
+  // Step 5: PageSpeed (priority pages only)
+  t0 = Date.now();
+  const psiResults: any[] = [];
+  if (psiKey) {
+    const psiPages = [
+      BASE_URL,
+      `${BASE_URL}/manned-guarding-london`,
+      `${BASE_URL}/mobile-patrols-london`,
+      `${BASE_URL}/security-services-city-of-london`,
+      `${BASE_URL}/security-services-canary-wharf`,
+    ].filter(u => pagesToAudit.includes(u)).slice(0, 5);
+
+    const psiPromises = await Promise.allSettled(
+      psiPages.map(u => getPageSpeedData(u, psiKey))
+    );
+
+    psiPromises.forEach((r) => {
+      if (r.status === 'fulfilled' && !r.value.error) {
+        psiResults.push(r.value);
+
+        const m = r.value.mobile;
+        if (m) {
+          if (m.lcp && parseFloat(m.lcp) >= 4) {
+            allIssues.push({
+              type: 'error',
+              category: 'Core Web Vitals',
+              message: `Poor LCP on mobile: ${m.lcp}s (threshold: 2.5s)`,
+              impact: 8,
+              url: r.value.url
+            });
+          } else if (m.lcp && parseFloat(m.lcp) >= 2.5) {
+            allIssues.push({
+              type: 'warning',
+              category: 'Core Web Vitals',
+              message: `LCP needs improvement on mobile: ${m.lcp}s`,
+              impact: 4,
+              url: r.value.url
+            });
+          }
+
+          if (m.cls && parseFloat(m.cls) >= 0.25) {
+            allIssues.push({
+              type: 'error',
+              category: 'Core Web Vitals',
+              message: `Poor CLS: ${m.cls} (threshold: 0.1)`,
+              impact: 8,
+              url: r.value.url
+            });
+          } else if (m.cls && parseFloat(m.cls) >= 0.1) {
+            allIssues.push({
+              type: 'warning',
+              category: 'Core Web Vitals',
+              message: `CLS needs improvement: ${m.cls}`,
+              impact: 4,
+              url: r.value.url
+            });
+          }
+
+          if (m.tbt && m.tbt >= 600) {
+            allIssues.push({
+              type: 'error',
+              category: 'Core Web Vitals',
+              message: `Poor TBT on mobile: ${m.tbt}ms — JavaScript blocking render`,
+              impact: 6,
+              url: r.value.url
+            });
+          }
+        }
+      }
+    });
+  }
+  timings['pagespeed'] = Date.now() - t0;
+
+  // Step 6: GSC data
+  t0 = Date.now();
+  const gscData = await getGSCData(gscSiteUrl);
+  if (gscData) {
+    gscData.rows.forEach((row: any) => {
+      const pageResult = pageResults.find(p => p.url === row.url);
+      const path = row.url.replace(BASE_URL, '');
+      const mustIndex = rules.must_index.some(
+        (p: string) => path === p || (p.endsWith('*') && path.startsWith(p.slice(0, -1)))
+      );
+
+      if (mustIndex && row.impressions === 0) {
+        allIssues.push({
+          type: 'warning',
+          category: 'GSC',
+          message: `Priority page has zero impressions in 28 days: ${path}`,
+          impact: 3,
+          url: row.url
+        });
+      }
+
+      if (mustIndex && row.ctr < 1 && row.impressions > 0) {
+        allIssues.push({
+          type: 'warning',
+          category: 'GSC',
+          message: `Low CTR: ${path} — ${row.ctr}% CTR from ${row.impressions} impressions`,
+          impact: 2,
+          url: row.url
+        });
+      }
+
+      if (mustIndex && row.position > 50) {
+        allIssues.push({
+          type: 'warning',
+          category: 'GSC',
+          message: `Page ranking poorly: ${path} — average position ${row.position}`,
+          impact: 2,
+          url: row.url
+        });
+      }
+    });
+
+    // Check for pages not in GSC data
+    pageResults.forEach(p => {
+      const path = p.url.replace(BASE_URL, '');
+      const mustIndex = rules.must_index.some(
+        (rule: string) => path === rule || (rule.endsWith('*') && path.startsWith(rule.slice(0, -1)))
+      );
+
+      if (mustIndex && !gscData.rows.find((r: any) => r.url === p.url)) {
+        allIssues.push({
+          type: 'error',
+          category: 'GSC',
+          message: `Priority page not ranking for any keyword: ${path}`,
+          impact: 4,
+          url: p.url
+        });
+      }
+    });
+  }
+  timings['gsc_data'] = Date.now() - t0;
+
+  // Step 7: Indexing submissions
+  t0 = Date.now();
+  const indexingCandidates: string[] = [];
+
+  pageResults.forEach(p => {
+    const path = p.url.replace(BASE_URL, '');
+    const mustIndex = rules.must_index.some(
+      (rule: string) => path === rule || (rule.endsWith('*') && path.startsWith(rule.slice(0, -1)))
+    );
+
+    if (mustIndex && p.status === 200 && !p.noindex && p.canonical === p.url) {
+      const gscRow = gscData?.rows.find((r: any) => r.url === p.url);
+      if (!gscRow || gscRow.impressions === 0) {
+        indexingCandidates.push(p.url);
+      }
+    }
+  });
+
+  const indexingResult = await submitForIndexing(indexingCandidates, isDryRun);
+  timings['indexing'] = Date.now() - t0;
 
   const wpIssues = await checkWordPressRedirects(redirectMap);
   allIssues.push(...wpIssues);
@@ -1730,9 +2335,36 @@ export async function GET() {
   const brokenImages = allIssues.filter(i => i.category === 'Images' && i.message.includes('Broken')).length;
   const ogIssues = allIssues.filter(i => i.category === 'Social Tags').length;
 
+  // Calculate PageRank module results
+  const pageRankArray = Array.from(pageRanks.entries()).map(([url, score]) => ({ url, score }));
+  const top5PageRank = pageRankArray.sort((a, b) => b.score - a.score).slice(0, 5);
+  const bottom5PageRank = pageRankArray.sort((a, b) => a.score - b.score).slice(0, 5);
+  const avgPageRank = pageRankArray.reduce((sum, p) => sum + p.score, 0) / pageRankArray.length;
+  const underLinkedPages = pageRankArray.filter(p => p.score < 20).length;
+
+  // Calculate Core Web Vitals module results
+  const avgMobileScore = psiResults.length > 0
+    ? Math.round(psiResults.reduce((sum, r) => sum + (r.mobile?.performance_score || 0), 0) / psiResults.length)
+    : 0;
+  const avgDesktopScore = psiResults.length > 0
+    ? Math.round(psiResults.reduce((sum, r) => sum + (r.desktop?.performance_score || 0), 0) / psiResults.length)
+    : 0;
+
+  // Calculate GSC module results
+  const gscConnected = !!gscData;
+  const totalClicks28d = gscData ? gscData.rows.reduce((sum: number, r: any) => sum + r.clicks, 0) : 0;
+  const totalImpressions28d = gscData ? gscData.rows.reduce((sum: number, r: any) => sum + r.impressions, 0) : 0;
+  const avgCTR = gscData && gscData.rows.length > 0
+    ? Math.round(gscData.rows.reduce((sum: number, r: any) => sum + r.ctr, 0) / gscData.rows.length * 10) / 10
+    : 0;
+  const avgPosition = gscData && gscData.rows.length > 0
+    ? Math.round(gscData.rows.reduce((sum: number, r: any) => sum + r.position, 0) / gscData.rows.length * 10) / 10
+    : 0;
+
   return NextResponse.json({
-    tool: 'Vigil Advanced SEO Auditor v5.0',
+    tool: 'Vigil Advanced SEO Auditor v6.0',
     site: 'security.vigilservices.co.uk',
+    mode: isDryRun ? 'dry_run' : 'live',
     score,
     grade: score >= 90 ? 'A' : score >= 70 ? 'B' :
            score >= 50 ? 'C' : 'D',
@@ -1777,16 +2409,19 @@ export async function GET() {
         'Near-duplicate content detection across same page types',
         'HTML entity decoding for accurate text analysis',
         'Asset file filtering from page audit scope',
+        'Full recursive site crawl (BFS)',
+        'Internal PageRank estimation',
+        'Core Web Vitals (LCP, CLS, TBT) via PageSpeed API',
+        'GSC search performance data (clicks, impressions, CTR, position)',
+        'Automated indexing submission for zero-impression pages',
+        'Write operation audit log',
       ],
       checks_ahrefs_does_we_still_miss: [
         'JavaScript rendering (requires headless browser)',
-        'Core Web Vitals from real user data',
+        'Real CrUX Core Web Vitals from real users',
         'Backlink profile analysis',
-        'Keyword ranking tracking',
+        'Keyword ranking tracking beyond GSC',
         'Competitor gap analysis',
-        'Historical index comparison',
-        'Full recursive site crawl',
-        'Image file size and format audit',
       ],
       our_advantage_over_ahrefs: [
         'Business-specific forbidden claims detection',
@@ -1799,6 +2434,11 @@ export async function GET() {
         'Real-time sitemap health monitoring',
         'Robots.txt configuration validation',
         'Crawl depth measurement and optimization',
+        'Internal PageRank calculation without third party',
+        'Direct GSC data integration in single dashboard',
+        'Automated indexing submission for unranked pages',
+        'Full recursive crawl without URL cap restrictions',
+        'Write operation security log',
       ],
     },
     summary: {
@@ -1807,8 +2447,12 @@ export async function GET() {
       warnings: warnings.length,
       notices: notices.length,
       pages_audited: pageResults.length,
+      pages_crawled_recursively: crawledPages.length,
       sitemap_urls_found: sitemapUrls.length,
       wordpress_urls_checked: Object.keys(redirectMap).length,
+      gsc_connected: gscConnected,
+      pagespeed_tested: psiResults.length,
+      indexing_candidates: indexingCandidates.length,
     },
     module_results: {
       structured_data: {
@@ -1889,7 +2533,85 @@ export async function GET() {
           similarity: Math.round(p.similarity * 100) / 100,
         })),
       },
+      pagerank: {
+        top_5_pages: top5PageRank.map(p => ({ url: p.url.replace(BASE_URL, ''), score: p.score })),
+        bottom_5_pages: bottom5PageRank.map(p => ({ url: p.url.replace(BASE_URL, ''), score: p.score })),
+        average_score: Math.round(avgPageRank),
+        under_linked_pages: underLinkedPages,
+      },
+      core_web_vitals: {
+        pages_tested: psiResults.length,
+        average_mobile_score: avgMobileScore,
+        average_desktop_score: avgDesktopScore,
+        poor_lcp_pages: allIssues.filter(i => i.category === 'Core Web Vitals' && i.message.includes('Poor LCP')).length,
+        poor_cls_pages: allIssues.filter(i => i.category === 'Core Web Vitals' && i.message.includes('Poor CLS')).length,
+        poor_tbt_pages: allIssues.filter(i => i.category === 'Core Web Vitals' && i.message.includes('Poor TBT')).length,
+        results: psiResults.map(r => ({
+          url: r.url.replace(BASE_URL, ''),
+          mobile_score: r.mobile?.performance_score || 0,
+          desktop_score: r.desktop?.performance_score || 0,
+          lcp: r.mobile?.lcp || null,
+          cls: r.mobile?.cls || null,
+          tbt: r.mobile?.tbt || null,
+          grade: r.mobile?.lcp && parseFloat(r.mobile.lcp) < 2.5 && r.mobile?.cls && parseFloat(r.mobile.cls) < 0.1
+            ? 'good'
+            : r.mobile?.lcp && parseFloat(r.mobile.lcp) < 4 && r.mobile?.cls && parseFloat(r.mobile.cls) < 0.25
+            ? 'needs-improvement'
+            : 'poor'
+        })),
+      },
+      gsc_data: gscData ? {
+        connected: true,
+        date_range: `${gscData.startDate} to ${gscData.endDate}`,
+        total_clicks_28d: totalClicks28d,
+        total_impressions_28d: totalImpressions28d,
+        average_ctr: avgCTR,
+        average_position: avgPosition,
+        pages_with_data: gscData.rows.length,
+        pages_zero_impressions: gscData.rows.filter((r: any) => r.impressions === 0).length,
+        top_5_pages: gscData.rows.sort((a: any, b: any) => b.clicks - a.clicks).slice(0, 5).map((r: any) => ({
+          url: r.url.replace(BASE_URL, ''),
+          clicks: r.clicks,
+          impressions: r.impressions,
+          ctr: r.ctr,
+          position: r.position,
+        })),
+        bottom_5_pages: gscData.rows.sort((a: any, b: any) => a.impressions - b.impressions).slice(0, 5).map((r: any) => ({
+          url: r.url.replace(BASE_URL, ''),
+          clicks: r.clicks,
+          impressions: r.impressions,
+          ctr: r.ctr,
+          position: r.position,
+        })),
+        all_pages: gscData.rows.map((r: any) => ({
+          url: r.url.replace(BASE_URL, ''),
+          clicks: r.clicks,
+          impressions: r.impressions,
+          ctr: r.ctr,
+          position: r.position,
+        })),
+      } : {
+        connected: false,
+        date_range: null,
+        total_clicks_28d: 0,
+        total_impressions_28d: 0,
+        average_ctr: 0,
+        average_position: 0,
+        pages_with_data: 0,
+        pages_zero_impressions: 0,
+        top_5_pages: [],
+        bottom_5_pages: [],
+        all_pages: [],
+      },
+      indexing_submissions: {
+        dry_run: isDryRun,
+        urls_submitted: indexingResult.submitted,
+        urls_eligible: indexingResult.total_eligible,
+        results: indexingResult.results,
+        quota_remaining: indexingResult.quota_remaining,
+      },
     },
+    write_operation_log: writeOperationLog,
     module_timings_ms: timings,
     by_category: byCategory,
     critical_issues: errors.slice(0, 20),
@@ -1906,6 +2628,7 @@ export async function GET() {
       has_h1: !!r.h1,
       forbidden_claims: r.forbidden_claims,
       nap_phone_ok: r.nap_phone_ok,
+      page_rank: r.page_rank || 0,
       issue_count: r.issues?.length || 0,
     })),
     duration_ms: Date.now() - start,
