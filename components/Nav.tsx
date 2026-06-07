@@ -407,10 +407,10 @@ export default function Nav({ minimal = false }: NavProps) {
         {/* Right: CTA Button (Desktop) */}
         <div className="hidden lg:flex items-center">
           <Link
-            href="/"
-            className="bg-[#4ecdc4] hover:bg-[#3dbdb4] text-white text-[13px] font-medium px-5 py-2.5 rounded-md transition-all duration-200"
+            href={process.env.NEXT_PUBLIC_BOOKING_URL || "/contact"}
+            className="bg-[#EA580C] hover:bg-[#EA580C]/90 text-white text-[13px] font-medium px-5 py-2.5 rounded-md transition-all duration-200"
           >
-            Get a quote
+            Get a free quote
           </Link>
         </div>
 
