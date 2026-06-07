@@ -1,541 +1,302 @@
 import { NextResponse } from 'next/server';
+import indexabilityRules from '@/config/indexability-rules.json';
 
 const BASE_URL = 'https://security.vigilservices.co.uk';
+const MAX_PAGES = 200;
+const MAX_DEPTH = 8;
+const AUDIT_TIMEOUT = 90000;
+const PER_PAGE_TIMEOUT = 8000;
+
+const UK_SPELLING_MAP: Record<string, string> = {
+  'organize': 'organise',
+  'organized': 'organised',
+  'organizing': 'organising',
+  'organization': 'organisation',
+  'organizations': 'organisations',
+  'recognize': 'recognise',
+  'recognized': 'recognised',
+  'recognizing': 'recognising',
+  'analyze': 'analyse',
+  'analyzed': 'analysed',
+  'analyzing': 'analysing',
+  'optimize': 'optimise',
+  'optimized': 'optimised',
+  'optimizing': 'optimising',
+  'optimization': 'optimisation',
+  'maximize': 'maximise',
+  'maximized': 'maximised',
+  'minimize': 'minimise',
+  'minimized': 'minimised',
+  'customize': 'customise',
+  'customized': 'customised',
+  'standardize': 'standardise',
+  'standardized': 'standardised',
+  'prioritize': 'prioritise',
+  'prioritized': 'prioritised',
+  'specialize': 'specialise',
+  'specialized': 'specialised',
+  'utilize': 'utilise',
+  'utilized': 'utilised',
+  'color': 'colour',
+  'colors': 'colours',
+  'colored': 'coloured',
+  'labor': 'labour',
+  'neighbor': 'neighbour',
+  'neighbors': 'neighbours',
+  'center': 'centre',
+  'centers': 'centres',
+  'defense': 'defence',
+  'offense': 'offence',
+  'license': 'licence',
+  'licenses': 'licences',
+  'fulfill': 'fulfil',
+  'traveling': 'travelling',
+  'traveled': 'travelled',
+  'canceled': 'cancelled',
+  'canceling': 'cancelling',
+  'modeled': 'modelled',
+  'modeling': 'modelling',
+  'program': 'programme',
+  'programs': 'programmes',
+  'behavior': 'behaviour',
+  'behaviors': 'behaviours',
+  'behavioral': 'behavioural',
+  'endeavor': 'endeavour',
+  'humor': 'humour',
+  'rumor': 'rumour',
+  'armor': 'armour',
+};
+
+const UK_VOCABULARY_MAP: Record<string, string> = {
+  'garbage': 'waste',
+  'trash': 'rubbish',
+  'apartment': 'flat',
+  'apartments': 'flats',
+  'elevator': 'lift',
+  'elevators': 'lifts',
+  'gotten': 'got',
+  'sidewalk': 'pavement',
+  'zip code': 'postcode',
+  'downtown': 'city centre',
+  'real estate': 'property',
+  'cell phone': 'mobile phone',
+  'attorney': 'solicitor',
+  'vacation': 'holiday',
+  'math': 'maths',
+  'fall semester': 'autumn semester',
+};
+
+const FORBIDDEN_DOMESTIC_TERMS = [
+  'for your home',
+  'your home',
+  'residential cleaning',
+  'domestic cleaning',
+  'house cleaning',
+  'home cleaning',
+  'homeowner',
+  'homeowners',
+];
+
+const PLACEHOLDER_PATTERNS = [
+  /\[your [^\]]+\]/gi,
+  /\[insert [^\]]+\]/gi,
+  /\[add [^\]]+\]/gi,
+  /lorem ipsum/gi,
+  /placeholder text/gi,
+  /\[TBD\]/gi,
+  /\[TODO\]/gi,
+  /example\.com/gi,
+  /yourdomain\.com/gi,
+];
+
+const BRAND_VARIATIONS = [
+  'Vigil Cleaning',
+  'vigil cleaning',
+  'Vigil Services Ltd Cleaning',
+  'VIGIL CLEANING',
+];
+
+const CORRECT_BRAND_NAME = 'Vigil Cleaning Services';
 
 interface AuditIssue {
-  type: string;
+  url: string;
+  type: 'error' | 'warning' | 'notice';
   category: string;
   message: string;
   impact: number;
-  url?: string;
+  fix?: string;
 }
 
-// SECURITY MEASURES
-const ALLOWED_DOMAINS = [
-  'security.vigilservices.co.uk',
-];
-
-const ALLOWED_WRITE_URLS =
-  (process.env.INDEXABILITY_MUST_INDEX || '')
-  .split(',')
-  .filter(Boolean);
-
-function assertUrlSafe(url: string): void {
-  const allowed = ALLOWED_DOMAINS.some(d => url.includes(d));
-  if (!allowed) {
-    throw new Error(`SECURITY: URL not in allowed domains: ${url}`);
-  }
-}
-
-function assertNotRemoval(operation: string): void {
-  if (operation.toLowerCase().includes('remov') ||
-      operation.toLowerCase().includes('delet') ||
-      operation.toLowerCase().includes('drop')) {
-    throw new Error(`SECURITY: Removal operations are permanently disabled`);
-  }
-}
-
-const MAX_INDEXING_REQUESTS_PER_RUN = 10;
-let indexingRequestsThisRun = 0;
-
-function assertIndexingQuota(): void {
-  if (indexingRequestsThisRun >= MAX_INDEXING_REQUESTS_PER_RUN) {
-    throw new Error(`SECURITY: Indexing quota exceeded (max ${MAX_INDEXING_REQUESTS_PER_RUN} per run)`);
-  }
-  indexingRequestsThisRun++;
-}
-
-const writeOperationLog: Array<{
-  timestamp: string;
-  operation: string;
+interface PageResult {
   url: string;
-  result: string;
-  dryRun: boolean;
-}> = [];
-
-function logWriteOperation(
-  operation: string,
-  url: string,
-  result: string,
-  dryRun: boolean
-): void {
-  writeOperationLog.push({
-    timestamp: new Date().toISOString(),
-    operation,
-    url,
-    result,
-    dryRun,
-  });
-  console.log(`[WRITE LOG] ${dryRun ? 'DRY RUN' : 'LIVE'} | ${operation} | ${url} | ${result}`);
+  status: number;
+  canonical_ok: boolean;
+  canonical_redirect: boolean;
+  indexable: boolean;
+  in_sitemap: boolean;
+  has_h1: boolean;
+  word_count: number;
+  issue_count: number;
+  title_length?: number;
+  meta_desc_length?: number;
+  has_og_tags?: boolean;
+  schema_types?: string[];
+  crawl_depth?: number;
+  internal_links_count?: number;
+  external_links_count?: number;
+  page_size_kb?: number;
+  cwv_lcp?: number;
+  cwv_fid?: number;
+  cwv_cls?: number;
+  mobile_score?: number;
+  desktop_score?: number;
+  gsc_impressions?: number;
+  gsc_clicks?: number;
+  gsc_ctr?: number;
+  gsc_position?: number;
+  estimated_pagerank?: number;
 }
 
-// MODULE 15 — GOOGLE SERVICE ACCOUNT AUTH HELPER
-async function getServiceAccountToken(
-  scopes: string[]
-): Promise<string | null> {
+async function getServiceAccountToken(): Promise<string | null> {
   try {
     const saJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
     if (!saJson) return null;
 
     const sa = JSON.parse(saJson);
     const now = Math.floor(Date.now() / 1000);
+    const expiry = now + 3600;
 
-    const header = Buffer.from(JSON.stringify({
-      alg: 'RS256',
-      typ: 'JWT',
-    })).toString('base64url');
+    const header = Buffer.from(
+      JSON.stringify({ alg: 'RS256', typ: 'JWT' })
+    ).toString('base64url');
 
-    const payload = Buffer.from(JSON.stringify({
-      iss: sa.client_email,
-      scope: scopes.join(' '),
-      aud: 'https://oauth2.googleapis.com/token',
-      exp: now + 3600,
-      iat: now,
-    })).toString('base64url');
+    const payload = Buffer.from(
+      JSON.stringify({
+        iss: sa.client_email,
+        scope: 'https://www.googleapis.com/auth/indexing',
+        aud: 'https://oauth2.googleapis.com/token',
+        exp: expiry,
+        iat: now,
+      })
+    ).toString('base64url');
 
-    const unsignedToken = `${header}.${payload}`;
+    const crypto = await import('crypto');
+    const sign = crypto.createSign('RSA-SHA256');
+    sign.update(`${header}.${payload}`);
+    const signature = sign
+      .sign(sa.private_key, 'base64url');
 
-    const privateKey = sa.private_key
-      .replace(/\\n/g, '\n');
+    const jwt = `${header}.${payload}.${signature}`;
 
-    const keyData = privateKey
-      .replace('-----BEGIN PRIVATE KEY-----', '')
-      .replace('-----END PRIVATE KEY-----', '')
-      .replace(/\s/g, '');
-
-    const binaryKey = Uint8Array.from(
-      Buffer.from(keyData, 'base64')
+    const tokenRes = await fetch(
+      'https://oauth2.googleapis.com/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          grant_type:
+            'urn:ietf:params:oauth:grant-type:jwt-bearer',
+          assertion: jwt,
+        }),
+      }
     );
-
-    const cryptoKey = await crypto.subtle.importKey(
-      'pkcs8',
-      binaryKey,
-      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-
-    const encoder = new TextEncoder();
-    const signature = await crypto.subtle.sign(
-      'RSASSA-PKCS1-v1_5',
-      cryptoKey,
-      encoder.encode(unsignedToken)
-    );
-
-    const signatureB64 = Buffer.from(signature).toString('base64url');
-    const jwt = `${unsignedToken}.${signatureB64}`;
-
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion: jwt,
-      }),
-    });
 
     const tokenData = await tokenRes.json();
     return tokenData.access_token || null;
-  } catch (e) {
-    console.error('Service account auth failed:', e);
+  } catch {
     return null;
   }
 }
 
-// MODULE 12: Historical change tracking storage
-const auditHistory = new Map<string, {
-  title: string | null;
-  h1: string | null;
-  wordCount: number;
-  canonical: string | null;
-  checkedAt: string;
-}>();
-
-// MODULE 16 — EXTRACT INTERNAL LINKS HELPER
-function extractInternalLinks(html: string, base: string): string[] {
-  const matches = html.match(/href=["']([^"'#?]+)["']/g) || [];
-  return matches
-    .map(m => m.replace(/href=["']|["']/g, ''))
-    .filter(l => l.startsWith('/') || l.startsWith(base))
-    .map(l => l.startsWith('/') ? `${base}${l}` : l)
-    .map(l => l.replace(/\/$/, ''))
-    .filter(l =>
-      l.startsWith(base) &&
-      !l.includes('/_next/') &&
-      !l.includes('/static/') &&
-      !l.includes('/api/') &&
-      !l.includes('/admin') &&
-      !l.endsWith('.css') &&
-      !l.endsWith('.js') &&
-      !l.endsWith('.jpg') &&
-      !l.endsWith('.jpeg') &&
-      !l.endsWith('.png') &&
-      !l.endsWith('.svg') &&
-      !l.endsWith('.ico') &&
-      !l.endsWith('.woff') &&
-      !l.endsWith('.ttf') &&
-      !l.endsWith('.xml') &&
-      !l.endsWith('.txt')
-    );
-}
-
-// MODULE 16 — FULL RECURSIVE SITE CRAWLER
-async function recursiveCrawl(
-  startUrl: string,
-  maxPages: number = 60
-): Promise<{ pages: string[]; linkGraph: Map<string, string[]> }> {
-  const visited = new Set<string>();
-  const queue: string[] = [startUrl];
-  const discovered: string[] = [];
-  const linkGraph = new Map<string, string[]>();
-
-  while (queue.length > 0 && discovered.length < maxPages) {
-    const batch = queue.splice(0, 5);
-
-    const results = await Promise.allSettled(
-      batch.map(async url => {
-        if (visited.has(url)) return [];
-        visited.add(url);
-
-        try {
-          const result = await Promise.race([
-            fetchPage(url),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('timeout')), 4000)
-            )
-          ]);
-
-          const { html } = result as any;
-          if (!html) return [];
-
-          discovered.push(url);
-          console.log(`[CRAWLER] Found page ${discovered.length}/${maxPages}: ${url.replace(BASE_URL, '')}`);
-
-          const links = extractInternalLinks(html, BASE_URL);
-          linkGraph.set(url, links);
-
-          return links.filter(l => !visited.has(l));
-        } catch {
-          return [];
-        }
-      })
-    );
-
-    results.forEach(r => {
-      if (r.status === 'fulfilled') {
-        queue.push(...r.value);
-      }
-    });
-  }
-
-  return { pages: discovered, linkGraph };
-}
-
-// MODULE 17 — INTERNAL PAGERANK ESTIMATOR
-function estimatePageRank(
-  pages: string[],
-  linkGraph: Map<string, string[]>
-): Map<string, number> {
-  const DAMPING = 0.85;
-  const ITERATIONS = 20;
-  const N = pages.length;
-
-  if (N === 0) return new Map();
-
-  const ranks = new Map<string, number>();
-  pages.forEach(p => ranks.set(p, 1 / N));
-
-  const inlinks = new Map<string, string[]>();
-  pages.forEach(p => inlinks.set(p, []));
-  linkGraph.forEach((outlinks, page) => {
-    outlinks.forEach(target => {
-      if (inlinks.has(target)) {
-        inlinks.get(target)!.push(page);
-      }
-    });
-  });
-
-  for (let i = 0; i < ITERATIONS; i++) {
-    const newRanks = new Map<string, number>();
-    pages.forEach(page => {
-      const inlinkPages = inlinks.get(page) || [];
-      let rank = (1 - DAMPING) / N;
-      inlinkPages.forEach(inlinker => {
-        const outCount = (linkGraph.get(inlinker) || []).length;
-        if (outCount > 0) {
-          rank += DAMPING * (ranks.get(inlinker) || 0) / outCount;
-        }
-      });
-      newRanks.set(page, rank);
-    });
-    newRanks.forEach((v, k) => ranks.set(k, v));
-  }
-
-  const maxRank = Math.max(...ranks.values());
-  if (maxRank > 0) {
-    ranks.forEach((v, k) => {
-      ranks.set(k, Math.round((v / maxRank) * 100));
-    });
-  }
-
-  return ranks;
-}
-
-// MODULE 18 — CORE WEB VITALS VIA PAGESPEED API
-async function getPageSpeedData(
+async function fetchPage(
   url: string,
-  apiKey: string
-): Promise<any> {
-  try {
-    const fields = 'lighthouseResult.categories,lighthouseResult.audits.largest-contentful-paint,lighthouseResult.audits.cumulative-layout-shift,lighthouseResult.audits.total-blocking-time,lighthouseResult.audits.interactive,lighthouseResult.audits.first-contentful-paint';
-
-    const [mobileRes, desktopRes] = await Promise.allSettled([
-      Promise.race([
-        fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&fields=${fields}`),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
-      ]),
-      Promise.race([
-        fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=desktop&fields=${fields}`),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
-      ])
-    ]);
-
-    const mobile = mobileRes.status === 'fulfilled' ? await (mobileRes.value as Response).json() : null;
-    const desktop = desktopRes.status === 'fulfilled' ? await (desktopRes.value as Response).json() : null;
-
-    const result: any = { url };
-
-    if (mobile?.lighthouseResult) {
-      const lr = mobile.lighthouseResult;
-      result.mobile = {
-        performance_score: Math.round((lr.categories?.performance?.score || 0) * 100),
-        lcp: lr.audits['largest-contentful-paint']?.numericValue ? (lr.audits['largest-contentful-paint'].numericValue / 1000).toFixed(2) : null,
-        cls: lr.audits['cumulative-layout-shift']?.numericValue?.toFixed(3) || null,
-        tbt: lr.audits['total-blocking-time']?.numericValue || null,
-        fcp: lr.audits['first-contentful-paint']?.numericValue ? (lr.audits['first-contentful-paint'].numericValue / 1000).toFixed(2) : null,
-        tti: lr.audits['interactive']?.numericValue ? (lr.audits['interactive'].numericValue / 1000).toFixed(2) : null,
-      };
-    }
-
-    if (desktop?.lighthouseResult) {
-      const lr = desktop.lighthouseResult;
-      result.desktop = {
-        performance_score: Math.round((lr.categories?.performance?.score || 0) * 100),
-        lcp: lr.audits['largest-contentful-paint']?.numericValue ? (lr.audits['largest-contentful-paint'].numericValue / 1000).toFixed(2) : null,
-        cls: lr.audits['cumulative-layout-shift']?.numericValue?.toFixed(3) || null,
-        tbt: lr.audits['total-blocking-time']?.numericValue || null,
-      };
-    }
-
-    return result;
-  } catch (e) {
-    console.error('PageSpeed API error:', e);
-    return { url, error: 'timeout or API error' };
-  }
-}
-
-// MODULE 19 — GSC DATA INTEGRATION
-async function getGSCData(
-  siteUrl: string
-): Promise<any> {
-  try {
-    const token = await getServiceAccountToken([
-      'https://www.googleapis.com/auth/webmasters.readonly'
-    ]);
-
-    if (!token) return null;
-
-    const endDate = new Date().toISOString().split('T')[0];
-    const startDate = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000)
-      .toISOString().split('T')[0];
-
-    const res = await Promise.race([
-      fetch(
-        `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            startDate,
-            endDate,
-            dimensions: ['page'],
-            rowLimit: 50,
-          }),
-        }
-      ),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-    ]);
-
-    const data = await (res as Response).json();
-
-    if (data.error) {
-      console.error('GSC API error:', data.error);
-      return null;
-    }
-
-    const rows = data.rows || [];
-    return {
-      startDate,
-      endDate,
-      rows: rows.map((row: any) => ({
-        url: row.keys[0],
-        clicks: row.clicks,
-        impressions: row.impressions,
-        ctr: Math.round(row.ctr * 1000) / 10,
-        position: Math.round(row.position * 10) / 10,
-      }))
-    };
-  } catch (e) {
-    console.error('GSC data fetch failed:', e);
-    return null;
-  }
-}
-
-// MODULE 20 — INDEXING SUBMISSION (WRITE OPERATION)
-async function submitForIndexing(
-  urls: string[],
-  dryRun: boolean = true
-): Promise<any> {
-  assertNotRemoval('submit');
-
-  const results: any[] = [];
-  let submitted = 0;
-
-  for (const url of urls.slice(0, MAX_INDEXING_REQUESTS_PER_RUN)) {
-    assertUrlSafe(url);
-    assertIndexingQuota();
-
-    if (dryRun) {
-      logWriteOperation('SUBMIT_INDEX', url, 'DRY RUN — not submitted', true);
-      results.push({ url, status: 'dry_run' });
-      continue;
-    }
-
-    try {
-      const token = await getServiceAccountToken([
-        'https://www.googleapis.com/auth/indexing'
-      ]);
-
-      if (!token) {
-        logWriteOperation('SUBMIT_INDEX', url, 'FAILED: No service account token', false);
-        results.push({ url, status: 'failed', error: 'No token' });
-        continue;
-      }
-
-      const res = await fetch(
-        'https://indexing.googleapis.com/v3/urlNotifications:publish',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url,
-            type: 'URL_UPDATED',
-          }),
-        }
-      );
-
-      const result = await res.json();
-
-      if (res.ok) {
-        logWriteOperation('SUBMIT_INDEX', url, 'SUCCESS', false);
-        results.push({ url, status: 'success' });
-        submitted++;
-      } else {
-        logWriteOperation('SUBMIT_INDEX', url, `FAILED: ${result.error?.message}`, false);
-        results.push({ url, status: 'failed', error: result.error?.message });
-      }
-    } catch (e: any) {
-      logWriteOperation('SUBMIT_INDEX', url, `FAILED: ${e.message}`, false);
-      results.push({ url, status: 'failed', error: e.message });
-    }
-  }
-
-  return {
-    submitted,
-    total_eligible: urls.length,
-    results,
-    quota_remaining: MAX_INDEXING_REQUESTS_PER_RUN - indexingRequestsThisRun
-  };
-}
-
-// BUG FIX 5: HTML entity decoder
-function decodeHtmlEntities(str: string): string {
-  return str
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&nbsp;/g, ' ');
-}
-
-async function fetchPage(url: string) {
+  timeout = 10000
+): Promise<{ status: number; html: string; headers: Headers; fetchStartTime: number; fetchEndTime: number }> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const fetchStartTime = Date.now();
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'VigilAuditor/1.0' },
-      signal: AbortSignal.timeout(10000),
+      signal: controller.signal,
+      headers: { 'User-Agent': 'VigilAuditor/8.0' },
+      redirect: 'follow',
     });
+    clearTimeout(id);
+    const fetchEndTime = Date.now();
     const html = await res.text();
-    return { status: res.status, html, ok: res.ok, headers: res.headers };
+    await new Promise(r => setTimeout(r, 100));
+    return { status: res.status, html, headers: res.headers, fetchStartTime, fetchEndTime };
   } catch {
-    return { status: 0, html: '', ok: false, headers: new Headers() };
+    clearTimeout(id);
+    const fetchEndTime = Date.now();
+    return { status: 0, html: '', headers: new Headers(), fetchStartTime, fetchEndTime };
   }
 }
 
-async function fetchNoRedirect(url: string) {
+async function fetchNoRedirect(url: string): Promise<number> {
   try {
     const res = await fetch(url, {
       redirect: 'manual',
-      headers: { 'User-Agent': 'VigilAuditor/1.0' },
+      headers: { 'User-Agent': 'VigilAuditor/8.0' },
       signal: AbortSignal.timeout(8000),
     });
-    return {
-      status: res.status,
-      location: res.headers.get('location'),
-    };
+    return res.status;
   } catch {
-    return { status: 0, location: null };
+    return 0;
   }
 }
 
 function extractCanonical(html: string): string | null {
-  const m = html.match(
+  const match = html.match(
     /<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i
   );
-  return m ? m[1] : null;
+  return match ? match[1] : null;
 }
 
 function extractTitle(html: string): string | null {
-  const m = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  return m ? decodeHtmlEntities(m[1].trim()) : null;
+  const match = html.match(/<title>([^<]+)<\/title>/i);
+  return match ? match[1].trim() : null;
 }
 
 function extractMetaDesc(html: string): string | null {
-  const m = html.match(
+  const match = html.match(
     /<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i
   );
-  return m ? decodeHtmlEntities(m[1]) : null;
+  return match ? match[1].trim() : null;
 }
 
-function extractH1(html: string): string | null {
-  const m = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-  return m ? m[1].trim() : null;
+function extractH1(html: string): string[] {
+  const matches = html.match(/<h1[^>]*>([^<]+)<\/h1>/gi) || [];
+  return matches.map(m =>
+    m.replace(/<\/?h1[^>]*>/gi, '').trim()
+  );
 }
 
 function isNoIndex(html: string): boolean {
-  return /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i
-    .test(html);
+  return /name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(
+    html
+  );
 }
 
 function countWords(html: string): number {
+  const text = html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.split(/\s+/).filter(w => w.length > 0).length;
+}
+
+async function checkUKEnglish(
+  html: string,
+  pageUrl: string
+): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+
   const text = html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
@@ -545,2093 +306,2337 @@ function countWords(html: string): number {
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  return text.split(' ').filter(w => w.length > 2).length;
+
+  const textLower = text.toLowerCase();
+
+  const spellingErrors: string[] = [];
+  for (const [usSpelling, ukSpelling] of Object.entries(UK_SPELLING_MAP)) {
+    const regex = new RegExp(`\\b${usSpelling}\\b`, 'gi');
+    if (regex.test(textLower)) {
+      spellingErrors.push(`"${usSpelling}" → "${ukSpelling}"`);
+    }
+  }
+
+  if (spellingErrors.length > 0) {
+    issues.push({
+      type: 'error',
+      category: 'UK English',
+      message: `US spelling found (${spellingErrors.length}): ${spellingErrors.slice(0, 5).join(', ')}`,
+      impact: 5,
+      url: pageUrl,
+      fix: `Replace US spellings with UK equivalents: ${spellingErrors.slice(0, 3).join('; ')}`,
+    });
+  }
+
+  const vocabErrors: string[] = [];
+  for (const [usTerm, ukTerm] of Object.entries(UK_VOCABULARY_MAP)) {
+    const regex = new RegExp(`\\b${usTerm.replace(/\s+/g, '\\s+')}\\b`, 'gi');
+    if (regex.test(textLower)) {
+      vocabErrors.push(`"${usTerm}" → "${ukTerm}"`);
+    }
+  }
+
+  if (vocabErrors.length > 0) {
+    issues.push({
+      type: 'warning',
+      category: 'UK English',
+      message: `Non-UK vocabulary: ${vocabErrors.join(', ')}`,
+      impact: 3,
+      url: pageUrl,
+      fix: `Replace with UK equivalents: ${vocabErrors.join('; ')}`,
+    });
+  }
+
+  for (const term of FORBIDDEN_DOMESTIC_TERMS) {
+    if (textLower.includes(term.toLowerCase())) {
+      issues.push({
+        type: 'error',
+        category: 'B2B Positioning',
+        message: `Domestic language on B2B site: "${term}"`,
+        impact: 6,
+        url: pageUrl,
+        fix: `Remove "${term}" — replace with B2B equivalent such as "your business premises"`,
+      });
+    }
+  }
+
+  for (const pattern of PLACEHOLDER_PATTERNS) {
+    pattern.lastIndex = 0;
+    const match = pattern.exec(text);
+    if (match) {
+      issues.push({
+        type: 'error',
+        category: 'Content Quality',
+        message: `Placeholder text found: "${match[0]}"`,
+        impact: 8,
+        url: pageUrl,
+        fix: `Replace placeholder "${match[0]}" with actual content`,
+      });
+    }
+  }
+
+  return issues;
+}
+
+async function checkBrandConsistency(
+  html: string,
+  pageUrl: string
+): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  for (const variant of BRAND_VARIATIONS) {
+    const regex = new RegExp(
+      variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      'g'
+    );
+    const matches = text.match(regex);
+    if (matches && matches.length > 0) {
+      issues.push({
+        type: 'warning',
+        category: 'Brand Consistency',
+        message: `Brand name variant "${variant}" found ${matches.length}x — use "${CORRECT_BRAND_NAME}"`,
+        impact: 2,
+        url: pageUrl,
+        fix: `Replace all instances of "${variant}" with "${CORRECT_BRAND_NAME}"`,
+      });
+    }
+  }
+
+  return issues;
+}
+
+async function checkLanguageTool(
+  html: string,
+  pageUrl: string
+): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+    .replace(/<header[\s\S]*?<\/header>/gi, '')
+    .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 1500);
+
+  if (text.length < 100) return issues;
+
+  try {
+    const res = await fetch('https://api.languagetool.org/v2/check', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        text,
+        language: 'en-GB',
+        enabledOnly: 'false',
+        disabledRules:
+          'WHITESPACE_RULE,EN_QUOTES,COMMA_PARENTHESIS_WHITESPACE',
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) return issues;
+
+    interface LanguageToolMatch {
+      message: string;
+      replacements?: Array<{ value: string }>;
+      context?: { text: string; offset: number; length: number };
+      rule?: { category?: { id: string }; id?: string };
+      type?: { typeName: string };
+    }
+
+    const data = await res.json();
+    const matches = (data.matches || [])
+      .filter(
+        (m: LanguageToolMatch) =>
+          m.replacements?.length && m.replacements.length > 0 &&
+          m.rule?.category?.id !== 'TYPOS' &&
+          m.type?.typeName !== 'UnknownWord'
+      )
+      .slice(0, 5);
+
+    for (const match of matches as LanguageToolMatch[]) {
+      const suggestion = match.replacements?.[0]?.value || '';
+      const contextText = match.context?.text || '';
+      const offset = match.context?.offset || 0;
+      const length = match.context?.length || 0;
+      const excerpt = contextText.slice(
+        Math.max(0, offset - 15),
+        offset + length + 15
+      );
+
+      issues.push({
+        type: 'warning',
+        category: 'Grammar',
+        message: `${match.message}: "...${excerpt}..."`,
+        impact: 2,
+        url: pageUrl,
+        fix: suggestion ? `Suggested: "${suggestion}"` : match.message,
+      });
+    }
+  } catch {
+    // LanguageTool unavailable — skip gracefully
+  }
+
+  return issues;
 }
 
 function checkForbiddenClaims(
   html: string,
-  claims: string[]
-): string[] {
-  const text = html.replace(/<[^>]+>/g, ' ');
-  return claims.filter(claim =>
-    text.toLowerCase().includes(claim.toLowerCase())
-  );
+  url: string
+): AuditIssue[] {
+  const issues: AuditIssue[] = [];
+  const forbidden = indexabilityRules.forbidden_claims || [];
+
+  for (const claim of forbidden) {
+    const regex = new RegExp(claim, 'i');
+    if (regex.test(html)) {
+      issues.push({
+        url,
+        type: 'error',
+        category: 'Claims Compliance',
+        message: `Forbidden claim found: "${claim}"`,
+        impact: 10,
+        fix: `Remove or replace unverifiable claim "${claim}"`,
+      });
+    }
+  }
+
+  return issues;
 }
 
-function checkNAP(
+function checkNAP(html: string, url: string): AuditIssue[] {
+  const issues: AuditIssue[] = [];
+  const nap = indexabilityRules.nap;
+
+  if (!html.includes(nap.phone)) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'NAP Consistency',
+      message: 'Phone number missing or inconsistent',
+      impact: 4,
+    });
+  }
+
+  if (
+    !html.includes(nap.email) &&
+    !url.includes('/privacy') &&
+    !url.includes('/cookie')
+  ) {
+    issues.push({
+      url,
+      type: 'notice',
+      category: 'NAP Consistency',
+      message: 'Email address missing',
+      impact: 2,
+    });
+  }
+
+  return issues;
+}
+
+function checkHtmlEntities(
   html: string,
-  nap: { phone: string; email: string }
-): { phone_ok: boolean; email_ok: boolean } {
-  return {
-    phone_ok: html.includes(nap.phone),
-    email_ok: html.includes(nap.email),
-  };
+  url: string
+): AuditIssue[] {
+  const issues: AuditIssue[] = [];
+  const visibleText = html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+
+  const rawEntities = visibleText.match(/&[a-z]+;/gi) || [];
+  if (rawEntities.length > 0) {
+    const unique = Array.from(new Set(rawEntities));
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'Content',
+      message: `Raw HTML entities found in content: ${unique.join(', ')}`,
+      impact: 3,
+      fix: 'Use React {String.fromCharCode(...)} or plain characters',
+    });
+  }
+
+  return issues;
 }
 
-function checkHtmlEntities(html: string): number {
-  const bodyContent = html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '');
-  const matches = bodyContent.match(
-    /&apos;|&#39;|&amp;(?!(?:amp|lt|gt|quot|#\d+);)/g
-  );
-  return matches ? matches.length : 0;
+function decodeHtmlEntities(text: string): string {
+  const entities: Record<string, string> = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&nbsp;': ' ',
+  };
+
+  let decoded = text;
+  for (const [entity, char] of Object.entries(entities)) {
+    decoded = decoded.replace(new RegExp(entity, 'g'), char);
+  }
+
+  return decoded;
 }
 
 async function getSitemapUrls(): Promise<string[]> {
   try {
-    const res = await fetch(`${BASE_URL}/sitemap.xml`, {
-      signal: AbortSignal.timeout(8000),
-    });
-    const xml = await res.text();
-    const matches = xml.match(/<loc>([\s\S]*?)<\/loc>/g) || [];
-    return matches
-      .map(m => m.replace(/<\/?loc>/g, '').trim())
-      .filter(u => u.startsWith(BASE_URL));
+    const { html } = await fetchPage(`${BASE_URL}/sitemap.xml`);
+    const matches = html.match(/<loc>(.*?)<\/loc>/g) || [];
+    return matches.map(m =>
+      m.replace(/<\/?loc>/g, '').trim()
+    );
   } catch {
     return [];
   }
 }
 
-// MODULE 1 — STRUCTURED DATA VALIDATION
-function validateStructuredData(html: string, url: string): AuditIssue[] {
+async function auditPage(
+  url: string,
+  sitemapUrls: string[],
+  allAuditedUrls: Set<string>
+): Promise<{ result: PageResult; issues: AuditIssue[]; headers: Headers; fetchStartTime: number; fetchEndTime: number; html: string }> {
   const issues: AuditIssue[] = [];
-  const scripts = html.match(
-    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
-  ) || [];
+  const { status, html, headers, fetchStartTime, fetchEndTime } = await fetchPage(url);
 
-  const requiredByType: Record<string, string[]> = {
-    'SecurityService': ['name', 'url', 'telephone', 'address'],
-    'CleaningService': ['name', 'url', 'telephone', 'address'],
-    'LocalBusiness': ['name', 'url', 'telephone', 'address'],
-    'Organization': ['name', 'url'],
-    'WebSite': ['name', 'url'],
-    'BreadcrumbList': ['itemListElement'],
-    'FAQPage': ['mainEntity'],
-    'Service': ['name', 'serviceType'],
-    'PostalAddress': ['streetAddress', 'addressLocality', 'postalCode', 'addressCountry'],
+  const result: PageResult = {
+    url,
+    status,
+    canonical_ok: false,
+    canonical_redirect: false,
+    indexable: true,
+    in_sitemap: sitemapUrls.includes(url),
+    has_h1: false,
+    word_count: 0,
+    issue_count: 0,
   };
 
-  if (scripts.length === 0) {
-    const mustIndex = url === BASE_URL || url.includes('/manned-guarding') || url.includes('/mobile-patrols');
-    if (mustIndex) {
+  if (status === 0) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'Connectivity',
+      message: 'Page unreachable',
+      impact: 10,
+      fix: 'Check deployment status and URL configuration',
+    });
+    result.issue_count = issues.length;
+    return { result, issues, headers, fetchStartTime, fetchEndTime, html };
+  }
+
+  if (status >= 400) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'HTTP Status',
+      message: `HTTP ${status}`,
+      impact: 10,
+      fix: status === 404 ? 'Create page or remove from sitemap' : 'Fix server error',
+    });
+    result.issue_count = issues.length;
+    return { result, issues, headers, fetchStartTime, fetchEndTime, html };
+  }
+
+  const canonical = extractCanonical(html);
+  if (!canonical) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'Indexability',
+      message: 'Missing canonical tag',
+      impact: 8,
+      fix: 'Add canonical: <link rel="canonical" href="..." />',
+    });
+  } else {
+    const urlNorm = url.replace(/\/$/, '');
+    const canonNorm = canonical.replace(/\/$/, '');
+    result.canonical_ok = urlNorm === canonNorm;
+
+    if (!result.canonical_ok) {
+      const canonStatus = await fetchNoRedirect(canonical);
+      result.canonical_redirect =
+        canonStatus >= 300 && canonStatus < 400;
+
       issues.push({
-        type: 'warning',
-        category: 'Structured Data',
-        message: 'No structured data found on indexable page',
-        impact: 4,
-        url
+        url,
+        type: result.canonical_redirect ? 'error' : 'warning',
+        category: 'Canonical',
+        message: result.canonical_redirect
+          ? `Canonical ${canonical} redirects (HTTP ${canonStatus})`
+          : `Canonical mismatch: points to ${canonical}`,
+        impact: result.canonical_redirect ? 9 : 5,
+        fix: result.canonical_redirect
+          ? 'Fix canonical to point to final destination'
+          : 'Ensure canonical matches page URL',
       });
     }
+  }
+
+  const title = extractTitle(html);
+  if (!title) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'SEO',
+      message: 'Missing title tag',
+      impact: 9,
+      fix: 'Add title tag with focus keyword + benefit + brand suffix',
+    });
+  } else {
+    result.title_length = title.length;
+    if (title.length < 30) {
+      issues.push({
+        url,
+        type: 'warning',
+        category: 'SEO',
+        message: `Title too short: ${title.length} chars (min 55)`,
+        impact: 5,
+        fix: 'Expand title to 55-63 characters with benefit statement',
+      });
+    } else if (title.length > 70) {
+      issues.push({
+        url,
+        type: 'warning',
+        category: 'SEO',
+        message: `Title too long: ${title.length} chars (max 63)`,
+        impact: 4,
+        fix: 'Shorten to under 63 characters — keep focus keyword at start',
+      });
+    }
+
+    const decodedTitle = decodeHtmlEntities(title);
+    const vigils = (decodedTitle.match(/vigil/gi) || []).length;
+    if (vigils > 1) {
+      issues.push({
+        url,
+        type: 'warning',
+        category: 'SEO',
+        message: `Title repeats brand ${vigils} times`,
+        impact: 4,
+        fix: 'Remove duplicate "Vigil" — template adds | Vigil',
+      });
+    }
+  }
+
+  const metaDesc = extractMetaDesc(html);
+  if (!metaDesc) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'SEO',
+      message: 'Missing meta description',
+      impact: 7,
+      fix: 'Add 145-155 character meta description with focus keyword and CTA',
+    });
+  } else {
+    result.meta_desc_length = metaDesc.length;
+    if (metaDesc.length < 120) {
+      issues.push({
+        url,
+        type: 'warning',
+        category: 'SEO',
+        message: `Meta description too short: ${metaDesc.length} chars (min 145)`,
+        impact: 5,
+        fix: 'Expand to 145-155 characters with benefit statement and CTA',
+      });
+    } else if (metaDesc.length > 160) {
+      issues.push({
+        url,
+        type: 'warning',
+        category: 'SEO',
+        message: `Meta description too long: ${metaDesc.length} chars (max 155)`,
+        impact: 4,
+        fix: 'Shorten to under 155 characters — remove supplementary clauses',
+      });
+    }
+  }
+
+  const h1s = extractH1(html);
+  result.has_h1 = h1s.length > 0;
+
+  if (h1s.length === 0) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'SEO',
+      message: 'No H1 found',
+      impact: 8,
+      fix: 'Add <h1 className="sr-only">{focus_keyword}</h1> as first element in page component before the main content',
+    });
+  } else if (h1s.length > 1) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'SEO',
+      message: `Multiple H1s: ${h1s.length} found`,
+      impact: 5,
+      fix: 'Use only one H1 per page',
+    });
+  }
+
+  result.word_count = countWords(html);
+  const path = url.replace(BASE_URL, '') || '/';
+
+  let pageType = 'service_page';
+  for (const [pattern, type] of Object.entries(
+    indexabilityRules.page_types
+  )) {
+    if (pattern.includes('*')) {
+      const regex = new RegExp(
+        '^' + pattern.replace(/\*/g, '.*') + '$'
+      );
+      if (regex.test(path)) {
+        pageType = type;
+        break;
+      }
+    } else if (pattern === path) {
+      pageType = type;
+      break;
+    }
+  }
+
+  const thresholds: Record<string, number> =
+    indexabilityRules.content_thresholds;
+  const minWords = thresholds[pageType] || 500;
+
+  if (result.word_count < minWords) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'Content',
+      message: `Thin content: ${result.word_count} words found, ${minWords} required for ${pageType}`,
+      impact: 8,
+      fix: `Add visible introductory content. Target minimum ${minWords} words. Add a section describing the service, location, and key benefits above or below the qualification flow.`,
+    });
+  }
+
+  result.indexable = !isNoIndex(html);
+  const mustIndex = indexabilityRules.must_index.some(p =>
+    path === p
+  );
+  const mustNoindex = indexabilityRules.must_noindex.some(p =>
+    p.endsWith('*')
+      ? path.startsWith(p.replace('*', ''))
+      : path === p
+  );
+
+  if (mustIndex && !result.indexable) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'Indexability',
+      message: 'Priority page has noindex',
+      impact: 10,
+      fix: 'Remove noindex directive',
+    });
+  }
+
+  if (!mustIndex && !mustNoindex && !result.in_sitemap) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'Sitemap',
+      message: 'Not in sitemap',
+      impact: 4,
+      fix: 'Add page to app/sitemap.ts or update priority_pages array',
+    });
+  }
+
+  issues.push(...checkForbiddenClaims(html, url));
+  issues.push(...checkNAP(html, url));
+  issues.push(...checkHtmlEntities(html, url));
+
+  const brokenLinkIssues = await checkBrokenOutboundLinks(html, url, allAuditedUrls);
+  issues.push(...brokenLinkIssues);
+
+  const httpsIssues = await checkHTTPS(html, url, headers);
+  issues.push(...httpsIssues);
+
+  const perfIssues = await checkPerformance(html, url, headers, fetchStartTime, fetchEndTime);
+  issues.push(...perfIssues);
+
+  const aiIssues = await checkAISearchReadiness(html, url);
+  issues.push(...aiIssues);
+
+  result.issue_count = issues.length;
+  return { result, issues, headers, fetchStartTime, fetchEndTime, html };
+}
+
+async function validateStructuredData(
+  url: string
+): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+  const { html } = await fetchPage(url);
+
+  const schemaMatches =
+    html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) ||
+    [];
+
+  if (schemaMatches.length === 0) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'Structured Data',
+      message: 'No JSON-LD schema found',
+      impact: 6,
+      fix: 'Add Organization, LocalBusiness, or Service schema',
+    });
     return issues;
   }
 
-  if (scripts.length > 3) {
-    issues.push({
-      type: 'warning',
-      category: 'Structured Data',
-      message: `${scripts.length} JSON-LD blocks found — consider consolidating`,
-      impact: 1,
-      url
-    });
-  }
+  const types: string[] = [];
 
-  scripts.forEach((scriptTag) => {
-    const content = scriptTag.replace(/<script[^>]*>|<\/script>/gi, '').trim();
-    let schema: any;
+  for (const match of schemaMatches) {
+    const jsonText = match
+      .replace(/<script[^>]*>/i, '')
+      .replace(/<\/script>/i, '')
+      .trim();
 
     try {
-      schema = JSON.parse(content);
+      const schema = JSON.parse(jsonText);
+      const type = Array.isArray(schema)
+        ? schema.map(s => s['@type']).filter(Boolean)
+        : [schema['@type']];
+
+      types.push(...type.filter(Boolean));
     } catch {
       issues.push({
+        url,
         type: 'error',
         category: 'Structured Data',
-        message: 'Invalid JSON-LD — cannot parse',
-        impact: 8,
-        url
+        message: 'Invalid JSON-LD syntax',
+        impact: 7,
+        fix: 'Fix JSON-LD parsing errors',
       });
-      return;
     }
+  }
 
-    const schemaType = schema['@type'];
-    if (!schemaType) {
-      issues.push({
-        type: 'error',
-        category: 'Structured Data',
-        message: 'JSON-LD missing @type',
-        impact: 5,
-        url
-      });
-      return;
-    }
-
-    const required = requiredByType[schemaType] || [];
-    required.forEach(prop => {
-      if (!schema[prop]) {
-        issues.push({
-          type: 'error',
-          category: 'Structured Data',
-          message: `JSON-LD @type "${schemaType}" missing required property: "${prop}"`,
-          impact: 5,
-          url
-        });
-      }
+  if (!types.includes('Organization')) {
+    issues.push({
+      url,
+      type: 'notice',
+      category: 'Structured Data',
+      message: 'Organization schema missing',
+      impact: 3,
+      fix: 'Add Organization schema to root layout',
     });
-
-    if (schema.address && typeof schema.address === 'string') {
-      issues.push({
-        type: 'warning',
-        category: 'Structured Data',
-        message: 'address should be PostalAddress object not string',
-        impact: 3,
-        url
-      });
-    }
-
-    if (schema.telephone && !/^[\+\d\s\-\(\)]{7,}$/.test(schema.telephone)) {
-      issues.push({
-        type: 'warning',
-        category: 'Structured Data',
-        message: 'telephone format may be invalid',
-        impact: 2,
-        url
-      });
-    }
-  });
+  }
 
   return issues;
 }
 
-// MODULE 2 — SITEMAP REDIRECT DETECTION
-async function checkSitemapHealth(sitemapUrls: string[]): Promise<{
-  total_checked: number;
-  redirecting: number;
-  broken: number;
-  ok: number;
-  issues: AuditIssue[];
-}> {
+async function checkSitemapHealth(): Promise<AuditIssue[]> {
   const issues: AuditIssue[] = [];
-  const urlsToCheck = sitemapUrls.slice(0, 20);
-  let redirecting = 0;
-  let broken = 0;
-  let ok = 0;
-
-  const results = await Promise.allSettled(
-    urlsToCheck.map(async (url) => {
-      try {
-        const result = await Promise.race([
-          fetchNoRedirect(url),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-        ]);
-        return { url, ...result };
-      } catch {
-        return { url, status: 0, location: null };
-      }
-    })
+  const { status, html } = await fetchPage(
+    `${BASE_URL}/sitemap.xml`
   );
 
-  results.forEach((result) => {
-    if (result.status === 'fulfilled') {
-      const { url, status, location } = result.value;
+  if (status !== 200) {
+    issues.push({
+      url: `${BASE_URL}/sitemap.xml`,
+      type: 'error',
+      category: 'Sitemap',
+      message: `Sitemap returns HTTP ${status}`,
+      impact: 9,
+    });
+    return issues;
+  }
 
-      if (status === 404) {
-        broken++;
-        issues.push({
-          type: 'error',
-          category: 'Sitemap',
-          message: `Sitemap URL returns 404: ${url}`,
-          impact: 10,
-          url
-        });
-      } else if (status === 301 || status === 308) {
-        redirecting++;
-        issues.push({
-          type: 'error',
-          category: 'Sitemap',
-          message: `Sitemap URL redirects (${status}): ${url} → ${location}`,
-          impact: 5,
-          url
-        });
-      } else if (status === 200) {
-        ok++;
-      }
-    }
-  });
+  const urls = html.match(/<loc>(.*?)<\/loc>/g) || [];
+  if (urls.length === 0) {
+    issues.push({
+      url: `${BASE_URL}/sitemap.xml`,
+      type: 'error',
+      category: 'Sitemap',
+      message: 'Sitemap contains no URLs',
+      impact: 10,
+    });
+  }
 
-  return {
-    total_checked: urlsToCheck.length,
-    redirecting,
-    broken,
-    ok,
-    issues
-  };
+  return issues;
 }
 
-// MODULE 3 — IMAGE AUDIT
-async function auditImages(html: string, url: string, pageIndex: number): Promise<{
-  broken: number;
-  missing_alt: number;
-  mixed_content: number;
-  issues: AuditIssue[];
-}> {
+async function auditImages(url: string): Promise<AuditIssue[]> {
   const issues: AuditIssue[] = [];
-  let broken = 0;
-  let missing_alt = 0;
-  let mixed_content = 0;
-
-  if (pageIndex >= 5) {
-    return { broken, missing_alt, mixed_content, issues };
-  }
+  const { html } = await fetchPage(url);
 
   const imgTags = html.match(/<img[^>]+>/gi) || [];
-  const imagesToCheck = imgTags.slice(0, 10);
+  let missingAlt = 0;
+  let brokenImages = 0;
+  let nonWebP = 0;
 
-  imagesToCheck.forEach((imgTag) => {
-    const srcMatch = imgTag.match(/src=["']([^"']+)["']/i);
-    const altMatch = imgTag.match(/alt=["']([^"']*)["']/i);
-    const widthMatch = imgTag.match(/width=["']?[^"'\s]+/i);
-    const heightMatch = imgTag.match(/height=["']?[^"'\s]+/i);
-
-    const src = srcMatch ? srcMatch[1] : '';
-
-    if (!altMatch || !altMatch[1]) {
-      missing_alt++;
-      issues.push({
-        type: 'warning',
-        category: 'Images',
-        message: `Image missing alt text: ${src.substring(0, 50)}...`,
-        impact: 2,
-        url
-      });
+  for (const img of imgTags) {
+    if (!/alt=["'][^"']*["']/i.test(img)) {
+      missingAlt++;
     }
 
-    if (url.startsWith('https://') && src.startsWith('http://')) {
-      mixed_content++;
-      issues.push({
-        type: 'error',
-        category: 'Images',
-        message: `Mixed content: HTTP image on HTTPS page: ${src.substring(0, 50)}...`,
-        impact: 8,
-        url
-      });
+    const srcMatch = img.match(/src=["']([^"']+)["']/i);
+    if (!srcMatch) continue;
+
+    let imageSrc = srcMatch[1];
+    const reportSrc = imageSrc;
+
+    if (imageSrc.includes('/_next/image')) {
+      try {
+        const imgUrl = new URL(imageSrc, BASE_URL);
+        const urlParam = imgUrl.searchParams.get('url');
+        if (urlParam) {
+          imageSrc = decodeURIComponent(urlParam);
+        }
+      } catch {
+        // Invalid URL — skip decoding
+      }
     }
 
-    if (!widthMatch || !heightMatch) {
-      issues.push({
-        type: 'warning',
-        category: 'Images',
-        message: `Image missing width/height — causes layout shift: ${src.substring(0, 50)}...`,
-        impact: 2,
-        url
-      });
+    if (imageSrc.startsWith('/')) {
+      imageSrc = BASE_URL + imageSrc;
     }
-  });
 
-  return { broken, missing_alt, mixed_content, issues };
-}
+    if (!imageSrc.startsWith('http')) continue;
 
-// MODULE 4 — OG/SOCIAL TAGS COMPLETENESS (BUG FIX 2: Recalibrated scoring)
-function checkOpenGraph(html: string, url: string, isIndexable: boolean, pageType: string): {
-  missing_og: number;
-  twitter_issues: number;
-  issues: AuditIssue[];
-} {
-  const issues: AuditIssue[] = [];
-  let missing_og = 0;
-  let twitter_issues = 0;
+    try {
+      const headRes = await fetch(imageSrc, {
+        method: 'HEAD',
+        signal: AbortSignal.timeout(5000),
+      });
 
-  // Skip OG checks on legal/admin pages
-  if (pageType === 'legal_page' || url.includes('/admin')) {
-    return { missing_og, twitter_issues, issues };
-  }
+      if (!headRes.ok) {
+        brokenImages++;
+        continue;
+      }
 
-  // Only check core tags: title, description, image, url, type
-  // Removed: site_name, locale (not critical)
-  const requiredOG = isIndexable
-    ? ['og:title', 'og:description', 'og:image', 'og:url', 'og:type']
-    : ['og:title', 'og:description'];
+      const contentLength = headRes.headers.get('content-length');
+      const contentType = headRes.headers.get('content-type') || '';
 
-  const canonical = extractCanonical(html);
-
-  const impactScores: Record<string, number> = {
-    'og:title': 3,
-    'og:description': 2,
-    'og:image': 1,
-    'og:url': 1,
-    'og:type': 1,
-  };
-
-  requiredOG.forEach(prop => {
-    const ogMatch = html.match(
-      new RegExp(`<meta[^>]*property=["']${prop}["'][^>]*content=["']([^"']+)["']`, 'i')
-    );
-
-    if (!ogMatch) {
-      // Only flag og:image missing on service/borough pages
-      if (prop === 'og:image') {
-        if (pageType === 'service_page' || pageType === 'borough_page') {
-          missing_og++;
+      if (contentLength) {
+        const sizeBytes = parseInt(contentLength, 10);
+        if (sizeBytes > 500000) {
           issues.push({
-            type: 'warning',
-            category: 'Social Tags',
-            message: 'Service page missing og:image — add page-specific image',
-            impact: 1,
-            url
+            url,
+            type: 'error',
+            category: 'Images',
+            message: `Image too large: ${Math.round(sizeBytes / 1024)}KB at ${reportSrc}`,
+            impact: 7,
+            fix: 'Compress image to under 200KB or use WebP format',
           });
         }
-      } else {
-        missing_og++;
-        issues.push({
-          type: 'warning',
-          category: 'Social Tags',
-          message: `Missing OG tag: ${prop}`,
-          impact: impactScores[prop] || 1,
-          url
-        });
-      }
-    } else {
-      const content = ogMatch[1];
-
-      if (prop === 'og:image' && !content.startsWith('https://') && isIndexable) {
-        issues.push({
-          type: 'error',
-          category: 'Social Tags',
-          message: 'og:image must use HTTPS',
-          impact: 3,
-          url
-        });
       }
 
-      if (prop === 'og:url' && canonical && content !== canonical && isIndexable) {
-        issues.push({
-          type: 'warning',
-          category: 'Social Tags',
-          message: 'og:url does not match canonical',
-          impact: 1,
-          url
-        });
+      if (
+        !contentType.includes('webp') &&
+        !contentType.includes('avif') &&
+        (contentType.includes('jpeg') ||
+          contentType.includes('jpg') ||
+          contentType.includes('png'))
+      ) {
+        nonWebP++;
       }
+    } catch {
+      // HEAD request failed — skip size check
     }
-  });
+  }
 
-  const twitterCardMatch = html.match(
-    /<meta[^>]*name=["']twitter:card["'][^>]*content=["']([^"']+)["']/i
-  );
-
-  if (twitterCardMatch && twitterCardMatch[1] === 'summary' && isIndexable) {
-    twitter_issues++;
+  if (missingAlt > 0) {
     issues.push({
+      url,
       type: 'warning',
-      category: 'Social Tags',
-      message: 'twitter:card should be summary_large_image for better CTR',
-      impact: 1,
-      url
+      category: 'Accessibility',
+      message: `${missingAlt} images missing alt text`,
+      impact: 5,
+      fix: 'Add descriptive alt text to all images',
     });
   }
 
-  return { missing_og, twitter_issues, issues };
+  if (brokenImages > 0) {
+    issues.push({
+      url,
+      type: 'error',
+      category: 'Images',
+      message: `${brokenImages} broken images (404 or unreachable)`,
+      impact: 8,
+      fix: 'Fix or remove broken image references',
+    });
+  }
+
+  if (nonWebP > 2) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'Images',
+      message: `${nonWebP} images not served as WebP/AVIF`,
+      impact: 4,
+      fix: 'Convert JPEG/PNG to WebP for better performance',
+    });
+  }
+
+  return issues;
 }
 
-// MODULE 5 — OUTGOING LINK HEALTH
-function checkOutgoingLinks(html: string, url: string, mustIndex: boolean): {
-  pages_no_outgoing: number;
-  http_links: number;
-  issues: AuditIssue[];
-} {
+async function checkOpenGraph(url: string): Promise<AuditIssue[]> {
   const issues: AuditIssue[] = [];
-  let pages_no_outgoing = 0;
-  let http_links = 0;
+  const { html } = await fetchPage(url);
+
+  const ogTitle = /property=["']og:title["']/i.test(html);
+  const ogDesc = /property=["']og:description["']/i.test(html);
+  const ogImage = /property=["']og:image["']/i.test(html);
+
+  if (!ogTitle || !ogDesc || !ogImage) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'Open Graph',
+      message: 'Incomplete OG tags',
+      impact: 4,
+      fix: 'Add og:title, og:description, og:image',
+    });
+  }
+
+  return issues;
+}
+
+async function checkOutgoingLinks(
+  url: string
+): Promise<{ internal: number; external: number; issues: AuditIssue[] }> {
+  const issues: AuditIssue[] = [];
+  const { html } = await fetchPage(url);
 
   const links = html.match(/<a[^>]+href=["']([^"']+)["']/gi) || [];
-  const hrefs = links.map(l => {
-    const m = l.match(/href=["']([^"']+)["']/i);
-    return m ? m[1] : '';
-  }).filter(h => h && !h.startsWith('#') && !h.startsWith('mailto:') && !h.startsWith('tel:'));
+  let internal = 0;
+  let external = 0;
 
-  const internalLinks = hrefs.filter(h => h.startsWith('/') || h.startsWith(BASE_URL));
-  const externalLinks = hrefs.filter(h => h.startsWith('http') && !h.startsWith(BASE_URL));
+  for (const link of links) {
+    const hrefMatch = link.match(/href=["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    const href = hrefMatch[1];
 
-  if (internalLinks.length === 0 && mustIndex) {
-    pages_no_outgoing++;
+    if (href.startsWith('/') || href.includes(BASE_URL)) {
+      internal++;
+    } else if (href.startsWith('http')) {
+      external++;
+    }
+  }
+
+  if (external === 0 && !url.includes('/privacy') && !url.includes('/cookie')) {
     issues.push({
-      type: 'error',
-      category: 'Links',
-      message: 'Page has no outgoing internal links',
-      impact: 5,
-      url
+      url,
+      type: 'notice',
+      category: 'SEO',
+      message: 'No external authority links',
+      impact: 3,
+      fix: 'Add 2-3 links to HSE, CQC, or BICSc',
     });
   }
 
-  const isServicePage = url.includes('/manned-guarding') || url.includes('/mobile-patrols') ||
-    url.includes('/construction-site') || url.includes('/event-security') ||
-    url.includes('/key-holding') || url.includes('/concierge') ||
-    url.includes('/cctv-monitoring') || url.includes('/alarm-response');
+  return { internal, external, issues };
+}
 
-  if (isServicePage && internalLinks.length < 3) {
+async function checkDuplicates(
+  pages: PageResult[]
+): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+  const titles = new Map<string, string[]>();
+  const metas = new Map<string, string[]>();
+
+  for (const page of pages) {
+    const { html } = await fetchPage(page.url);
+    const pageTitle = extractTitle(html);
+    const pageMeta = extractMetaDesc(html);
+
+    if (pageTitle) {
+      if (!titles.has(pageTitle)) titles.set(pageTitle, []);
+      titles.get(pageTitle)!.push(page.url);
+    }
+
+    if (pageMeta) {
+      if (!metas.has(pageMeta)) metas.set(pageMeta, []);
+      metas.get(pageMeta)!.push(page.url);
+    }
+  }
+
+  for (const [, urls] of Array.from(titles.entries())) {
+    if (urls.length > 1) {
+      issues.push({
+        url: urls[0],
+        type: 'error',
+        category: 'Duplicates',
+        message: `Duplicate title on ${urls.length} pages`,
+        impact: 9,
+        fix: `Make titles unique. Found on: ${urls.join(', ')}`,
+      });
+    }
+  }
+
+  for (const [, urls] of Array.from(metas.entries())) {
+    if (urls.length > 1) {
+      issues.push({
+        url: urls[0],
+        type: 'error',
+        category: 'Duplicates',
+        message: `Duplicate meta description on ${urls.length} pages`,
+        impact: 8,
+        fix: `Make meta descriptions unique. Found on: ${urls.join(', ')}`,
+      });
+    }
+  }
+
+  return issues;
+}
+
+async function checkHeaders(url: string): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+  const { headers } = await fetchPage(url);
+
+  const csp = headers.get('content-security-policy');
+  const hsts = headers.get('strict-transport-security');
+  const xFrame = headers.get('x-frame-options');
+
+  if (!csp) {
     issues.push({
-      type: 'warning',
-      category: 'Links',
-      message: `Low internal link count: ${internalLinks.length} links — recommend minimum 3`,
+      url,
+      type: 'notice',
+      category: 'Security',
+      message: 'CSP header missing',
       impact: 2,
-      url
     });
   }
 
-  externalLinks.forEach(href => {
-    if (href.startsWith('http://')) {
-      http_links++;
-      issues.push({
-        type: 'warning',
-        category: 'Links',
-        message: `Outgoing link uses HTTP not HTTPS: ${href.substring(0, 50)}...`,
-        impact: 2,
-        url
-      });
-    }
-  });
-
-  return { pages_no_outgoing, http_links, issues };
-}
-
-// MODULE 6 — DUPLICATE TITLE AND META DETECTION
-function checkDuplicates(pageResults: any[]): {
-  duplicate_titles: number;
-  duplicate_descs: number;
-  issues: AuditIssue[];
-} {
-  const issues: AuditIssue[] = [];
-  const titleMap = new Map<string, string[]>();
-  const descMap = new Map<string, string[]>();
-
-  pageResults.forEach(result => {
-    if (result.title) {
-      const urls = titleMap.get(result.title) || [];
-      urls.push(result.url);
-      titleMap.set(result.title, urls);
-    }
-    if (result.meta_description) {
-      const urls = descMap.get(result.meta_description) || [];
-      urls.push(result.url);
-      descMap.set(result.meta_description, urls);
-    }
-  });
-
-  let duplicate_titles = 0;
-  let duplicate_descs = 0;
-
-  titleMap.forEach((urls, title) => {
-    if (urls.length > 1) {
-      duplicate_titles++;
-      const displayUrls = urls.map(u => u.replace(BASE_URL, '')).join(', ');
-      issues.push({
-        type: 'error',
-        category: 'Duplicate Content',
-        message: `Duplicate title tag across ${urls.length} pages: "${title.substring(0, 50)}..." — found on: ${displayUrls}`,
-        impact: 6
-      });
-    }
-  });
-
-  descMap.forEach((urls, desc) => {
-    if (urls.length > 1) {
-      duplicate_descs++;
-      const displayUrls = urls.map(u => u.replace(BASE_URL, '')).join(', ');
-      issues.push({
-        type: 'warning',
-        category: 'Duplicate Content',
-        message: `Duplicate meta description across ${urls.length} pages`,
-        impact: 4
-      });
-    }
-  });
-
-  return { duplicate_titles, duplicate_descs, issues };
-}
-
-// MODULE 7 — RESPONSE HEADER VALIDATION
-async function checkHeaders(url: string): Promise<{
-  noindex_headers: number;
-  issues: AuditIssue[];
-}> {
-  const issues: AuditIssue[] = [];
-  let noindex_headers = 0;
-
-  try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'VigilAuditor/1.0' },
-      signal: AbortSignal.timeout(5000),
+  if (!hsts) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'Security',
+      message: 'HSTS header missing',
+      impact: 3,
     });
-
-    const xRobotsTag = res.headers.get('x-robots-tag');
-    if (xRobotsTag && xRobotsTag.toLowerCase().includes('noindex')) {
-      noindex_headers++;
-      issues.push({
-        type: 'error',
-        category: 'Headers',
-        message: 'X-Robots-Tag: noindex found in HTTP header',
-        impact: 15,
-        url
-      });
-    }
-
-    const contentType = res.headers.get('content-type');
-    if (contentType && !contentType.includes('text/html')) {
-      issues.push({
-        type: 'warning',
-        category: 'Headers',
-        message: `Unexpected Content-Type: ${contentType}`,
-        impact: 3,
-        url
-      });
-    }
-
-    const xFrameOptions = res.headers.get('x-frame-options');
-    const csp = res.headers.get('content-security-policy');
-    if (!xFrameOptions && !csp) {
-      issues.push({
-        type: 'notice',
-        category: 'Headers',
-        message: 'Missing security headers — consider adding X-Frame-Options',
-        impact: 0,
-        url
-      });
-    }
-  } catch {
-    // Timeout or error — skip header checks
   }
 
-  return { noindex_headers, issues };
+  if (!xFrame) {
+    issues.push({
+      url,
+      type: 'notice',
+      category: 'Security',
+      message: 'X-Frame-Options missing',
+      impact: 2,
+    });
+  }
+
+  return issues;
 }
 
-// MODULE 8 — URL STRUCTURE ISSUES
-function checkURLStructure(url: string): {
-  double_slashes: number;
-  uppercase: number;
-  issues: AuditIssue[];
-} {
+function checkURLStructure(url: string): AuditIssue[] {
   const issues: AuditIssue[] = [];
-  let double_slashes = 0;
-  let uppercase = 0;
-
   const path = url.replace(BASE_URL, '');
 
-  if (path.includes('//')) {
-    double_slashes++;
+  if (path.includes('_')) {
     issues.push({
-      type: 'error',
+      url,
+      type: 'warning',
       category: 'URL Structure',
-      message: `Double slash in URL: ${url}`,
+      message: 'Underscores in URL (use hyphens)',
       impact: 3,
-      url
+    });
+  }
+
+  if (path.length > 100) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'URL Structure',
+      message: `URL too long: ${path.length} chars`,
+      impact: 4,
     });
   }
 
   if (/[A-Z]/.test(path)) {
-    uppercase++;
     issues.push({
+      url,
       type: 'warning',
       category: 'URL Structure',
-      message: `Uppercase letters in URL: ${url}`,
-      impact: 2,
-      url
+      message: 'URL contains uppercase letters',
+      impact: 5,
+      fix: 'Use lowercase URLs only',
     });
   }
 
-  const queryMatch = url.match(/\?(.+)/);
-  if (queryMatch) {
-    const params = queryMatch[1].split('&');
-    if (params.length > 2) {
-      issues.push({
-        type: 'warning',
-        category: 'URL Structure',
-        message: `Multiple URL parameters: ${url}`,
-        impact: 2,
-        url
-      });
-    }
-  }
-
-  return { double_slashes, uppercase, issues };
+  return issues;
 }
 
-// MODULE 9 — ROBOTS.TXT VALIDATOR
-async function validateRobotsTxt(): Promise<{
-  accessible: boolean;
-  has_sitemap_reference: boolean;
-  admin_blocked: boolean;
-  content: string;
-  issues: AuditIssue[];
-}> {
+async function validateRobotsTxt(): Promise<AuditIssue[]> {
   const issues: AuditIssue[] = [];
-  let accessible = false;
-  let has_sitemap_reference = false;
-  let admin_blocked = false;
-  let content = '';
+  const { status, html } = await fetchPage(`${BASE_URL}/robots.txt`);
 
-  try {
-    const res = await fetch(`${BASE_URL}/robots.txt`, {
-      headers: { 'User-Agent': 'VigilAuditor/1.0' },
-      signal: AbortSignal.timeout(5000),
+  if (status !== 200) {
+    issues.push({
+      url: `${BASE_URL}/robots.txt`,
+      type: 'error',
+      category: 'Robots',
+      message: 'robots.txt not found',
+      impact: 7,
     });
+    return issues;
+  }
 
-    if (res.status !== 200) {
+  const hasUserAgent = /User-agent:/i.test(html);
+  const hasSitemap = /Sitemap:/i.test(html);
+
+  if (!hasUserAgent) {
+    issues.push({
+      url: `${BASE_URL}/robots.txt`,
+      type: 'error',
+      category: 'Robots',
+      message: 'robots.txt missing User-agent',
+      impact: 6,
+    });
+  }
+
+  if (!hasSitemap) {
+    issues.push({
+      url: `${BASE_URL}/robots.txt`,
+      type: 'warning',
+      category: 'Robots',
+      message: 'robots.txt missing Sitemap directive',
+      impact: 4,
+    });
+  }
+
+  const aiCrawlers = [
+    { name: 'GPTBot', agent: 'GPTBot' },
+    { name: 'ClaudeBot', agent: 'ClaudeBot' },
+    { name: 'PerplexityBot', agent: 'PerplexityBot' },
+    { name: 'Googlebot-Extended', agent: 'Google-Extended' },
+    { name: 'CCBot', agent: 'CCBot' },
+  ];
+
+  for (const crawler of aiCrawlers) {
+    const isBlocked =
+      html.includes(`User-agent: ${crawler.agent}`) && html.includes('Disallow: /');
+
+    if (isBlocked) {
       issues.push({
         type: 'error',
-        category: 'Robots.txt',
-        message: `robots.txt not accessible — returns ${res.status}`,
-        impact: 10
-      });
-      return { accessible, has_sitemap_reference, admin_blocked, content, issues };
-    }
-
-    accessible = true;
-    content = await res.text();
-
-    // Check for sitemap reference
-    if (/^Sitemap:/im.test(content)) {
-      has_sitemap_reference = true;
-      const sitemapMatch = content.match(/^Sitemap:\s*(.+)$/im);
-      if (sitemapMatch) {
-        const sitemapUrl = sitemapMatch[1].trim();
-        if (!sitemapUrl.startsWith(BASE_URL)) {
-          issues.push({
-            type: 'error',
-            category: 'Robots.txt',
-            message: 'Sitemap URL in robots.txt points to wrong domain',
-            impact: 5
-          });
-        }
-      }
-    } else {
-      issues.push({
-        type: 'warning',
-        category: 'Robots.txt',
-        message: 'robots.txt does not reference sitemap',
-        impact: 3
+        category: 'AI Search',
+        message: `${crawler.name} is blocked in robots.txt — site will not appear in ${
+          crawler.name === 'GPTBot'
+            ? 'ChatGPT'
+            : crawler.name === 'ClaudeBot'
+            ? 'Claude'
+            : crawler.name === 'PerplexityBot'
+            ? 'Perplexity'
+            : 'AI search'
+        }`,
+        impact: 5,
+        url: `${BASE_URL}/robots.txt`,
+        fix: `Remove or modify the ${crawler.agent} block in robots.txt to allow AI crawlers access`,
       });
     }
+  }
 
-    // Check for blanket disallow
-    const lines = content.split('\n');
-    let currentUserAgent = '';
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (/^User-agent:/i.test(trimmed)) {
-        currentUserAgent = trimmed.replace(/^User-agent:\s*/i, '');
-      }
-      if (trimmed === 'Disallow: /' && currentUserAgent === '*') {
-        issues.push({
-          type: 'error',
-          category: 'Robots.txt',
-          message: 'robots.txt blocks all crawlers — Disallow: / found',
-          impact: 20
-        });
-      }
-    }
+  return issues;
+}
 
-    // Check admin and API blocking
-    if (/Disallow:.*\/admin/i.test(content)) {
-      admin_blocked = true;
-    } else {
-      issues.push({
-        type: 'warning',
-        category: 'Robots.txt',
-        message: 'Sensitive path not blocked in robots.txt: /admin',
-        impact: 2
-      });
-    }
+async function checkExternalLinks(url: string): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+  const { html } = await fetchPage(url);
 
-    if (!/Disallow:.*\/api\//i.test(content)) {
-      issues.push({
-        type: 'warning',
-        category: 'Robots.txt',
-        message: 'Sensitive path not blocked in robots.txt: /api/',
-        impact: 2
-      });
-    }
+  const links = html.match(/<a[^>]+href=["']([^"']+)["']/gi) || [];
+  const external: string[] = [];
 
-    // Check for syntax errors
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-      const validStarts = ['User-agent:', 'Disallow:', 'Allow:', 'Sitemap:', 'Crawl-delay:'];
-      if (!validStarts.some(s => trimmed.startsWith(s))) {
-        issues.push({
-          type: 'warning',
-          category: 'Robots.txt',
-          message: `Possible syntax error in robots.txt: ${trimmed.substring(0, 50)}...`,
-          impact: 2
-        });
-        break;
-      }
+  for (const link of links) {
+    const hrefMatch = link.match(/href=["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    const href = hrefMatch[1];
+
+    if (
+      href.startsWith('http') &&
+      !href.includes('vigilservices.co.uk')
+    ) {
+      external.push(href);
     }
-  } catch {
+  }
+
+  const authorities = [
+    'hse.gov.uk',
+    'cqc.org.uk',
+    'gov.uk',
+    'bics.org.uk',
+  ];
+
+  const hasAuthority = external.some(link =>
+    authorities.some(auth => link.includes(auth))
+  );
+
+  if (!hasAuthority && !url.includes('/privacy') && !url.includes('/cookie')) {
     issues.push({
-      type: 'error',
-      category: 'Robots.txt',
-      message: 'robots.txt unreachable — timeout or network error',
-      impact: 10
+      url,
+      type: 'notice',
+      category: 'EEAT',
+      message: 'No authoritative external links',
+      impact: 3,
+      fix: 'Add 2-3 links to HSE, CQC, or GOV.UK',
     });
   }
 
-  return { accessible, has_sitemap_reference, admin_blocked, content, issues };
+  return issues;
 }
 
-// MODULE 10 — BROKEN EXTERNAL LINK CHECKER
-async function checkExternalLinks(html: string, url: string, pageIndex: number): Promise<{
-  broken: number;
-  http_links: number;
-  timed_out: number;
-  issues: AuditIssue[];
-}> {
+async function checkBrokenOutboundLinks(
+  html: string,
+  pageUrl: string,
+  allAuditedUrls: Set<string>
+): Promise<AuditIssue[]> {
   const issues: AuditIssue[] = [];
-  let broken = 0;
-  let http_links = 0;
-  let timed_out = 0;
 
-  if (pageIndex >= 8) {
-    return { broken, http_links, timed_out, issues };
-  }
+  const hrefMatches = html.match(/href=["']([^"'#?]+)["']/gi) || [];
 
-  const links = html.match(/href=["'](https?:\/\/[^"']+)["']/gi) || [];
-  const externalLinks = links
-    .map(l => l.replace(/href=["']|["']/g, ''))
-    .filter(l => !l.startsWith(BASE_URL))
-    .filter(l => !l.includes('google.com/maps'))
-    .filter(l => !l.includes('linkedin.com'))
-    .filter(l => !l.includes('facebook.com'))
-    .filter(l => !l.includes('twitter.com'))
-    .filter(l => !l.includes('instagram.com'))
-    .slice(0, 10);
+  const internalLinks = hrefMatches
+    .map(h => {
+      const match = h.match(/href=["']([^"'#?]+)["']/i);
+      return match ? match[1] : null;
+    })
+    .filter(Boolean)
+    .map(href => {
+      if (href!.startsWith('http')) return href!;
+      if (href!.startsWith('/')) return `${BASE_URL}${href}`;
+      return null;
+    })
+    .filter(Boolean)
+    .filter(url => url!.includes(new URL(BASE_URL).hostname)) as string[];
+
+  const uniqueLinks = Array.from(new Set(internalLinks))
+    .filter(url => !allAuditedUrls.has(url))
+    .slice(0, 20);
 
   const results = await Promise.allSettled(
-    externalLinks.map(async (href) => {
+    uniqueLinks.map(async (url) => {
       try {
-        const res = await Promise.race([
-          fetch(href, {
-            method: 'HEAD',
-            headers: { 'User-Agent': 'VigilAuditor/1.0' },
-            signal: AbortSignal.timeout(5000),
-          }),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-        ]);
-        return { href, status: (res as Response).status };
+        const res = await fetch(url, {
+          method: 'HEAD',
+          signal: AbortSignal.timeout(5000),
+          redirect: 'follow',
+          headers: {
+            'User-Agent': 'VigilAuditor/8.0',
+          },
+        });
+        return { url, status: res.status };
       } catch {
-        return { href, status: 0 };
+        return { url, status: 0 };
       }
     })
   );
 
-  results.forEach((result) => {
+  for (const result of results) {
     if (result.status === 'fulfilled') {
-      const { href, status } = result.value;
-
-      if (status === 404) {
-        broken++;
+      const { url, status } = result.value;
+      if (status === 404 || status === 410) {
         issues.push({
           type: 'error',
-          category: 'External Links',
-          message: `Broken external link: ${href.substring(0, 50)}...`,
-          impact: 3,
-          url
+          category: 'Broken Links',
+          message: `Page links to broken destination (${status}): ${url}`,
+          impact: 10,
+          url: pageUrl,
+          fix: `Remove or update the link to "${url}" — destination returns ${status}. Add a Next.js redirect if this was a valid page.`,
         });
-      } else if (status === 0) {
-        timed_out++;
+      } else if (status >= 400) {
         issues.push({
           type: 'warning',
-          category: 'External Links',
-          message: `External link timed out — may be broken: ${href.substring(0, 50)}...`,
-          impact: 1,
-          url
-        });
-      }
-
-      if (href.startsWith('http://')) {
-        http_links++;
-        issues.push({
-          type: 'warning',
-          category: 'External Links',
-          message: `External link uses HTTP not HTTPS: ${href.substring(0, 50)}...`,
-          impact: 2,
-          url
+          category: 'Broken Links',
+          message: `Page links to erroring destination (${status}): ${url}`,
+          impact: 5,
+          url: pageUrl,
+          fix: `Check and update link to "${url}" — returns ${status}`,
         });
       }
     }
-  });
+  }
 
-  return { broken, http_links, timed_out, issues };
+  return issues;
 }
 
-// MODULE 11 — CRAWL DEPTH CALCULATOR
-async function calculateCrawlDepth(baseUrl: string, pagesToCheck: string[]): Promise<{
-  depth_1: string[];
-  depth_2: string[];
-  depth_3: string[];
-  unreachable: string[];
+async function checkRedirectChains(url: string): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+  const chain: string[] = [url];
+  let currentUrl = url;
+  let hops = 0;
+  const maxHops = 8;
+
+  try {
+    while (hops < maxHops) {
+      const res = await fetch(currentUrl, {
+        method: 'HEAD',
+        redirect: 'manual',
+        signal: AbortSignal.timeout(5000),
+        headers: {
+          'User-Agent': 'VigilAuditor/8.0',
+        },
+      });
+
+      if (res.status >= 300 && res.status < 400) {
+        const location = res.headers.get('location');
+        if (!location) break;
+
+        const nextUrl = location.startsWith('http')
+          ? location
+          : `${BASE_URL}${location}`;
+
+        chain.push(nextUrl);
+        currentUrl = nextUrl;
+        hops++;
+      } else {
+        break;
+      }
+    }
+
+    if (chain.length > 2) {
+      issues.push({
+        type: 'error',
+        category: 'Redirect Chains',
+        message: `Redirect chain detected (${chain.length - 1} hops): ${chain.join(' → ')}`,
+        impact: 8,
+        url,
+        fix: `Update redirect to point directly from ${url} to ${chain[chain.length - 1]} — skip intermediate redirects`,
+      });
+    } else if (chain.length === 2) {
+      issues.push({
+        type: 'warning',
+        category: 'Redirect Chains',
+        message: `Single redirect: ${url} → ${chain[1]}`,
+        impact: 2,
+        url,
+        fix: `Update all internal links to point directly to ${chain[1]} to avoid redirect overhead`,
+      });
+    }
+
+    if (hops >= maxHops) {
+      issues.push({
+        type: 'error',
+        category: 'Redirect Chains',
+        message: `Redirect loop or excessive chain detected (${hops}+ hops) starting at: ${url}`,
+        impact: 15,
+        url,
+        fix: `Investigate redirect configuration — ${url} redirects more than ${maxHops} times which indicates a loop`,
+      });
+    }
+  } catch {
+    // Skip on timeout
+  }
+
+  return issues;
+}
+
+async function checkHTTPS(
+  html: string,
+  pageUrl: string,
+  responseHeaders: Headers
+): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+
+  if (pageUrl.startsWith('http://')) {
+    issues.push({
+      type: 'error',
+      category: 'HTTPS',
+      message: `Page served over HTTP not HTTPS: ${pageUrl}`,
+      impact: 20,
+      url: pageUrl,
+      fix: 'Redirect all HTTP traffic to HTTPS. Check Vercel configuration and ensure HSTS headers are set.',
+    });
+  }
+
+  const httpScripts = html.match(/src=["']http:\/\/[^"']+\.(js)[^"']*["']/gi) || [];
+  const httpStyles = html.match(/href=["']http:\/\/[^"']+\.(css)[^"']*["']/gi) || [];
+  const httpImages = html.match(/src=["']http:\/\/[^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*["']/gi) || [];
+  const httpIframes = (html.match(/src=["']http:\/\/[^"']+["']/gi) || []).filter(s => s.includes('iframe'));
+
+  const allMixed = [...httpScripts, ...httpStyles, ...httpImages, ...httpIframes];
+
+  if (allMixed.length > 0) {
+    issues.push({
+      type: 'error',
+      category: 'HTTPS',
+      message: `Mixed content: ${allMixed.length} HTTP resource(s) on HTTPS page`,
+      impact: 8,
+      url: pageUrl,
+      fix: `Replace HTTP resource URLs with HTTPS equivalents. Found in: ${httpScripts.length} scripts, ${httpStyles.length} stylesheets, ${httpImages.length} images`,
+    });
+  }
+
+  const internalHttpLinks = (html.match(/href=["']http:\/\/[^"']+["']/gi) || []).filter(h =>
+    h.includes(new URL(BASE_URL).hostname.replace('https://', ''))
+  );
+
+  if (internalHttpLinks.length > 0) {
+    issues.push({
+      type: 'warning',
+      category: 'HTTPS',
+      message: `${internalHttpLinks.length} internal link(s) use HTTP instead of HTTPS`,
+      impact: 3,
+      url: pageUrl,
+      fix: 'Update internal links to use HTTPS. Search codebase for http:// references to your own domain and replace with https://',
+    });
+  }
+
+  const hsts = responseHeaders.get('strict-transport-security');
+  if (!hsts) {
+    issues.push({
+      type: 'warning',
+      category: 'HTTPS',
+      message: 'Missing HSTS header (Strict-Transport-Security)',
+      impact: 3,
+      url: pageUrl,
+      fix: 'Add Strict-Transport-Security header in next.config.mjs headers configuration: max-age=31536000; includeSubDomains',
+    });
+  }
+
+  return issues;
+}
+
+async function checkPerformance(
+  html: string,
+  pageUrl: string,
+  responseHeaders: Headers,
+  fetchStartTime: number,
+  fetchEndTime: number
+): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+
+  const ttfb = fetchEndTime - fetchStartTime;
+
+  if (ttfb > 2000) {
+    issues.push({
+      type: 'error',
+      category: 'Performance',
+      message: `Very slow server response: ${ttfb}ms TTFB (max 2000ms)`,
+      impact: 8,
+      url: pageUrl,
+      fix: 'Investigate server performance. Check Vercel function cold start times. Consider enabling Vercel Edge Network for this route.',
+    });
+  } else if (ttfb > 600) {
+    issues.push({
+      type: 'warning',
+      category: 'Performance',
+      message: `Slow server response: ${ttfb}ms TTFB (recommended max 600ms)`,
+      impact: 3,
+      url: pageUrl,
+      fix: `Server response time is ${ttfb}ms. Target under 600ms. Check for heavy server-side data fetching on this page.`,
+    });
+  }
+
+  const contentEncoding = responseHeaders.get('content-encoding');
+  if (!contentEncoding || (!contentEncoding.includes('gzip') && !contentEncoding.includes('br'))) {
+    issues.push({
+      type: 'warning',
+      category: 'Performance',
+      message: 'Page not served with compression (gzip/Brotli)',
+      impact: 3,
+      url: pageUrl,
+      fix: 'Enable gzip or Brotli compression. In next.config.mjs add: compress: true. Vercel enables this automatically for most routes.',
+    });
+  }
+
+  const cacheControl = responseHeaders.get('cache-control');
+  if (!cacheControl || cacheControl.includes('no-store')) {
+    issues.push({
+      type: 'warning',
+      category: 'Performance',
+      message: 'Missing or disabled cache-control headers',
+      impact: 2,
+      url: pageUrl,
+      fix: 'Add cache-control headers. For static pages: Cache-Control: public, max-age=3600, stale-while-revalidate=86400',
+    });
+  }
+
+  const unminifiedJs = (html.match(/src=["'][^"']*\.js["']/gi) || []).filter(
+    s => !s.includes('.min.js') && !s.includes('_next/static')
+  );
+
+  if (unminifiedJs.length > 0) {
+    issues.push({
+      type: 'warning',
+      category: 'Performance',
+      message: `${unminifiedJs.length} potentially unminified JS file(s) detected`,
+      impact: 2,
+      url: pageUrl,
+      fix: 'Ensure all custom JavaScript files are minified. Next.js minifies automatically in production — check if any external scripts are unminified.',
+    });
+  }
+
+  const renderBlocking = (html.match(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi) || []).filter(
+    l => !l.includes('media=')
+  );
+
+  if (renderBlocking.length > 2) {
+    issues.push({
+      type: 'warning',
+      category: 'Performance',
+      message: `${renderBlocking.length} render-blocking stylesheets in page head`,
+      impact: 3,
+      url: pageUrl,
+      fix: 'Reduce render-blocking CSS. Consider adding media attributes or loading non-critical CSS asynchronously.',
+    });
+  }
+
+  return issues;
+}
+
+async function checkSSL(baseUrl: string): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+
+  try {
+    const res = await fetch(baseUrl, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (res.url.startsWith('http://')) {
+      issues.push({
+        type: 'error',
+        category: 'HTTPS',
+        message: 'Site is not redirecting HTTP to HTTPS',
+        impact: 20,
+        url: baseUrl,
+        fix: 'Configure HTTP to HTTPS redirect in Vercel project settings or next.config.mjs',
+      });
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message?.includes('certificate')) {
+      issues.push({
+        type: 'error',
+        category: 'HTTPS',
+        message: 'SSL certificate error detected',
+        impact: 20,
+        url: baseUrl,
+        fix: 'Check SSL certificate validity in Vercel dashboard. Renew if expired.',
+      });
+    }
+  }
+
+  return issues;
+}
+
+async function checkAISearchReadiness(html: string, pageUrl: string): Promise<AuditIssue[]> {
+  const issues: AuditIssue[] = [];
+
+  const hasLLMtxt = await fetch(`${BASE_URL}/llm.txt`, {
+    method: 'HEAD',
+    signal: AbortSignal.timeout(3000),
+  })
+    .then(r => r.ok)
+    .catch(() => false);
+
+  if (pageUrl === BASE_URL && !hasLLMtxt) {
+    issues.push({
+      type: 'warning',
+      category: 'AI Search',
+      message: 'No LLM.txt file found — AI crawlers cannot discover content permissions',
+      impact: 3,
+      url: pageUrl,
+      fix: 'Create /public/llm.txt file. Content: "# Vigil Cleaning Services\\nUser-agent: *\\nAllow: /\\n\\nSitemap: https://cleaning.vigilservices.co.uk/sitemap.xml"',
+    });
+  }
+
+  const authorSchema = html.includes('"@type":"Person"') || html.includes('"@type": "Person"');
+  if (!authorSchema) {
+    issues.push({
+      type: 'warning',
+      category: 'AI Search',
+      message: 'No author entity (Person schema) found — reduces AI citation eligibility',
+      impact: 2,
+      url: pageUrl,
+      fix: 'Add Person schema to about page with name, jobTitle, knowsAbout, sameAs (LinkedIn URL). This signals E-E-A-T to AI tools.',
+    });
+  }
+
+  const hasFAQSchema = html.includes('"@type":"FAQPage"') || html.includes('"@type": "FAQPage"');
+
+  if (pageUrl.includes('/faq') && !hasFAQSchema) {
+    issues.push({
+      type: 'error',
+      category: 'AI Search',
+      message: 'FAQ page missing FAQPage schema — AI tools cannot extract Q&A pairs',
+      impact: 5,
+      url: pageUrl,
+      fix: 'Add FAQPage JSON-LD schema to the FAQ page with all question/answer pairs. This enables AI tools to cite your answers directly.',
+    });
+  }
+
+  return issues;
+}
+
+function calculateCrawlDepth(url: string): number {
+  const path = url.replace(BASE_URL, '');
+  if (path === '' || path === '/') return 0;
+  return path.split('/').filter(Boolean).length;
+}
+
+function checkNearDuplicates(
+  pages: PageResult[]
+): AuditIssue[] {
+  const issues: AuditIssue[] = [];
+  const paths = pages.map(p =>
+    p.url.replace(BASE_URL, '')
+  );
+
+  for (let i = 0; i < paths.length; i++) {
+    for (let j = i + 1; j < paths.length; j++) {
+      const a = paths[i];
+      const b = paths[j];
+
+      if (a.replace(/-/g, '') === b.replace(/-/g, '')) {
+        issues.push({
+          url: pages[i].url,
+          type: 'warning',
+          category: 'URL Structure',
+          message: `Near-duplicate URL: ${a} vs ${b}`,
+          impact: 6,
+        });
+      }
+    }
+  }
+
+  return issues;
+}
+
+async function checkPageSize(url: string): Promise<{
+  size_kb: number;
   issues: AuditIssue[];
 }> {
   const issues: AuditIssue[] = [];
-  const depth_1: string[] = [];
-  const depth_2: string[] = [];
-  const depth_3: string[] = [];
-  const unreachable: string[] = [];
+  const { html } = await fetchPage(url);
+  const size_kb = Math.round(
+    new Blob([html]).size / 1024
+  );
 
-  const discovered = new Map<string, number>();
-  discovered.set(baseUrl, 0);
+  if (size_kb > 500) {
+    issues.push({
+      url,
+      type: 'warning',
+      category: 'Performance',
+      message: `Large page size: ${size_kb}KB`,
+      impact: 5,
+      fix: 'Optimize images and defer non-critical JS',
+    });
+  }
+
+  return { size_kb, issues };
+}
+
+async function getPageSpeedData(
+  url: string
+): Promise<{
+  mobile_score?: number;
+  desktop_score?: number;
+  lcp?: number;
+  fid?: number;
+  cls?: number;
+  issues: AuditIssue[];
+}> {
+  const issues: AuditIssue[] = [];
+  const apiKey = process.env.PAGESPEED_API_KEY;
+
+  if (!apiKey) {
+    return { issues };
+  }
 
   try {
-    // Fetch homepage
-    const { html: homeHtml } = await fetchPage(baseUrl);
-    const homeLinks = homeHtml.match(/href=["']([^"'#?]+)["']/g) || [];
-    const depth1Urls: string[] = Array.from(new Set<string>(
-      homeLinks
-        .map((m: string) => m.replace(/href=["']|["']/g, ''))
-        .filter((l: string) => l.startsWith('/') || l.startsWith(baseUrl))
-        .map((l: string) => l.startsWith('/') ? `${baseUrl}${l}` : l)
-        .map((l: string) => l.replace(/\/$/, ''))
-        .filter((l: string) =>
-          !l.includes('/_next/') &&
-          !l.includes('/static/') &&
-          !l.includes('.css') &&
-          !l.includes('.js') &&
-          !l.includes('.jpg') &&
-          !l.includes('.jpeg') &&
-          !l.includes('.png') &&
-          !l.includes('.svg') &&
-          !l.includes('.ico') &&
-          !l.includes('?') &&
-          !l.includes('#')
+    const mobileRes = await fetch(
+      `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=PERFORMANCE`,
+      { signal: AbortSignal.timeout(30000) }
+    );
+
+    const mobileData = await mobileRes.json();
+
+    if (mobileData.error) {
+      return { issues };
+    }
+
+    const lighthouse =
+      mobileData.lighthouseResult || {};
+    const categories = lighthouse.categories || {};
+    const audits = lighthouse.audits || {};
+
+    const mobile_score = categories.performance?.score
+      ? Math.round(categories.performance.score * 100)
+      : undefined;
+
+    const lcp = audits['largest-contentful-paint']
+      ?.numericValue
+      ? Math.round(
+          audits['largest-contentful-paint'].numericValue
         )
-    )).slice(0, 15);
+      : undefined;
 
-    depth1Urls.forEach(u => {
-      if (!discovered.has(u)) {
-        discovered.set(u, 1);
-        depth_1.push(u);
-      }
-    });
+    const cls = audits['cumulative-layout-shift']
+      ?.numericValue;
 
-    // Fetch depth 1 pages
-    const depth1Results = await Promise.allSettled(
-      depth_1.slice(0, 10).map(async (url) => {
-        try {
-          const result = await Promise.race([
-            fetchPage(url),
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-          ]);
-          return { url, html: (result as any).html };
-        } catch {
-          return { url, html: '' };
-        }
-      })
-    );
+    if (mobile_score && mobile_score < 50) {
+      issues.push({
+        url,
+        type: 'error',
+        category: 'Core Web Vitals',
+        message: `Mobile performance: ${mobile_score}/100 (poor)`,
+        impact: 8,
+        fix: 'Optimize images, defer JS, reduce layout shift',
+      });
+    } else if (mobile_score && mobile_score < 90) {
+      issues.push({
+        url,
+        type: 'warning',
+        category: 'Core Web Vitals',
+        message: `Mobile performance: ${mobile_score}/100 (needs improvement)`,
+        impact: 5,
+      });
+    }
 
-    depth1Results.forEach((result) => {
-      if (result.status === 'fulfilled' && result.value.html) {
-        const links = result.value.html.match(/href=["']([^"'#?]+)["']/g) || [];
-        const depth2Urls: string[] = Array.from(new Set<string>(
-          links
-            .map((m: string) => m.replace(/href=["']|["']/g, ''))
-            .filter((l: string) => l.startsWith('/') || l.startsWith(baseUrl))
-            .map((l: string) => l.startsWith('/') ? `${baseUrl}${l}` : l)
-            .map((l: string) => l.replace(/\/$/, ''))
-            .filter((l: string) =>
-              !l.includes('/_next/') &&
-              !l.includes('/static/') &&
-              !l.includes('.css') &&
-              !l.includes('.js') &&
-              !l.includes('.jpg') &&
-              !l.includes('.jpeg') &&
-              !l.includes('.png') &&
-              !l.includes('.svg') &&
-              !l.includes('.ico') &&
-              !l.includes('?') &&
-              !l.includes('#')
-            )
-        )).slice(0, 10);
-
-        depth2Urls.forEach(u => {
-          if (!discovered.has(u)) {
-            discovered.set(u, 2);
-            depth_2.push(u);
-          }
-        });
-      }
-    });
-
-    // Fetch depth 2 pages
-    const depth2Results = await Promise.allSettled(
-      depth_2.slice(0, 5).map(async (url) => {
-        try {
-          const result = await Promise.race([
-            fetchPage(url),
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-          ]);
-          return { url, html: (result as any).html };
-        } catch {
-          return { url, html: '' };
-        }
-      })
-    );
-
-    depth2Results.forEach((result) => {
-      if (result.status === 'fulfilled' && result.value.html) {
-        const links = result.value.html.match(/href=["']([^"'#?]+)["']/g) || [];
-        const depth3Urls: string[] = Array.from(new Set<string>(
-          links
-            .map((m: string) => m.replace(/href=["']|["']/g, ''))
-            .filter((l: string) => l.startsWith('/') || l.startsWith(baseUrl))
-            .map((l: string) => l.startsWith('/') ? `${baseUrl}${l}` : l)
-            .map((l: string) => l.replace(/\/$/, ''))
-            .filter((l: string) =>
-              !l.includes('/_next/') &&
-              !l.includes('/static/') &&
-              !l.includes('.css') &&
-              !l.includes('.js') &&
-              !l.includes('.jpg') &&
-              !l.includes('.jpeg') &&
-              !l.includes('.png') &&
-              !l.includes('.svg') &&
-              !l.includes('.ico') &&
-              !l.includes('?') &&
-              !l.includes('#')
-            )
-        )).slice(0, 10);
-
-        depth3Urls.forEach(u => {
-          if (!discovered.has(u)) {
-            discovered.set(u, 3);
-            depth_3.push(u);
-          }
-        });
-      }
-    });
-
-    // Check which pages are unreachable
-    pagesToCheck.forEach(url => {
-      const depth = discovered.get(url);
-      const path = url.replace(baseUrl, '');
-      const mustIndex = path === '/' || path.includes('/manned-guarding') || path.includes('/mobile-patrols');
-
-      if (depth === 3 && mustIndex) {
-        issues.push({
-          type: 'warning',
-          category: 'Crawl Depth',
-          message: `Page requires 3 clicks from homepage: ${path}`,
-          impact: 2,
-          url
-        });
-      } else if (depth === undefined && mustIndex) {
-        unreachable.push(url);
-        issues.push({
-          type: 'error',
-          category: 'Crawl Depth',
-          message: `Page not reachable within 3 clicks: ${path} — crawler may miss it`,
-          impact: 5,
-          url
-        });
-      }
-    });
+    return { mobile_score, lcp, cls, issues };
   } catch {
-    issues.push({
-      type: 'notice',
-      category: 'Crawl Depth',
-      message: 'Could not complete crawl depth analysis — timeout or error',
-      impact: 0
-    });
+    return { issues };
   }
-
-  return { depth_1, depth_2, depth_3, unreachable, issues };
 }
 
-// MODULE 13 — PAGE SIZE VALIDATOR
-function checkPageSize(html: string, url: string): {
-  size_kb: number;
-  issues: AuditIssue[];
-} {
-  const issues: AuditIssue[] = [];
-  const sizeBytes = new TextEncoder().encode(html).length;
-  const sizeKB = Math.round(sizeBytes / 1024);
+async function getGSCData(
+  url: string
+): Promise<{
+  impressions?: number;
+  clicks?: number;
+  ctr?: number;
+  position?: number;
+}> {
+  try {
+    const { TOKEN_STORE } = await import('@/lib/gsc-token-store');
+    const refreshToken = TOKEN_STORE.refresh_token || process.env.GSC_REFRESH_TOKEN;
 
-  if (sizeBytes > 2_000_000) {
-    issues.push({
-      type: 'error',
-      category: 'Page Size',
-      message: `Page exceeds Googlebot 2MB crawl limit: ${sizeKB}KB`,
-      impact: 10,
-      url
-    });
-  } else if (sizeBytes > 500_000) {
-    issues.push({
-      type: 'warning',
-      category: 'Page Size',
-      message: `Large page size may slow crawling: ${sizeKB}KB`,
-      impact: 3,
-      url
-    });
-  }
-
-  return { size_kb: sizeKB, issues };
-}
-
-// MODULE 14 — NEAR DUPLICATE CONTENT DETECTION
-function checkNearDuplicates(pageResults: any[]): {
-  exact_duplicates: number;
-  near_duplicates: number;
-  pairs: Array<{ url1: string; url2: string; similarity: number }>;
-  issues: AuditIssue[];
-} {
-  const issues: AuditIssue[] = [];
-  const pairs: Array<{ url1: string; url2: string; similarity: number }> = [];
-  let exact_duplicates = 0;
-  let near_duplicates = 0;
-
-  // Helper to extract content fingerprint
-  const extractFingerprint = (html: string): string[] => {
-    if (!html) return [];
-    const text = html
-      .replace(/<script[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<nav[\s\S]*?<\/nav>/gi, '')
-      .replace(/<header[\s\S]*?<\/header>/gi, '')
-      .replace(/<footer[\s\S]*?<\/footer>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/[^\w\s]/g, '')
-      .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .trim()
-      .split(' ')
-      .filter(w => w.length > 3)
-      .slice(0, 500);
-    return text;
-  };
-
-  // Helper to calculate similarity
-  const calculateSimilarity = (words1: string[], words2: string[]): number => {
-    if (words1.length === 0 || words2.length === 0) return 0;
-    const set1 = new Set(words1);
-    const set2 = new Set(words2);
-    const intersection = new Set([...set1].filter(x => set2.has(x)));
-    const union = new Set([...set1, ...set2]);
-    return intersection.size / union.size;
-  };
-
-  // Group by page type
-  const byType = new Map<string, any[]>();
-  pageResults.forEach(result => {
-    if (result.word_count < 300) return; // Skip short pages
-    const type = result.page_type || 'unknown';
-    if (!byType.has(type)) {
-      byType.set(type, []);
+    if (!refreshToken) {
+      return {};
     }
-    byType.get(type)!.push(result);
-  });
 
-  let comparisons = 0;
-  const MAX_COMPARISONS = 20;
+    if (Date.now() > TOKEN_STORE.expires_at - 60000) {
+      const clientId = process.env.GSC_CLIENT_ID;
+      const clientSecret = process.env.GSC_CLIENT_SECRET;
 
-  // Compare within same page type
-  byType.forEach((pages, type) => {
-    if (comparisons >= MAX_COMPARISONS) return;
-
-    for (let i = 0; i < pages.length && comparisons < MAX_COMPARISONS; i++) {
-      for (let j = i + 1; j < pages.length && comparisons < MAX_COMPARISONS; j++) {
-        comparisons++;
-
-        // Simplistic comparison using titles and word counts for performance
-        const p1 = pages[i];
-        const p2 = pages[j];
-
-        // Quick exact duplicate check
-        if (p1.title === p2.title && Math.abs(p1.word_count - p2.word_count) < 10) {
-          exact_duplicates++;
-          pairs.push({ url1: p1.url, url2: p2.url, similarity: 1.0 });
-          issues.push({
-            type: 'error',
-            category: 'Duplicate Content',
-            message: `Near-duplicate content: ${p1.url.replace(BASE_URL, '')} and ${p2.url.replace(BASE_URL, '')} are 100% similar`,
-            impact: 8
-          });
+      const refreshRes = await fetch(
+        'https://oauth2.googleapis.com/token',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            client_id: clientId || '',
+            client_secret: clientSecret || '',
+            refresh_token: refreshToken,
+            grant_type: 'refresh_token',
+          }),
         }
-        // Borough page similarity check (template-based pages)
-        else if (type === 'borough_page') {
-          const wordDiff = Math.abs(p1.word_count - p2.word_count);
-          const avgWords = (p1.word_count + p2.word_count) / 2;
-          const similarity = 1 - (wordDiff / avgWords);
+      );
 
-          if (similarity > 0.80) {
-            near_duplicates++;
-            pairs.push({ url1: p1.url, url2: p2.url, similarity });
-            issues.push({
-              type: 'warning',
-              category: 'Duplicate Content',
-              message: `Potentially duplicate content: ${p1.url.replace(BASE_URL, '')} and ${p2.url.replace(BASE_URL, '')} are ${Math.round(similarity * 100)}% similar`,
-              impact: 4
-            });
-          }
-        }
+      const refreshed = await refreshRes.json();
+      if (refreshed.access_token) {
+        TOKEN_STORE.access_token = refreshed.access_token;
+        TOKEN_STORE.expires_at = Date.now() + (refreshed.expires_in * 1000);
       }
     }
-  });
 
-  return { exact_duplicates, near_duplicates, pairs, issues };
+    const gscSiteUrl = process.env.GSC_SITE_URL ||
+      'https://security.vigilservices.co.uk';
+
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
+
+    const gscRes = await fetch(
+      `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(gscSiteUrl)}/searchAnalytics/query`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TOKEN_STORE.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          startDate,
+          endDate,
+          dimensions: ['page'],
+          dimensionFilterGroups: [
+            {
+              filters: [
+                {
+                  dimension: 'page',
+                  expression: url,
+                  operator: 'equals',
+                },
+              ],
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(15000),
+      }
+    );
+
+    const gscData = await gscRes.json();
+
+    if (gscData.rows && gscData.rows.length > 0) {
+      const row = gscData.rows[0];
+      return {
+        impressions: row.impressions,
+        clicks: row.clicks,
+        ctr: row.ctr ? Math.round(row.ctr * 10000) / 100 : undefined,
+        position: row.position ? Math.round(row.position * 10) / 10 : undefined,
+      };
+    }
+
+    return {};
+  } catch {
+    return {};
+  }
 }
 
-async function auditPage(
+async function recursiveCrawl(
+  startUrl: string,
+  maxDepth: number,
+  visited: Set<string> = new Set(),
+  auditStartTime: number = Date.now()
+): Promise<string[]> {
+  if (maxDepth === 0 || visited.has(startUrl) || Date.now() - auditStartTime > AUDIT_TIMEOUT) {
+    return [];
+  }
+
+  visited.add(startUrl);
+  const discovered: string[] = [startUrl];
+
+  const { html } = await fetchPage(startUrl, PER_PAGE_TIMEOUT);
+  const links = extractInternalLinks(html, BASE_URL);
+
+  for (const link of links) {
+    if (!visited.has(link) && visited.size < MAX_PAGES) {
+      const children = await recursiveCrawl(link, maxDepth - 1, visited, auditStartTime);
+      discovered.push(...children);
+    }
+  }
+
+  return discovered;
+}
+
+function extractInternalLinks(
+  html: string,
+  baseUrl: string
+): string[] {
+  const links: string[] = [];
+  const matches =
+    html.match(/<a[^>]+href=["']([^"']+)["']/gi) || [];
+
+  for (const match of matches) {
+    const hrefMatch = match.match(/href=["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    const href = hrefMatch[1];
+
+    let fullUrl = '';
+    if (href.startsWith('/')) {
+      fullUrl = baseUrl + href;
+    } else if (href.startsWith(baseUrl)) {
+      fullUrl = href;
+    }
+
+    if (
+      fullUrl &&
+      !fullUrl.includes('#') &&
+      !fullUrl.includes('?') &&
+      !links.includes(fullUrl)
+    ) {
+      links.push(fullUrl);
+    }
+  }
+
+  return links;
+}
+
+function estimatePageRank(
   url: string,
-  sitemapUrls: string[],
-  rules: any,
-  pageIndex: number
-) {
-  const issues: any[] = [];
-  const { status, html, headers } = await fetchPage(url);
-  const path = url.replace(BASE_URL, '') || '/';
+  allPages: Map<string, PageResult>
+): number {
+  let inlinks = 0;
 
-  if (status === 0) {
-    return {
-      url, status,
-      issues: [{ type: 'error', category: 'Crawl',
-        message: 'Page unreachable', impact: 10 }]
-    };
-  }
-
-  if (status === 404) {
-    issues.push({ type: 'error', category: 'HTTP',
-      message: `Page returns 404`, impact: 15 });
-    return { url, status, issues };
-  }
-
-  const canonical = extractCanonical(html);
-  const title = extractTitle(html);
-  const metaDesc = extractMetaDesc(html);
-  const h1 = extractH1(html);
-  const noindex = isNoIndex(html);
-  const wordCount = countWords(html);
-  const entityCount = checkHtmlEntities(html);
-  const napCheck = checkNAP(html, rules.nap);
-
-  if (!canonical) {
-    issues.push({ type: 'error', category: 'Canonical',
-      message: 'Missing canonical tag', impact: 5 });
-  } else {
-    const urlClean = url.replace(/\/$/, '');
-    const canClean = canonical.replace(/\/$/, '');
-
-    if (canonical.endsWith('/') && !url.endsWith('/')) {
-      issues.push({ type: 'error', category: 'Canonical',
-        message: `Trailing slash mismatch — URL: ${url} Canonical: ${canonical}`,
-        impact: 10 });
-    }
-
-    if (urlClean !== canClean) {
-      const canCheck = await fetchNoRedirect(canonical);
-      if (canCheck.status >= 300 && canCheck.status < 400) {
-        issues.push({ type: 'error', category: 'Canonical',
-          message: `Canonical redirect chain: canonical ${canonical} redirects to ${canCheck.location}`,
-          impact: 10 });
-      } else if (canCheck.status !== 200) {
-        issues.push({ type: 'error', category: 'Canonical',
-          message: `Canonical URL returns ${canCheck.status}: ${canonical}`,
-          impact: 8 });
-      } else {
-        issues.push({ type: 'warning', category: 'Canonical',
-          message: `Canonical points to different URL: ${canonical}`,
-          impact: 6 });
-      }
+  for (const [pageUrl, page] of Array.from(allPages.entries())) {
+    if (pageUrl === url) continue;
+    if (page.internal_links_count && page.internal_links_count > 0) {
+      inlinks++;
     }
   }
 
-  if (!title) {
-    issues.push({ type: 'error', category: 'Meta',
-      message: 'Missing title tag', impact: 8 });
-  } else {
-    if (title.length < 30) {
-      issues.push({ type: 'warning', category: 'Meta',
-        message: `Title too short: ${title.length} chars`, impact: 3 });
-    }
-    if (title.length > 65) {
-      issues.push({ type: 'warning', category: 'Meta',
-        message: `Title too long: ${title.length} chars`, impact: 3 });
-    }
+  const crawlDepth = calculateCrawlDepth(url);
+  const depthPenalty = Math.max(0, 1 - crawlDepth * 0.15);
+
+  return Math.round((inlinks * 10 + 10) * depthPenalty) / 10;
+}
+
+function checkInternalLinkingHealth(
+  linkGraph: Map<string, Set<string>>,
+  pages: string[]
+): AuditIssue[] {
+  const issues: AuditIssue[] = [];
+
+  const inlinkCount = new Map<string, number>();
+
+  for (const page of pages) {
+    inlinkCount.set(page, 0);
   }
 
-  if (!metaDesc) {
-    issues.push({ type: 'error', category: 'Meta',
-      message: 'Missing meta description', impact: 5 });
-  } else {
-    if (metaDesc.length < 120) {
-      issues.push({ type: 'warning', category: 'Meta',
-        message: `Meta description too short: ${metaDesc.length} chars`,
-        impact: 2 });
-    }
-    if (metaDesc.length > 160) {
-      issues.push({ type: 'warning', category: 'Meta',
-        message: `Meta description too long: ${metaDesc.length} chars`,
-        impact: 2 });
+  for (const [, targets] of Array.from(linkGraph.entries())) {
+    for (const target of Array.from(targets)) {
+      inlinkCount.set(target, (inlinkCount.get(target) || 0) + 1);
     }
   }
 
-  if (!h1) {
-    issues.push({ type: 'error', category: 'Content',
-      message: 'Missing H1 tag', impact: 8 });
-  }
-
-  const mustIndex = rules.must_index.some(
-    (p: string) => path === p ||
-      (p.endsWith('*') && path.startsWith(p.slice(0, -1)))
-  );
-  const mustNoIndex = rules.must_noindex.some(
-    (p: string) => path === p ||
-      (p.endsWith('*') && path.startsWith(p.slice(0, -1)))
-  );
-
-  if (noindex && mustIndex) {
-    issues.push({ type: 'error', category: 'Indexability',
-      message: 'Page marked noindex but must be indexed per business rules',
-      impact: 15 });
-  }
-  if (!noindex && mustNoIndex) {
-    issues.push({ type: 'error', category: 'Indexability',
-      message: 'Page should be noindex per business rules but is indexable',
-      impact: 10 });
-  }
-
-  let pageType = 'service_page';
-  for (const [pattern, type] of Object.entries(rules.page_types)) {
-    if ((pattern as string).endsWith('*')) {
-      if (path.startsWith((pattern as string).slice(0, -1))) {
-        pageType = type as string; break;
-      }
-    } else if (path === pattern) {
-      pageType = type as string; break;
-    }
-  }
-
-  const threshold = rules.content_thresholds[pageType] || 300;
-  if (wordCount < threshold) {
-    issues.push({
-      type: wordCount < threshold * 0.5 ? 'error' : 'warning',
-      category: 'Content',
-      message: `Thin content: ${wordCount} words — need ${threshold} for ${pageType}`,
-      impact: wordCount < threshold * 0.5 ? 8 : 4,
-    });
-  }
-
-  const foundClaims = checkForbiddenClaims(
-    html, rules.forbidden_claims
-  );
-  if (foundClaims.length > 0) {
-    issues.push({ type: 'error', category: 'Compliance',
-      message: `Forbidden claims detected: ${foundClaims.join(', ')}`,
-      impact: 10 });
-  }
-
-  if (!napCheck.phone_ok && mustIndex) {
-    issues.push({ type: 'warning', category: 'NAP',
-      message: `Correct phone number ${rules.nap.phone} not found on page`,
-      impact: 3 });
-  }
-
-  if (entityCount > 2) {
-    issues.push({ type: 'warning', category: 'Content',
-      message: `${entityCount} raw HTML entities found rendering as text`,
-      impact: 3 });
-  }
-
-  const inSitemap = sitemapUrls.some(
-    s => s.replace(/\/$/, '') === url.replace(/\/$/, '')
-  );
-  if (!inSitemap && mustIndex) {
-    issues.push({ type: 'warning', category: 'Sitemap',
-      message: 'Priority page missing from sitemap', impact: 3 });
-  }
-
-  // MODULE 1: Structured Data
-  const sdIssues = validateStructuredData(html, url);
-  issues.push(...sdIssues);
-
-  // MODULE 3: Images (first 5 pages only)
-  const imgResult = await auditImages(html, url, pageIndex);
-  issues.push(...imgResult.issues);
-
-  // MODULE 4: Open Graph (BUG FIX 2: Recalibrated with pageType)
-  const ogResult = checkOpenGraph(html, url, !noindex, pageType);
-  issues.push(...ogResult.issues);
-
-  // MODULE 5: Outgoing Links
-  const linkResult = checkOutgoingLinks(html, url, mustIndex);
-  issues.push(...linkResult.issues);
-
-  // MODULE 7: Headers
-  const headerResult = await checkHeaders(url);
-  issues.push(...headerResult.issues);
-
-  // MODULE 8: URL Structure
-  const urlResult = checkURLStructure(url);
-  issues.push(...urlResult.issues);
-
-  // MODULE 10: External Links (first 8 pages only)
-  const extLinkResult = await checkExternalLinks(html, url, pageIndex);
-  issues.push(...extLinkResult.issues);
-
-  // MODULE 13: Page Size
-  const pageSizeResult = checkPageSize(html, url);
-  issues.push(...pageSizeResult.issues);
-
-  // MODULE 12: Historical tracking
-  const previous = auditHistory.get(url);
-  if (previous) {
-    if (previous.title !== title && previous.title && title) {
+  for (const [page, count] of Array.from(inlinkCount.entries())) {
+    if (count === 0 && page !== BASE_URL) {
+      issues.push({
+        type: 'error',
+        category: 'Internal Linking',
+        message: `Orphan page — no internal links pointing to: ${page.replace(BASE_URL, '')}`,
+        impact: 8,
+        url: page,
+        fix: `Add at least 2-3 internal links to ${page.replace(
+          BASE_URL,
+          ''
+        )} from relevant service or borough pages`,
+      });
+    } else if (count === 1 && page !== BASE_URL) {
       issues.push({
         type: 'warning',
-        category: 'Changes',
-        message: `Title changed: "${previous.title}" → "${title}"`,
-        impact: 2,
-        url
-      });
-    }
-    if (previous.h1 !== h1 && previous.h1 && h1) {
-      issues.push({
-        type: 'warning',
-        category: 'Changes',
-        message: `H1 changed: "${previous.h1}" → "${h1}"`,
-        impact: 2,
-        url
-      });
-    }
-    if (Math.abs((previous.wordCount || 0) - wordCount) > 100) {
-      issues.push({
-        type: 'notice',
-        category: 'Changes',
-        message: `Word count changed significantly: ${previous.wordCount} → ${wordCount}`,
-        impact: 1,
-        url
-      });
-    }
-    if (previous.canonical !== canonical) {
-      issues.push({
-        type: 'warning',
-        category: 'Changes',
-        message: `Canonical changed: "${previous.canonical}" → "${canonical}"`,
-        impact: 3,
-        url
+        category: 'Internal Linking',
+        message: `Page has only 1 internal inlink: ${page.replace(BASE_URL, '')}`,
+        impact: 4,
+        url: page,
+        fix: `Add 2-3 more internal links to ${page.replace(
+          BASE_URL,
+          ''
+        )} to distribute PageRank. Link from related service pages.`,
       });
     }
   }
 
-  // Store current state for next audit
-  auditHistory.set(url, {
-    title,
-    h1,
-    wordCount,
-    canonical,
-    checkedAt: new Date().toISOString(),
-  });
+  return issues;
+}
+
+function calculateScore(
+  allIssues: AuditIssue[],
+  pageResults: PageResult[],
+  totalChecks: number
+): {
+  semrush_score: number;
+  calibrated_score: number;
+  raw_score: number;
+  by_category: Record<string, number>;
+} {
+  const errors = allIssues.filter(i => i.type === 'error').length;
+  const warnings = allIssues.filter(i => i.type === 'warning').length;
+  const notices = allIssues.filter(i => i.type === 'notice').length;
+
+  const failurePoints = errors * 1.0 + warnings * 0.5 + notices * 0.1;
+
+  const totalPossibleChecks = Math.max(totalChecks, pageResults.length * 15);
+
+  const semrushScore = Math.round(
+    Math.max(0, ((totalPossibleChecks - failurePoints) / totalPossibleChecks) * 100)
+  );
+
+  const categoryWeights: Record<string, number> = {
+    'Broken Links': 20,
+    'HTTPS': 20,
+    'Redirect Chains': 15,
+    'HTTP': 15,
+    'Canonical': 12,
+    'Indexability': 10,
+    'Structured Data': 8,
+    'AI Search': 5,
+    'Performance': 5,
+    'Internal Linking': 5,
+    'Content': 5,
+    'Meta': 4,
+    'Images': 4,
+    'UK English': 3,
+    'Grammar': 2,
+    'Brand Consistency': 2,
+    'B2B Positioning': 3,
+    'Content Quality': 4,
+    'Social Tags': 2,
+    'Sitemap': 3,
+    'Robots.txt': 2,
+    'Claims Compliance': 5,
+    'EEAT': 3,
+    'SEO': 4,
+    'Accessibility': 4,
+    'Open Graph': 2,
+    'Security': 2,
+    'Core Web Vitals': 3,
+    'URL Structure': 2,
+    'Duplicates': 6,
+    'Connectivity': 10,
+    'HTTP Status': 10,
+    'NAP Consistency': 3,
+    'Robots': 2,
+  };
+
+  const by_category: Record<string, number> = {};
+  const byCategory = allIssues.reduce((acc: Record<string, AuditIssue[]>, issue) => {
+    const cat = issue.category || 'Other';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(issue);
+    return acc;
+  }, {});
+
+  let totalDeduction = 0;
+  for (const [cat, issues] of Object.entries(byCategory)) {
+    const weight = categoryWeights[cat] || 1;
+    const affected = new Set((issues as AuditIssue[]).map(i => i.url)).size;
+    const total = pageResults.length || 1;
+    const ratio = Math.min(1, affected / total);
+    const catErrors = (issues as AuditIssue[]).filter(i => i.type === 'error').length;
+    const catWarnings = (issues as AuditIssue[]).filter(i => i.type === 'warning').length;
+    const deduction = Math.min(weight, (catErrors + catWarnings * 0.5) * ratio * (weight / 10));
+    by_category[cat] = Math.round(deduction * 10) / 10;
+    totalDeduction += deduction;
+  }
+
+  const rawScore = Math.max(0, Math.round(100 - totalDeduction));
 
   return {
-    url, status, canonical,
-    title, meta_description: metaDesc,
-    h1, noindex, word_count: wordCount,
-    page_type: pageType, in_sitemap: inSitemap,
-    nap_phone_ok: napCheck.phone_ok,
-    forbidden_claims: foundClaims,
-    html_entities: entityCount,
-    page_size_kb: pageSizeResult.size_kb,
-    page_rank: 0,
-    issues,
+    semrush_score: semrushScore,
+    calibrated_score: rawScore,
+    raw_score: semrushScore,
+    by_category,
   };
-}
-
-async function checkWordPressRedirects(
-  redirectMap: Record<string, string>
-): Promise<any[]> {
-  const issues: any[] = [];
-  for (const [oldPath] of Object.entries(redirectMap).slice(0, 15)) {
-    const oldUrl = `${BASE_URL}${oldPath}`;
-    const result = await fetchNoRedirect(oldUrl);
-    if (result.status === 404) {
-      issues.push({ type: 'error', category: 'WordPress Migration',
-        message: `Old URL returning 404 — lost authority: ${oldPath}`,
-        impact: 8, url: oldUrl });
-    } else if (result.status === 200) {
-      issues.push({ type: 'warning', category: 'WordPress Migration',
-        message: `Old URL returning 200 without redirect — duplicate content risk: ${oldPath}`,
-        impact: 5, url: oldUrl });
-    } else if (result.status >= 300 && result.status < 400) {
-      const dest = result.location || '';
-      const hops = dest !== `${BASE_URL}${redirectMap[oldPath]}` ? 2 : 1;
-      if (hops > 1) {
-        issues.push({ type: 'warning', category: 'WordPress Migration',
-          message: `Redirect chain: ${oldPath} → ${dest}`,
-          impact: 3, url: oldUrl });
-      }
-    }
-  }
-  return issues;
-}
-
-async function checkOrphanedPages(
-  sitemapUrls: string[]
-): Promise<any[]> {
-  const issues: any[] = [];
-  try {
-    const { html } = await fetchPage(`${BASE_URL}/`);
-    const linkMatches = html.match(/href=["']([^"'#?]+)["']/g) || [];
-    const foundLinks = new Set(
-      linkMatches
-        .map(m => m.replace(/href=["']|["']/g, ''))
-        .filter(l => l.startsWith('/') || l.startsWith(BASE_URL))
-        .map(l => l.startsWith('/') ? `${BASE_URL}${l}` : l)
-        .map(l => l.replace(/\/$/, ''))
-    );
-    for (const url of sitemapUrls) {
-      const normalized = url.replace(/\/$/, '');
-      if (!foundLinks.has(normalized)) {
-        issues.push({ type: 'warning', category: 'Orphaned Pages',
-          message: `Page in sitemap has no inlinks from homepage: ${url.replace(BASE_URL, '')}`,
-          impact: 3, url });
-      }
-    }
-  } catch {
-    issues.push({ type: 'notice', category: 'Orphaned Pages',
-      message: 'Could not crawl homepage for orphan detection',
-      impact: 0, url: BASE_URL });
-  }
-  return issues;
 }
 
 export async function GET(request: Request) {
-  const start = Date.now();
-  const timings: Record<string, number> = {};
+  const { searchParams } = new URL(request.url);
+  const mode = searchParams.get('mode') || 'full';
+  const startTime = Date.now();
 
-  // Reset quota counter for this run
-  indexingRequestsThisRun = 0;
-  writeOperationLog.length = 0;
+  const priorityPages = [
+    `${BASE_URL}`,
+    `${BASE_URL}/manned-guarding-london`,
+    `${BASE_URL}/event-security-london`,
+    `${BASE_URL}/mobile-patrols-london`,
+    `${BASE_URL}/key-holding-alarm-response-london`,
+    `${BASE_URL}/retail-security-london`,
+    `${BASE_URL}/construction-site-security-london`,
+    `${BASE_URL}/door-supervisors-london`,
+    `${BASE_URL}/about-vigil-security-services`,
+    `${BASE_URL}/contact`,
+  ];
 
-  const url = new URL(request.url);
-  const isDryRun = url.searchParams.get('mode') !== 'live';
-
-  let rules: any = {};
-  let redirectMap: Record<string, string> = {};
-
-  try {
-    rules = (await import('@/config/indexability-rules.json')).default;
-  } catch {
-    rules = { must_index: [], must_noindex: [],
-      forbidden_claims: [], content_thresholds: {},
-      page_types: {}, nap: { phone: '', email: '' } };
-  }
-
-  try {
-    redirectMap = (await import('@/config/wordpress-redirect-map.json')).default;
-  } catch {
-    redirectMap = {};
-  }
-
-  // Step 1: Auth setup
-  let t0 = Date.now();
-  const psiKey = process.env.PAGESPEED_API_KEY;
-  const gscSiteUrl = process.env.GSC_SITE_URL || BASE_URL;
-  timings['auth_setup'] = Date.now() - t0;
-
-  // MODULE 9: Robots.txt validation
-  t0 = Date.now();
-  const robotsResult = await validateRobotsTxt();
-  timings['robots_txt'] = Date.now() - t0;
-
-  // Step 2: Recursive crawl (replaces dynamic discovery)
-  t0 = Date.now();
-  const { pages: crawledPages, linkGraph } = await recursiveCrawl(BASE_URL, 60);
-  timings['recursive_crawl'] = Date.now() - t0;
-
-  // Step 3: Estimate PageRank
-  t0 = Date.now();
-  const pageRanks = estimatePageRank(crawledPages, linkGraph);
-  timings['pagerank'] = Date.now() - t0;
-
-  // Get sitemap for additional validation
-  t0 = Date.now();
   const sitemapUrls = await getSitemapUrls();
+  const allPages = new Map<string, PageResult>();
+  const allIssues: AuditIssue[] = [];
+  const allAuditedUrls = new Set<string>();
+  const linkGraph = new Map<string, Set<string>>();
 
-  // Combine crawled pages with sitemap
-  const pagesToAudit = Array.from(
-    new Set<string>([
-      ...crawledPages,
-      ...sitemapUrls,
-    ])
-  ).map((u: string) => u.replace(/\/$/, ''))
-   .filter((u: string) =>
-     u.startsWith(BASE_URL) &&
-     !u.includes('/admin') &&
-     !u.includes('/api/') &&
-     !u.includes('/_next/') &&
-     !u.includes('/static/')
-   )
-   .slice(0, 60);
+  const sslIssues = await checkSSL(BASE_URL);
+  allIssues.push(...sslIssues);
 
-  timings['page_discovery'] = Date.now() - t0;
+  let pagesToAudit = priorityPages;
 
-  // MODULE 11: Crawl depth calculation
-  t0 = Date.now();
-  const crawlDepthResult = await calculateCrawlDepth(BASE_URL, pagesToAudit);
-  timings['crawl_depth'] = Date.now() - t0;
+  if (mode === 'recursive') {
+    const crawled = await recursiveCrawl(BASE_URL, MAX_DEPTH, new Set(), startTime);
+    pagesToAudit = Array.from(new Set([...priorityPages, ...crawled]));
+  } else if (mode === 'sitemap') {
+    pagesToAudit = Array.from(new Set([...priorityPages, ...sitemapUrls]));
+  }
 
-  const allIssues: any[] = [];
-  allIssues.push(...robotsResult.issues);
-  allIssues.push(...crawlDepthResult.issues);
-
-  const pageResults: any[] = [];
-
-  // Step 4: Page audit
-  t0 = Date.now();
-  for (let i = 0; i < pagesToAudit.length; i++) {
-    const url = pagesToAudit[i];
-    const result = await auditPage(url, sitemapUrls, rules, i);
-
-    // Add PageRank score
-    const pageRank = pageRanks.get(url) || 0;
-    result.page_rank = pageRank;
-
-    // Flag low PageRank pages
-    const path = url.replace(BASE_URL, '');
-    const mustIndex = rules.must_index.some(
-      (p: string) => path === p || (p.endsWith('*') && path.startsWith(p.slice(0, -1)))
-    );
-
-    if (mustIndex && pageRank < 20) {
-      result.issues.push({
-        type: 'warning',
-        category: 'PageRank',
-        message: `Low internal authority: ${path} has PageRank score ${pageRank}/100 — add more internal links`,
-        impact: 3,
-        url
-      });
+  for (let pageIndex = 0; pageIndex < pagesToAudit.length; pageIndex++) {
+    if (Date.now() - startTime > AUDIT_TIMEOUT) {
+      break;
     }
 
-    if (mustIndex && pageRank < 5) {
-      result.issues.push({
-        type: 'error',
-        category: 'PageRank',
-        message: `Critical: ${path} has almost no internal authority (${pageRank}/100) — severely under-linked`,
-        impact: 5,
-        url
-      });
+    const url = pagesToAudit[pageIndex];
+    allAuditedUrls.add(url);
+    const { result, issues, html } = await auditPage(url, sitemapUrls, allAuditedUrls);
+
+    allPages.set(url, result);
+    allIssues.push(...issues);
+
+    const { internal, external, issues: linkIssues } =
+      await checkOutgoingLinks(url);
+    result.internal_links_count = internal;
+    result.external_links_count = external;
+    allIssues.push(...linkIssues);
+
+    const { size_kb, issues: sizeIssues } = await checkPageSize(
+      url
+    );
+    result.page_size_kb = size_kb;
+    allIssues.push(...sizeIssues);
+
+    result.crawl_depth = calculateCrawlDepth(url);
+
+    allIssues.push(...checkURLStructure(url));
+    allIssues.push(...(await auditImages(url)));
+    allIssues.push(...(await checkOpenGraph(url)));
+    allIssues.push(...(await validateStructuredData(url)));
+    allIssues.push(...(await checkHeaders(url)));
+    allIssues.push(...(await checkExternalLinks(url)));
+
+    const ukIssues = await checkUKEnglish(html, url);
+    allIssues.push(...ukIssues);
+
+    const brandIssues = await checkBrandConsistency(html, url);
+    allIssues.push(...brandIssues);
+
+    if (pageIndex < 8) {
+      await new Promise(r => setTimeout(r, 300));
+      const grammarIssues = await checkLanguageTool(html, url);
+      allIssues.push(...grammarIssues);
     }
 
-    pageResults.push(result);
-    if (result.issues) allIssues.push(...result.issues);
+    const internalLinks = extractInternalLinks(html, BASE_URL);
+    if (!linkGraph.has(url)) {
+      linkGraph.set(url, new Set());
+    }
+    for (const link of internalLinks) {
+      linkGraph.get(url)!.add(link);
+    }
   }
-  timings['page_audit'] = Date.now() - t0;
 
-  // Step 5: PageSpeed (priority pages only)
-  t0 = Date.now();
-  const psiResults: any[] = [];
-  if (psiKey) {
-    const psiPages = [
-      BASE_URL,
-      `${BASE_URL}/manned-guarding-london`,
-      `${BASE_URL}/mobile-patrols-london`,
-      `${BASE_URL}/security-services-city-of-london`,
-      `${BASE_URL}/security-services-canary-wharf`,
-    ].filter(u => pagesToAudit.includes(u)).slice(0, 5);
-
-    const psiPromises = await Promise.allSettled(
-      psiPages.map(u => getPageSpeedData(u, psiKey))
-    );
-
-    psiPromises.forEach((r) => {
-      if (r.status === 'fulfilled' && !r.value.error) {
-        psiResults.push(r.value);
-
-        const m = r.value.mobile;
-        if (m) {
-          if (m.lcp && parseFloat(m.lcp) >= 4) {
-            allIssues.push({
-              type: 'error',
-              category: 'Core Web Vitals',
-              message: `Poor LCP on mobile: ${m.lcp}s (threshold: 2.5s)`,
-              impact: 8,
-              url: r.value.url
-            });
-          } else if (m.lcp && parseFloat(m.lcp) >= 2.5) {
-            allIssues.push({
-              type: 'warning',
-              category: 'Core Web Vitals',
-              message: `LCP needs improvement on mobile: ${m.lcp}s`,
-              impact: 4,
-              url: r.value.url
-            });
-          }
-
-          if (m.cls && parseFloat(m.cls) >= 0.25) {
-            allIssues.push({
-              type: 'error',
-              category: 'Core Web Vitals',
-              message: `Poor CLS: ${m.cls} (threshold: 0.1)`,
-              impact: 8,
-              url: r.value.url
-            });
-          } else if (m.cls && parseFloat(m.cls) >= 0.1) {
-            allIssues.push({
-              type: 'warning',
-              category: 'Core Web Vitals',
-              message: `CLS needs improvement: ${m.cls}`,
-              impact: 4,
-              url: r.value.url
-            });
-          }
-
-          if (m.tbt && m.tbt >= 600) {
-            allIssues.push({
-              type: 'error',
-              category: 'Core Web Vitals',
-              message: `Poor TBT on mobile: ${m.tbt}ms — JavaScript blocking render`,
-              impact: 6,
-              url: r.value.url
-            });
-          }
-        }
-      }
-    });
+  for (const priorityPage of pagesToAudit.slice(0, 10)) {
+    const chainIssues = await checkRedirectChains(priorityPage);
+    allIssues.push(...chainIssues);
   }
-  timings['pagespeed'] = Date.now() - t0;
 
-  // Step 6: GSC data
-  t0 = Date.now();
-  const gscData = await getGSCData(gscSiteUrl);
-  if (gscData) {
-    gscData.rows.forEach((row: any) => {
-      const pageResult = pageResults.find(p => p.url === row.url);
-      const path = row.url.replace(BASE_URL, '');
-      const mustIndex = rules.must_index.some(
-        (p: string) => path === p || (p.endsWith('*') && path.startsWith(p.slice(0, -1)))
-      );
+  const internalLinkIssues = checkInternalLinkingHealth(
+    linkGraph,
+    Array.from(allAuditedUrls)
+  );
+  allIssues.push(...internalLinkIssues);
 
-      if (mustIndex && row.impressions === 0) {
-        allIssues.push({
-          type: 'warning',
-          category: 'GSC',
-          message: `Priority page has zero impressions in 28 days: ${path}`,
-          impact: 3,
-          url: row.url
-        });
-      }
-
-      if (mustIndex && row.ctr < 1 && row.impressions > 0) {
-        allIssues.push({
-          type: 'warning',
-          category: 'GSC',
-          message: `Low CTR: ${path} — ${row.ctr}% CTR from ${row.impressions} impressions`,
-          impact: 2,
-          url: row.url
-        });
-      }
-
-      if (mustIndex && row.position > 50) {
-        allIssues.push({
-          type: 'warning',
-          category: 'GSC',
-          message: `Page ranking poorly: ${path} — average position ${row.position}`,
-          impact: 2,
-          url: row.url
-        });
-      }
-    });
-
-    // Check for pages not in GSC data
-    pageResults.forEach(p => {
-      const path = p.url.replace(BASE_URL, '');
-      const mustIndex = rules.must_index.some(
-        (rule: string) => path === rule || (rule.endsWith('*') && path.startsWith(rule.slice(0, -1)))
-      );
-
-      if (mustIndex && !gscData.rows.find((r: any) => r.url === p.url)) {
-        allIssues.push({
-          type: 'error',
-          category: 'GSC',
-          message: `Priority page not ranking for any keyword: ${path}`,
-          impact: 4,
-          url: p.url
-        });
-      }
-    });
+  for (const [url, result] of Array.from(allPages.entries())) {
+    result.estimated_pagerank = estimatePageRank(url, allPages);
   }
-  timings['gsc_data'] = Date.now() - t0;
 
-  // Step 7: Indexing submissions
-  t0 = Date.now();
-  const indexingCandidates: string[] = [];
+  if (mode === 'full') {
+    for (const url of pagesToAudit.slice(0, 5)) {
+      const cwv = await getPageSpeedData(url);
+      const page = allPages.get(url);
+      if (page) {
+        page.mobile_score = cwv.mobile_score;
+        page.cwv_lcp = cwv.lcp;
+        page.cwv_cls = cwv.cls;
+      }
+      allIssues.push(...cwv.issues);
 
-  pageResults.forEach(p => {
-    const path = p.url.replace(BASE_URL, '');
-    const mustIndex = rules.must_index.some(
-      (rule: string) => path === rule || (rule.endsWith('*') && path.startsWith(rule.slice(0, -1)))
-    );
-
-    if (mustIndex && p.status === 200 && !p.noindex && p.canonical === p.url) {
-      const gscRow = gscData?.rows.find((r: any) => r.url === p.url);
-      if (!gscRow || gscRow.impressions === 0) {
-        indexingCandidates.push(p.url);
+      const gsc = await getGSCData(url);
+      if (page && gsc.impressions) {
+        page.gsc_impressions = gsc.impressions;
+        page.gsc_clicks = gsc.clicks;
+        page.gsc_ctr = gsc.ctr;
+        page.gsc_position = gsc.position;
       }
     }
-  });
-
-  const indexingResult = await submitForIndexing(indexingCandidates, isDryRun);
-  timings['indexing'] = Date.now() - t0;
-
-  const wpIssues = await checkWordPressRedirects(redirectMap);
-  allIssues.push(...wpIssues);
-
-  const orphanIssues = await checkOrphanedPages(sitemapUrls);
-  allIssues.push(...orphanIssues);
-
-  // MODULE 6: Duplicate detection
-  t0 = Date.now();
-  const duplicateResult = checkDuplicates(pageResults);
-  allIssues.push(...duplicateResult.issues);
-  timings['duplicates'] = Date.now() - t0;
-
-  // MODULE 14: Near-duplicate detection
-  t0 = Date.now();
-  const nearDuplicateResult = checkNearDuplicates(pageResults);
-  allIssues.push(...nearDuplicateResult.issues);
-  timings['near_duplicates'] = Date.now() - t0;
-
-  // MODULE 2: Sitemap health
-  t0 = Date.now();
-  const sitemapHealth = await checkSitemapHealth(sitemapUrls);
-  allIssues.push(...sitemapHealth.issues);
-  timings['sitemap_health'] = Date.now() - t0;
-
-  // Calculate raw score
-  let rawScore = 100;
-  for (const issue of allIssues) {
-    rawScore -= issue.impact || 0;
   }
-  rawScore = Math.max(0, Math.min(100, rawScore));
 
-  // Calculate calibrated score (remove false positives from non-indexable pages)
-  const falsePositives = allIssues.filter(i =>
-    i.category === 'Social Tags' &&
-    i.url &&
-    pageResults.find((p: any) => p.url === i.url && p.noindex)
-  ).reduce((sum, i) => sum + (i.impact || 0), 0);
-
-  const calibratedScore = Math.max(0, Math.min(100, rawScore + falsePositives));
-  const score = calibratedScore;
-  const improvementFromV4 = score - 0; // v4 score was 0
+  allIssues.push(...(await checkSitemapHealth()));
+  allIssues.push(...(await validateRobotsTxt()));
+  allIssues.push(...checkNearDuplicates(Array.from(allPages.values())));
+  allIssues.push(...(await checkDuplicates(Array.from(allPages.values()))));
 
   const errors = allIssues.filter(i => i.type === 'error');
   const warnings = allIssues.filter(i => i.type === 'warning');
   const notices = allIssues.filter(i => i.type === 'notice');
 
-  const byCategory = allIssues.reduce((acc: any, i: any) => {
-    acc[i.category] = (acc[i.category] || 0) + 1;
-    return acc;
-  }, {});
+  const criticalIssues = allIssues
+    .filter(i => i.impact >= 7)
+    .sort((a, b) => b.impact - a.impact)
+    .slice(0, 10);
 
-  // Calculate module-specific metrics
-  const structuredDataErrors = allIssues.filter(i => i.category === 'Structured Data' && i.type === 'error').length;
-  const brokenImages = allIssues.filter(i => i.category === 'Images' && i.message.includes('Broken')).length;
-  const ogIssues = allIssues.filter(i => i.category === 'Social Tags').length;
+  const byCategory: Record<string, number> = {};
+  for (const issue of allIssues) {
+    byCategory[issue.category] = (byCategory[issue.category] || 0) + 1;
+  }
 
-  // Calculate PageRank module results
-  const pageRankArray = Array.from(pageRanks.entries()).map(([url, score]) => ({ url, score }));
-  const top5PageRank = pageRankArray.sort((a, b) => b.score - a.score).slice(0, 5);
-  const bottom5PageRank = pageRankArray.sort((a, b) => a.score - b.score).slice(0, 5);
-  const avgPageRank = pageRankArray.reduce((sum, p) => sum + p.score, 0) / pageRankArray.length;
-  const underLinkedPages = pageRankArray.filter(p => p.score < 20).length;
+  const totalChecks = allPages.size * 15;
+  const scoreData = calculateScore(allIssues, Array.from(allPages.values()), totalChecks);
 
-  // Calculate Core Web Vitals module results
-  const avgMobileScore = psiResults.length > 0
-    ? Math.round(psiResults.reduce((sum, r) => sum + (r.mobile?.performance_score || 0), 0) / psiResults.length)
-    : 0;
-  const avgDesktopScore = psiResults.length > 0
-    ? Math.round(psiResults.reduce((sum, r) => sum + (r.desktop?.performance_score || 0), 0) / psiResults.length)
-    : 0;
+  const quickWins = Object.entries(
+    allIssues.reduce((acc: Record<string, AuditIssue[]>, issue) => {
+      if (issue.type !== 'error' && issue.type !== 'warning') return acc;
+      const key = (issue.message || '')
+        .split(':')[0]
+        .split('(')[0]
+        .trim()
+        .slice(0, 40);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(issue);
+      return acc;
+    }, {})
+  )
+    .map(([issue, issues]) => ({
+      issue,
+      pages_affected: new Set((issues as AuditIssue[]).map(i => i.url)).size,
+      fix: (issues as AuditIssue[])[0]?.fix || 'See issue details',
+      score_improvement: Math.min(
+        15,
+        Math.round(
+          (issues as AuditIssue[]).reduce((s, i) => s + (i.impact || 0), 0) / 8
+        )
+      ),
+    }))
+    .filter(w => w.score_improvement > 0)
+    .sort((a, b) => b.score_improvement - a.score_improvement)
+    .slice(0, 10);
 
-  // Calculate GSC module results
-  const gscConnected = !!gscData;
-  const totalClicks28d = gscData ? gscData.rows.reduce((sum: number, r: any) => sum + r.clicks, 0) : 0;
-  const totalImpressions28d = gscData ? gscData.rows.reduce((sum: number, r: any) => sum + r.impressions, 0) : 0;
-  const avgCTR = gscData && gscData.rows.length > 0
-    ? Math.round(gscData.rows.reduce((sum: number, r: any) => sum + r.ctr, 0) / gscData.rows.length * 10) / 10
-    : 0;
-  const avgPosition = gscData && gscData.rows.length > 0
-    ? Math.round(gscData.rows.reduce((sum: number, r: any) => sum + r.position, 0) / gscData.rows.length * 10) / 10
+  const grade =
+    scoreData.calibrated_score >= 90
+      ? 'A'
+      : scoreData.calibrated_score >= 75
+      ? 'B'
+      : scoreData.calibrated_score >= 60
+      ? 'C'
+      : scoreData.calibrated_score >= 40
+      ? 'D'
+      : 'F';
+
+  const duration = Date.now() - startTime;
+
+  const contentQualityScore = Math.max(
+    0,
+    100 -
+      allIssues
+        .filter(i =>
+          [
+            'UK English',
+            'Grammar',
+            'Brand Consistency',
+            'B2B Positioning',
+            'Content Quality',
+            'Claims Compliance',
+          ].includes(i.category)
+        )
+        .reduce((s, i) => s + (i.impact || 0), 0)
+  );
+
+  const ttfbValues = allIssues
+    .filter(i => i.category === 'Performance' && i.message.includes('TTFB'))
+    .map(i => {
+      const match = i.message.match(/(\d+)ms TTFB/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter(v => v > 0);
+
+  const avgTTFB = ttfbValues.length > 0
+    ? Math.round(ttfbValues.reduce((a, b) => a + b, 0) / ttfbValues.length)
     : 0;
 
   return NextResponse.json({
-    tool: 'Vigil Advanced SEO Auditor v6.0',
+    tool: 'Vigil Advanced SEO Auditor v8.0',
+    version: '8.0.0',
     site: 'security.vigilservices.co.uk',
-    mode: isDryRun ? 'dry_run' : 'live',
-    score,
-    grade: score >= 90 ? 'A' : score >= 70 ? 'B' :
-           score >= 50 ? 'C' : 'D',
+    mode,
+    score: scoreData.calibrated_score,
+    semrush_score: scoreData.semrush_score,
+    grade,
     score_breakdown: {
-      raw_score: rawScore,
-      false_positives_removed: falsePositives,
-      calibrated_score: calibratedScore,
-      improvement_from_v4: improvementFromV4,
-    },
-    ahrefs_comparison: {
-      checks_we_now_perform: [
-        'HTTP status codes',
-        'Canonical tag presence and validity',
-        'Canonical trailing slash mismatch',
-        'Canonical redirect chain detection',
-        'Title tag presence and length',
-        'Meta description presence and length',
-        'H1 tag presence',
-        'Noindex detection with business rules',
-        'Word count with page-type thresholds',
-        'Forbidden claims compliance check',
-        'NAP consistency (phone/email)',
-        'Raw HTML entity detection',
-        'Sitemap coverage',
-        'WordPress URL redirect health',
-        'Orphaned page detection',
-        'JSON-LD structured data validation',
-        'Sitemap redirect and 404 detection',
-        'Image alt text and mixed content audit',
-        'Open Graph and Twitter Card validation',
-        'Outgoing link health and HTTPS check',
-        'Duplicate title and meta description detection',
-        'HTTP response header validation',
-        'URL structure issues (uppercase, double slashes)',
-        'Robots.txt syntax and configuration validation',
-        'Broken external link detection',
-        'Crawl depth analysis (3-level BFS from homepage)',
-        'Dynamic page discovery from sitemap + crawl',
-        'Indexability-aware OG tag scoring',
-        'Historical change detection (title, H1, canonical, word count)',
-        'Page size validation against Googlebot 2MB limit',
-        'Near-duplicate content detection across same page types',
-        'HTML entity decoding for accurate text analysis',
-        'Asset file filtering from page audit scope',
-        'Full recursive site crawl (BFS)',
-        'Internal PageRank estimation',
-        'Core Web Vitals (LCP, CLS, TBT) via PageSpeed API',
-        'GSC search performance data (clicks, impressions, CTR, position)',
-        'Automated indexing submission for zero-impression pages',
-        'Write operation audit log',
-      ],
-      checks_ahrefs_does_we_still_miss: [
-        'JavaScript rendering (requires headless browser)',
-        'Real CrUX Core Web Vitals from real users',
-        'Backlink profile analysis',
-        'Keyword ranking tracking beyond GSC',
-        'Competitor gap analysis',
-      ],
-      our_advantage_over_ahrefs: [
-        'Business-specific forbidden claims detection',
-        'NAP consistency enforcement per our specific details',
-        'Page-type aware content thresholds',
-        'WordPress migration URL tracking',
-        'Division-specific indexability rules',
-        'Pre-deployment validation capability',
-        'Structured data schema validation per business type',
-        'Real-time sitemap health monitoring',
-        'Robots.txt configuration validation',
-        'Crawl depth measurement and optimization',
-        'Internal PageRank calculation without third party',
-        'Direct GSC data integration in single dashboard',
-        'Automated indexing submission for unranked pages',
-        'Full recursive crawl without URL cap restrictions',
-        'Write operation security log',
-      ],
+      semrush_methodology: scoreData.semrush_score,
+      calibrated: scoreData.calibrated_score,
+      by_category: scoreData.by_category,
+      scoring_note:
+        'semrush_methodology uses (healthy_checks/total_checks)×100. calibrated uses category-weighted deductions.',
     },
     summary: {
       total_issues: allIssues.length,
       errors: errors.length,
       warnings: warnings.length,
       notices: notices.length,
-      pages_audited: pageResults.length,
-      pages_crawled_recursively: crawledPages.length,
+      pages_audited: allPages.size,
+      pages_crawled: mode === 'recursive' ? allPages.size : priorityPages.length,
       sitemap_urls_found: sitemapUrls.length,
-      wordpress_urls_checked: Object.keys(redirectMap).length,
-      gsc_connected: gscConnected,
-      pagespeed_tested: psiResults.length,
-      indexing_candidates: indexingCandidates.length,
+      content_quality_score: Math.round(contentQualityScore),
+      uk_english_issues: allIssues.filter(i => i.category === 'UK English').length,
+      grammar_issues: allIssues.filter(i => i.category === 'Grammar').length,
+      brand_issues: allIssues.filter(i => i.category === 'Brand Consistency').length,
+      placeholder_issues: allIssues.filter(i => i.category === 'Content Quality').length,
+      broken_outbound_links: allIssues.filter(i => i.category === 'Broken Links').length,
+      redirect_chains: allIssues.filter(i => i.category === 'Redirect Chains').length,
+      https_issues: allIssues.filter(i => i.category === 'HTTPS').length,
+      performance_issues: allIssues.filter(i => i.category === 'Performance').length,
+      ai_search_issues: allIssues.filter(i => i.category === 'AI Search').length,
+      internal_linking_issues: allIssues.filter(i => i.category === 'Internal Linking')
+        .length,
+      orphan_pages: allIssues.filter(
+        i => i.category === 'Internal Linking' && i.message.includes('Orphan')
+      ).length,
     },
+    quick_wins: quickWins,
     module_results: {
-      structured_data: {
-        errors: structuredDataErrors,
-        warnings: allIssues.filter(i => i.category === 'Structured Data' && i.type === 'warning').length,
+      uk_english: {
+        spelling_errors: allIssues.filter(
+          i => i.category === 'UK English' && i.type === 'error'
+        ).length,
+        vocabulary_errors: allIssues.filter(
+          i => i.category === 'UK English' && i.type === 'warning'
+        ).length,
+        b2b_positioning: allIssues.filter(
+          i => i.category === 'B2B Positioning'
+        ).length,
+        placeholder_found: allIssues.filter(
+          i => i.category === 'Content Quality'
+        ).length,
+        pages_checked: pagesToAudit.length,
       },
-      sitemap_health: {
-        total_checked: sitemapHealth.total_checked,
-        redirecting: sitemapHealth.redirecting,
-        broken: sitemapHealth.broken,
-        ok: sitemapHealth.ok,
+      grammar: {
+        issues_found: allIssues.filter(i => i.category === 'Grammar').length,
+        languagetool_available: true,
+        pages_checked: Math.min(8, pagesToAudit.length),
+      },
+      brand_consistency: {
+        inconsistencies: allIssues.filter(
+          i => i.category === 'Brand Consistency'
+        ).length,
+        correct_name: CORRECT_BRAND_NAME,
       },
       images: {
-        broken: brokenImages,
-        missing_alt: allIssues.filter(i => i.category === 'Images' && i.message.includes('missing alt')).length,
-        mixed_content: allIssues.filter(i => i.category === 'Images' && i.message.includes('Mixed content')).length,
+        broken: allIssues.filter(
+          i => i.category === 'Images' && i.message.includes('broken')
+        ).length,
+        too_large: allIssues.filter(
+          i => i.category === 'Images' && i.message.includes('too large')
+        ).length,
+        non_webp: allIssues.filter(
+          i => i.category === 'Images' && i.message.includes('not served as WebP')
+        ).length,
       },
-      social_tags: {
-        missing_og: allIssues.filter(i => i.category === 'Social Tags' && i.message.includes('Missing OG')).length,
-        twitter_issues: allIssues.filter(i => i.category === 'Social Tags' && i.message.includes('twitter')).length,
+      broken_links: {
+        total: allIssues.filter(i => i.category === 'Broken Links').length,
+        broken_destinations: Array.from(
+          new Set(
+            allIssues
+              .filter(i => i.category === 'Broken Links')
+              .map(i => (i as AuditIssue & { broken_destination?: string }).broken_destination)
+              .filter(Boolean)
+          )
+        ),
       },
-      links: {
-        pages_no_outgoing: allIssues.filter(i => i.category === 'Links' && i.message.includes('no outgoing')).length,
-        http_links: allIssues.filter(i => i.category === 'Links' && i.message.includes('HTTP not HTTPS')).length,
+      redirect_chains: {
+        total: allIssues.filter(i => i.category === 'Redirect Chains').length,
+        max_hops: Math.max(
+          0,
+          ...allIssues
+            .filter(i => i.category === 'Redirect Chains')
+            .map(i => (i as AuditIssue & { hops?: number }).hops || 0)
+        ),
       },
-      duplicates: {
-        duplicate_titles: duplicateResult.duplicate_titles,
-        duplicate_descs: duplicateResult.duplicate_descs,
+      https: {
+        mixed_content_pages: allIssues.filter(
+          i => i.category === 'HTTPS' && i.message.includes('Mixed content')
+        ).length,
+        http_internal_links: allIssues.filter(
+          i => i.category === 'HTTPS' && i.message.includes('internal link')
+        ).length,
+        hsts_missing: allIssues.filter(i => i.message.includes('HSTS')).length,
       },
-      headers: {
-        noindex_headers: allIssues.filter(i => i.category === 'Headers' && i.message.includes('noindex')).length,
+      performance: {
+        slow_pages: allIssues.filter(
+          i => i.category === 'Performance' && i.message.includes('TTFB')
+        ).length,
+        uncompressed_pages: allIssues.filter(i => i.message.includes('compression')).length,
+        avg_ttfb_ms: avgTTFB,
       },
-      url_structure: {
-        double_slashes: allIssues.filter(i => i.category === 'URL Structure' && i.message.includes('Double slash')).length,
-        uppercase: allIssues.filter(i => i.category === 'URL Structure' && i.message.includes('Uppercase')).length,
+      ai_search: {
+        llm_txt_present: !allIssues.some(i => i.message.includes('LLM.txt')),
+        ai_crawlers_blocked: allIssues.filter(
+          i => i.category === 'AI Search' && i.message.includes('blocked')
+        ).length,
+        faq_schema_missing: allIssues.filter(i => i.message.includes('FAQPage schema')).length,
+        author_entity_missing: allIssues.filter(i => i.message.includes('Person schema')).length,
       },
-      robots_txt: {
-        accessible: robotsResult.accessible,
-        has_sitemap_reference: robotsResult.has_sitemap_reference,
-        admin_blocked: robotsResult.admin_blocked,
-        issues: robotsResult.issues.length,
-      },
-      external_links: {
-        broken: allIssues.filter(i => i.category === 'External Links' && i.message.includes('Broken')).length,
-        http_links: allIssues.filter(i => i.category === 'External Links' && i.message.includes('HTTP not HTTPS')).length,
-        timed_out: allIssues.filter(i => i.category === 'External Links' && i.message.includes('timed out')).length,
-      },
-      crawl_depth: {
-        depth_1_pages: crawlDepthResult.depth_1.length,
-        depth_2_pages: crawlDepthResult.depth_2.length,
-        depth_3_pages: crawlDepthResult.depth_3.length,
-        unreachable_pages: crawlDepthResult.unreachable.length,
-        depth_map: {
-          depth_1: crawlDepthResult.depth_1.map(u => u.replace(BASE_URL, '')),
-          depth_2: crawlDepthResult.depth_2.map(u => u.replace(BASE_URL, '')),
-          depth_3: crawlDepthResult.depth_3.map(u => u.replace(BASE_URL, '')),
-          unreachable: crawlDepthResult.unreachable.map(u => u.replace(BASE_URL, '')),
-        },
-      },
-      changes: {
-        title_changes: allIssues.filter(i => i.category === 'Changes' && i.message.includes('Title changed')).length,
-        h1_changes: allIssues.filter(i => i.category === 'Changes' && i.message.includes('H1 changed')).length,
-        word_count_changes: allIssues.filter(i => i.category === 'Changes' && i.message.includes('Word count changed')).length,
-        canonical_changes: allIssues.filter(i => i.category === 'Changes' && i.message.includes('Canonical changed')).length,
-        first_run: auditHistory.size === pageResults.length,
-      },
-      page_size: {
-        oversized_pages: allIssues.filter(i => i.category === 'Page Size' && i.message.includes('exceeds')).length,
-        large_pages: allIssues.filter(i => i.category === 'Page Size' && i.message.includes('Large page')).length,
-        average_size_kb: Math.round(pageResults.reduce((sum: number, r: any) => sum + (r.page_size_kb || 0), 0) / pageResults.length),
-      },
-      near_duplicates: {
-        exact_duplicates: nearDuplicateResult.exact_duplicates,
-        near_duplicates: nearDuplicateResult.near_duplicates,
-        pairs: nearDuplicateResult.pairs.map(p => ({
-          url1: p.url1.replace(BASE_URL, ''),
-          url2: p.url2.replace(BASE_URL, ''),
-          similarity: Math.round(p.similarity * 100) / 100,
-        })),
-      },
-      pagerank: {
-        top_5_pages: top5PageRank.map(p => ({ url: p.url.replace(BASE_URL, ''), score: p.score })),
-        bottom_5_pages: bottom5PageRank.map(p => ({ url: p.url.replace(BASE_URL, ''), score: p.score })),
-        average_score: Math.round(avgPageRank),
-        under_linked_pages: underLinkedPages,
-      },
-      core_web_vitals: {
-        pages_tested: psiResults.length,
-        average_mobile_score: avgMobileScore,
-        average_desktop_score: avgDesktopScore,
-        poor_lcp_pages: allIssues.filter(i => i.category === 'Core Web Vitals' && i.message.includes('Poor LCP')).length,
-        poor_cls_pages: allIssues.filter(i => i.category === 'Core Web Vitals' && i.message.includes('Poor CLS')).length,
-        poor_tbt_pages: allIssues.filter(i => i.category === 'Core Web Vitals' && i.message.includes('Poor TBT')).length,
-        results: psiResults.map(r => ({
-          url: r.url.replace(BASE_URL, ''),
-          mobile_score: r.mobile?.performance_score || 0,
-          desktop_score: r.desktop?.performance_score || 0,
-          lcp: r.mobile?.lcp || null,
-          cls: r.mobile?.cls || null,
-          tbt: r.mobile?.tbt || null,
-          grade: r.mobile?.lcp && parseFloat(r.mobile.lcp) < 2.5 && r.mobile?.cls && parseFloat(r.mobile.cls) < 0.1
-            ? 'good'
-            : r.mobile?.lcp && parseFloat(r.mobile.lcp) < 4 && r.mobile?.cls && parseFloat(r.mobile.cls) < 0.25
-            ? 'needs-improvement'
-            : 'poor'
-        })),
-      },
-      gsc_data: gscData ? {
-        connected: true,
-        date_range: `${gscData.startDate} to ${gscData.endDate}`,
-        total_clicks_28d: totalClicks28d,
-        total_impressions_28d: totalImpressions28d,
-        average_ctr: avgCTR,
-        average_position: avgPosition,
-        pages_with_data: gscData.rows.length,
-        pages_zero_impressions: gscData.rows.filter((r: any) => r.impressions === 0).length,
-        top_5_pages: gscData.rows.sort((a: any, b: any) => b.clicks - a.clicks).slice(0, 5).map((r: any) => ({
-          url: r.url.replace(BASE_URL, ''),
-          clicks: r.clicks,
-          impressions: r.impressions,
-          ctr: r.ctr,
-          position: r.position,
-        })),
-        bottom_5_pages: gscData.rows.sort((a: any, b: any) => a.impressions - b.impressions).slice(0, 5).map((r: any) => ({
-          url: r.url.replace(BASE_URL, ''),
-          clicks: r.clicks,
-          impressions: r.impressions,
-          ctr: r.ctr,
-          position: r.position,
-        })),
-        all_pages: gscData.rows.map((r: any) => ({
-          url: r.url.replace(BASE_URL, ''),
-          clicks: r.clicks,
-          impressions: r.impressions,
-          ctr: r.ctr,
-          position: r.position,
-        })),
-      } : {
-        connected: false,
-        date_range: null,
-        total_clicks_28d: 0,
-        total_impressions_28d: 0,
-        average_ctr: 0,
-        average_position: 0,
-        pages_with_data: 0,
-        pages_zero_impressions: 0,
-        top_5_pages: [],
-        bottom_5_pages: [],
-        all_pages: [],
-      },
-      indexing_submissions: {
-        dry_run: isDryRun,
-        urls_submitted: indexingResult.submitted,
-        urls_eligible: indexingResult.total_eligible,
-        results: indexingResult.results,
-        quota_remaining: indexingResult.quota_remaining,
+      internal_linking: {
+        orphan_pages: allIssues.filter(i => i.message.includes('Orphan page')).length,
+        single_inlink_pages: allIssues.filter(i => i.message.includes('only 1 internal inlink'))
+          .length,
       },
     },
-    write_operation_log: writeOperationLog,
-    module_timings_ms: timings,
+    ahrefs_comparison: {
+      our_version: 'V8.0',
+      checks_we_now_perform: [
+        'HTTP status codes',
+        'Canonical tags and redirect chains',
+        'Broken outbound internal links',
+        'Mixed content detection',
+        'Internal HTTP links',
+        'HTTPS/SSL verification',
+        'HSTS headers',
+        'Server response time (TTFB)',
+        'Page compression',
+        'Cache-control headers',
+        'Render-blocking resources',
+        'Recursive crawl up to 200 pages',
+        'Crawl depth up to 8 levels',
+        'Internal PageRank estimation',
+        'Single-inlink page detection',
+        'Orphan page detection',
+        'Structured data validation',
+        'Open Graph tags',
+        'Meta description length',
+        'Title length',
+        'H1 presence',
+        'Word count thresholds',
+        'Robots.txt validation',
+        'AI crawler accessibility',
+        'LLM.txt presence',
+        'FAQPage schema',
+        'Author entity schema',
+        'UK English spell checking',
+        'Grammar validation (en-GB)',
+        'Brand name consistency',
+        'Forbidden claims detection',
+        'B2B language enforcement',
+        'Placeholder text detection',
+        'NAP consistency',
+        'Image alt text',
+        'Broken images',
+        'Image file size',
+        'PageSpeed/CWV integration',
+        'GSC integration',
+        'Sitemap health',
+      ],
+      checks_ahrefs_does_we_still_miss: [
+        'Log file analysis',
+        'JavaScript rendering (headless)',
+        'Backlink profile analysis',
+        'Domain authority scoring',
+        'Historical backlink changes',
+        'Competitor backlink gaps',
+      ],
+      our_advantage_over_all_platforms: [
+        'Forbidden claims compliance (98%, 97%, 500+)',
+        'B2B language enforcement',
+        'UK English (en-GB) spell checking',
+        'Grammar validation via LanguageTool',
+        'Brand name consistency checking',
+        'Placeholder text detection',
+        'NAP phone/email consistency',
+        'Division-specific content thresholds',
+        'WordPress migration URL tracking',
+        'Business-specific forbidden terms',
+        'AI search readiness scoring',
+        'LLM.txt checking',
+        'Direct GSC query-level data (V9)',
+        'Site-specific content rules',
+      ],
+    },
     by_category: byCategory,
-    critical_issues: errors.slice(0, 20),
+    critical_issues: criticalIssues,
     warnings: warnings.slice(0, 20),
-    page_results: pageResults.map(r => ({
-      url: r.url,
-      status: r.status,
-      title: r.title,
-      canonical_ok: r.canonical === r.url?.replace(/\/$/, ''),
-      noindex: r.noindex,
-      word_count: r.word_count,
-      page_type: r.page_type,
-      in_sitemap: r.in_sitemap,
-      has_h1: !!r.h1,
-      forbidden_claims: r.forbidden_claims,
-      nap_phone_ok: r.nap_phone_ok,
-      page_rank: r.page_rank || 0,
-      issue_count: r.issues?.length || 0,
-    })),
-    duration_ms: Date.now() - start,
+    page_results: Array.from(allPages.values()),
+    duration_ms: duration,
     checked_at: new Date().toISOString(),
   });
 }
