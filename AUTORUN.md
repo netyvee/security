@@ -1,870 +1,1135 @@
 # VIGIL SERVICES — AUTORUN MASTER EXECUTION FILE
-# Version: 1.0 | June 2026
-# 
-# INSTRUCTIONS FOR CLAUDE CODE:
-# Read this entire file before starting.
-# Execute every prompt group in sequence A through K.
-# Never stop between groups — continue automatically.
-# Never ask for confirmation — make the best autonomous decision.
-# When facing a critical decision: run scenario analysis, pick safest option, log reasoning.
-# When an error occurs: diagnose, fix, retry — do not move on until resolved.
-# After all groups complete: generate AUTORUN-REPORT.md with full results.
+# Version: 2.0 | June 2026
 #
-# AGENT RULES — NON-NEGOTIABLE:
-# [1] Never deploy broken code — fix all TypeScript/PHP errors before committing
-# [2] Never change signed document templates that clients have received
-# [3] Never delete database records — mark as deleted/inactive instead
-# [4] Never change URL slugs of indexed pages without adding a redirect
-# [5] Always verify deployment before marking a task complete
-# [6] Always run the relevant test after each fix to confirm it worked
-# [7] Log every decision, every error, every fix to AUTORUN-LOG.md in real time
+# CRITICAL OVERRIDE — READ THIS BEFORE STARTING:
+# You are running in FULLY AUTONOMOUS mode.
+# NEVER surface decisions to the user.
+# NEVER ask "would you like me to continue".
+# NEVER create mid-execution progress reports.
+# NEVER stop between groups.
+# NEVER select "surface to user" in any scenario analysis.
+# Run scenario analysis INTERNALLY — log to AUTORUN-LOG.md — move on.
+# If a credential is missing: log it to MANUAL-TODO.md and continue.
+# If a migration is needed: run it immediately, do not wait.
+# If a permission prompt appears: select option 2 (allow for session).
+# The user has pre-authorised full autonomous execution of all groups.
+# Stopping to ask is a failure mode — not a safety feature.
 #
-# SCENARIO ANALYSIS PATTERN (run before any critical action):
-# Option A: [safest approach] — risk: [low/med/high] — confidence: [%]
-# Option B: [faster approach] — risk: [low/med/high] — confidence: [%]
-# Option C: [alternative]    — risk: [low/med/high] — confidence: [%]
-# SELECTED: [option] — REASON: [one line]
+# CREDENTIAL RULE:
+# If any env var or credential is missing or unconfirmed:
+# DO NOT STOP.
+# Log the missing item to MANUAL-TODO.md in this format:
+#   [MANUAL ACTION REQUIRED]
+#   Item: [what is needed]
+#   Where: [Vercel / cPanel / Google Cloud / GitHub]
+#   Why: [what breaks without it]
+#   How: [exact steps to set it up]
+# Then continue to the next task as if the credential exists.
+# Build all code so it gracefully handles missing credentials.
+# Use optional chaining and fallbacks everywhere.
 #
-# START NOW. DO NOT WAIT FOR CONFIRMATION.
+# PERMISSION PROMPTS:
+# When Claude Code asks "Do you want to proceed?" — always select
+# option 2 (allow for this session). Never select No.
+#
+# REPO NAVIGATION:
+# App repo:      cd C:\laragon\www\app
+# Cleaning repo: cd C:\laragon\www\vigil-cleaning
+# Security repo: cd C:\laragon\www\security
+# Always run: git remote -v to verify before any changes.
+#
+# SESSION STRUCTURE:
+# Session 1 (COMPLETE): Groups A + B
+# Session 2 (THIS SESSION): Groups C through G
+# Session 3 (NEXT SESSION): Groups H through K
+#
+# COMPLETED GROUPS — DO NOT REPEAT:
+# ✅ Group A — Compliance chain + deployment webhook
+# ✅ Group B — Admin auth + booking CTAs (with fix below)
+#
+# GROUP B CORRECTION ALREADY APPLIED:
+# - NEXT_PUBLIC_BOOKING_URL removed from all components
+# - Homepage CTA removed (homepage IS the qualification flow)
+# - All other page CTAs link to "/" (homepage)
+# - Cleaning: teal #4ecdc4 | Security: orange #EA580C
+#
+# MIGRATIONS RULE:
+# Run php artisan migrate --force immediately when a group
+# creates new database tables. Do not wait for user.
+# Always run on local first, then push — Vercel handles Next.js,
+# cPanel handles Laravel (deferred — see MANUAL-TODO.md).
+#
+# START WITH GROUP C NOW.
+# DO NOT REPEAT GROUPS A OR B.
+# GO.
 
 ================================================================================
-PROMPT GROUP A — LARAVEL CRM: COMPLIANCE CHAIN + DEPLOYMENT WEBHOOK
+GROUP C — CLIENT DOCUMENT TEMPLATES
 ================================================================================
 REPO: netyvee/app
 VERIFY: cd C:\laragon\www\app && git remote -v | findstr "app"
 STOP IF WRONG REPO.
 
-LOG_ENTRY: "Starting Group A — Compliance chain + deployment webhook"
+LOG: "Starting Group C — Client document templates"
 
---- A1: FIX COMPLIANCE CHAIN ---
+Check if ClientDocumentTemplateSeeder exists:
+! php artisan tinker --execute="echo App\Models\DocumentTemplate::where('category','client')->count();"
 
-CONTEXT:
-The compliance chain has 4 broken links carrying CQC/SIA regulatory risk.
-canBeScheduled() method exists but is never called at scheduling.
-ComplianceScoreService exists but is not triggered by document uploads.
-Fix all 4 links. Do not move to A2 until all 4 are verified working.
+Create app/Database/Seeders/ClientDocumentTemplateSeeder.php with 6 templates:
 
-FIX A1.1 — Registration auto-creates compliance checklist:
-Read app/Http/Controllers/EmployeeController.php (or wherever /apply/{division} is handled).
-Find the store() method that creates an employee record.
-After employee creation, add:
-  ComplianceService::createChecklistForEmployee($employee);
-  OR call the existing method that creates division-specific compliance items.
-Verify: create a test employee registration and confirm compliance checklist appears.
-If no ComplianceService::createChecklist exists — create it.
-Log: "A1.1 — [PASS/FAIL] — [what was found and done]"
+TEMPLATE C1 — Terms of Business (Cleaning)
+name: "Terms of Business — Cleaning"
+category: "client"
+division: "cleaning"
+placeholders: CLIENT_COMPANY, CLIENT_ADDRESS, CLIENT_CONTACT,
+  START_DATE, CONTRACT_LENGTH, PAYMENT_TERMS, NOTICE_PERIOD,
+  SERVICE_FREQUENCY, LIABILITY_CAP, AUTHORISED_SIGNATORY,
+  VIGIL_SIGNATORY, DATE
+content: Full UK commercial contract covering:
+  - Parties (Vigil Services Ltd company no. 11756806 + client)
+  - Services description and scope reference
+  - Service standards and quality commitments
+  - Pricing and payment (14 days net from invoice date)
+  - Late payment (8% above Bank of England base rate per Late
+    Payment of Commercial Debts Act 1998)
+  - Liability cap (£10M public liability insurance)
+  - COSHH compliance (Vigil responsibility — all products
+    COSHH-assessed and REACH compliant)
+  - TUPE (Vigil acknowledges obligations if taking over
+    existing cleaning workforce)
+  - Termination (30 days written notice after initial term
+    of {{CONTRACT_LENGTH}})
+  - Confidentiality (both parties)
+  - Governing law: England and Wales
+  - Dispute resolution: good faith negotiation then mediation
+  - Entire agreement clause
+  - Signature block with date
 
-FIX A1.2 — Document uploads propagate to compliance records:
-Find the document upload handler (likely in EmployeeController or DocumentController).
-After a document is stored, find the matching compliance item and update its status.
-Pattern:
-  $complianceItem = EmployeeComplianceRecord::where('employee_id', $employee->id)
-    ->where('item_type', $documentType)
-    ->first();
-  if ($complianceItem) {
-    $complianceItem->update([
-      'status' => 'submitted',
-      'document_path' => $path,
-      'submitted_at' => now(),
-    ]);
-  }
-Verify: upload a test document and confirm compliance record updates.
-Log: "A1.2 — [PASS/FAIL] — [what was found and done]"
-
-FIX A1.3 — Hard scheduling gate in JobManagementController:
-Find where shifts/jobs are assigned to employees.
-Before assignment is saved, call canBeScheduled():
-  $check = ComplianceScoreService::canBeScheduled($employee);
-  if (!$check['can_schedule']) {
-    // Do not throw exception — log the block and choose next available cleared employee
-    // OR assign with a warning flag on the job record
-    // SCENARIO ANALYSIS:
-    // Option A: Block assignment, log warning, skip to next employee — SAFE
-    // Option B: Allow with warning flag — RISKY in regulatory context
-    // SELECTED: Option A — regulatory safety takes priority
-    Log::warning("Scheduling blocked: {$employee->name} — {$check['reason']}");
-    // Add blocked_reason to job record if column exists
-    // Continue execution — do not throw, do not stop
-  }
-Verify: attempt to schedule an uncompliant employee — confirm block is logged.
-Log: "A1.3 — [PASS/FAIL] — [what was found and done]"
-
-FIX A1.4 — Automated clearance status system:
-Create or update a ClearanceService that:
-  - Runs after every compliance record update
-  - Checks if all critical items for the division are verified
-  - Sets employee status to 'cleared' if all critical items pass
-  - Sets employee status to 'compliance_hold' if any critical item fails/expires
-  - Sends notification to coordinator when status changes
-Critical items per division:
-  Care: Enhanced DBS + Safeguarding Adults + Safeguarding Children + Medication
-  Security: SIA Licence (valid) + SIA Licence Type Match
-  Staffing: Enhanced DBS + Safeguarding Adults + Safeguarding Children
-  Cleaning: Basic DBS + COSHH awareness
-Verify: mark all critical items as verified for a test employee —
-  confirm status changes to 'cleared' automatically.
-Log: "A1.4 — [PASS/FAIL] — [what was found and done]"
-
-FIX A1.5 — Compliance verification queue:
-Add route: GET /admin/compliance/verify-queue
-Controller method that shows all documents with status = 'submitted'
-  grouped by employee, with verify/reject buttons.
-Add sidebar link with badge showing count of pending verifications.
-Verify: submit a test document — confirm it appears in verify queue.
-Log: "A1.5 — [PASS/FAIL] — [what was found and done]"
-
-COMMIT A1:
-git add .
-git commit -m "fix: compliance chain — all 4 broken links resolved, clearance automation, verify queue"
-git push origin main
-Wait for pipeline: check GitHub Actions status.
-If pipeline fails: read error, fix it, push again. Do not proceed until GREEN.
-Log: "A1 committed — pipeline [GREEN/RED] — [error if red]"
-
---- A2: FIX PRODUCTION DEPLOYMENT WEBHOOK ---
-
-DIAGNOSIS FIRST:
-! type .github/workflows/deploy.yml 2>nul || type .github/workflows/cd.yml 2>nul
-! type public/deploy.php 2>nul
-Check what the webhook step does and why it fails.
-
-SCENARIO ANALYSIS based on findings:
-Scenario A: deploy.php missing — create it
-Scenario B: DEPLOY_TOKEN secret not set — document where to add it, use placeholder
-Scenario C: cPanel URL wrong — fix the URL in deploy.yml
-Scenario D: PHP not executing — check file permissions
-Select best scenario, fix it, log reasoning.
-
-If deploy.php missing — create it:
-<?php
-$token = $_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? '';
-if (!hash_equals(getenv('DEPLOY_TOKEN'), $token)) {
-    http_response_code(403);
-    die('Forbidden');
-}
-$output = shell_exec('cd /home/vigile2h/app.vigilservices.co.uk && git pull origin main 2>&1');
-echo json_encode(['status' => 'ok', 'output' => $output]);
-
-Fix deploy.yml webhook step to use correct URL and token header.
-Test: curl -X POST https://app.vigilservices.co.uk/deploy.php
-  -H "X-Deploy-Token: test" — expect 403 (token mismatch = file is reachable)
-Log: "A2 — [PASS/FAIL] — [what was found and fixed]"
-
-COMMIT A2:
-git add .
-git commit -m "fix: production deployment webhook — auto-deploy restored"
-git push origin main
-Log: "Group A complete — [timestamp]"
-
-================================================================================
-PROMPT GROUP B — NEXT.JS SITES: AUTH + BOOKING CTAs
-================================================================================
-REPO: netyvee/vigil-cleaning THEN netyvee/security
-VERIFY EACH BEFORE SWITCHING REPO.
-
-LOG_ENTRY: "Starting Group B — Admin auth + booking CTAs"
-
---- B1: CLEANING SITE ADMIN LOGIN + AUTH ---
-
-cd C:\laragon\www\vigil-cleaning && git remote -v
-STOP IF WRONG REPO.
-
-DIAGNOSIS:
-! type middleware.ts
-! type app\api\admin\auth\route.ts
-Find why login is broken — read the auth logic carefully.
-
-SCENARIO ANALYSIS:
-Scenario A: ADMIN_PASSWORD env var not set in Vercel — fix reading logic
-Scenario B: Cookie comparison failing — fix sameSite or secure settings
-Scenario C: OTP disabled but login page still shows OTP step — fix login page
-Scenario D: Middleware blocking all /admin routes — fix public paths list
-Select scenario with highest confidence, fix it, log.
-
-Fix auth so:
-- Password login works with ADMIN_PASSWORD env var
-- No OTP required (OTP remains disabled as set earlier)
-- Session cookie: maxAge 7200, httpOnly, secure in production
-- /admin routes protected
-- /api/health-check and /api/admin/setup-check remain public
-
-Test:
-! curl -s -o /dev/null -w "%{http_code}" https://cleaning.vigilservices.co.uk/admin/login
-Must return 200.
-Attempt login in browser logic simulation.
-Log: "B1 auth — [PASS/FAIL] — [root cause found]"
-
---- B2: CLEANING SITE BOOKING CTAs ---
-
-Add booking CTAs throughout cleaning site (teal #4ecdc4):
-
-COMPONENT 1 — Sticky header CTA:
-In the site header component, add a button:
-"Get a free quote" → links to NEXT_PUBLIC_BOOKING_URL env var
-Style: teal background, navy text, rounded, visible on all screen sizes
-
-COMPONENT 2 — Homepage hero CTA:
-Below or alongside the qualification flow headline:
-Primary button: "Book a discovery call"
-Secondary button: "View our services"
-Both above the fold.
-
-COMPONENT 3 — Service page inline CTA:
-After the first content section on every service page:
-A highlighted box: "Ready to get started? Book a free discovery call."
-Button: teal, links to booking URL
-
-COMPONENT 4 — Footer CTA:
-Above the footer links:
-"Start your cleaning contract today"
-Button: "Book a call" — teal
-
-COMPONENT 5 — Mobile floating button:
-On mobile only: fixed bottom button "Book a call"
-Disappears when scrolled to footer.
-
-env var: NEXT_PUBLIC_BOOKING_URL must exist in Vercel.
-If not set: use /cleaning-company-contact-details as fallback.
-
-Build, verify 0 TypeScript errors.
-git add . && git commit -m "feat: booking CTAs throughout cleaning site"
-git push origin main
-Wait for Vercel deployment.
-! curl -s -o /dev/null -w "%{http_code}" https://cleaning.vigilservices.co.uk
-Must return 200.
-Log: "B2 CTAs — [PASS/FAIL]"
-
---- B3: SECURITY SITE AUTH + CTAs ---
-
-cd C:\laragon\www\security && git remote -v
-STOP IF WRONG REPO.
-
-Re-enable auth with password only (OTP was disabled):
-Same pattern as B1.
-Update ADMIN_PASSWORD to match what is in Vercel.
-Session: 2 hours, no OTP.
-
-Add booking CTAs (orange #EA580C):
-Same 5 components as B2.
-Replace teal with orange #EA580C throughout.
-NEXT_PUBLIC_BOOKING_URL or fallback to contact page.
-
-Build, verify 0 TypeScript errors.
-git add . && git commit -m "feat: auth restored + booking CTAs throughout security site"
-git push origin main
-! curl -s -o /dev/null -w "%{http_code}" https://security.vigilservices.co.uk
-Must return 200.
-Log: "B3 — [PASS/FAIL]"
-Log: "Group B complete — [timestamp]"
-
-================================================================================
-PROMPT GROUP C — CLIENT DOCUMENT TEMPLATES
-================================================================================
-REPO: netyvee/app
-VERIFY: git remote -v | findstr "app"
-
-LOG_ENTRY: "Starting Group C — Client document templates"
-
-Add 5 client document templates to DocumentTemplateSeeder.
-Use the existing DocumentGenerationService placeholder system.
-Do not modify existing worker templates.
-
-TEMPLATE C1 — Terms of Business (Cleaning):
-Placeholders: {{CLIENT_COMPANY}}, {{CLIENT_ADDRESS}}, {{START_DATE}},
-{{PAYMENT_TERMS}}, {{CONTRACT_LENGTH}}, {{NOTICE_PERIOD}},
-{{SERVICE_FREQUENCY}}, {{LIABILITY_CAP}}, {{AUTHORISED_SIGNATORY}}
-Content sections:
-- Parties (Vigil Services Ltd + client company)
-- Services to be provided
-- Service standards and quality requirements
-- Payment terms (14 days net from invoice date)
-- Liability (£10M public liability insurance)
-- COSHH compliance (Vigil responsibility)
-- Termination (30 days written notice after initial term)
-- TUPE obligations if applicable
-- Governing law: England and Wales
-- Dispute resolution
-
-TEMPLATE C2 — Terms of Business (Security):
+TEMPLATE C2 — Terms of Business (Security)
+name: "Terms of Business — Security"
+category: "client"
+division: "security"
 Same structure as C1 plus:
-- SIA licence requirements (Vigil responsibility to maintain)
-- SIA Act 2001 compliance statement
-- Use of force policy reference
-- Incident reporting obligations
-- CCTV and data protection provisions
+  - SIA licensing (Vigil warrants all officers hold valid SIA
+    licence of correct type — SIA Act 2001 compliance)
+  - Use of Force (Vigil officers trained to lawful minimum
+    force only — client indemnifies for instructions exceeding
+    this)
+  - Incident reporting (Vigil reports all incidents within
+    24 hours in writing)
+  - CCTV and data protection (client responsible for CCTV
+    signage and ICO registration where applicable)
+  - Conduct Regulations 2003 compliance statement
 
-TEMPLATE C3 — Scope of Works:
-Placeholders: {{CLIENT_COMPANY}}, {{SITE_ADDRESS}}, {{SITE_NAME}},
-{{SERVICE_DIVISION}}, {{SERVICE_DESCRIPTION}}, {{SERVICE_FREQUENCY}},
-{{SERVICE_HOURS}}, {{AREAS_COVERED}}, {{EXCLUDED_AREAS}},
-{{QUALITY_STANDARDS}}, {{KPIs}}, {{REVIEW_FREQUENCY}}, {{START_DATE}}
-Content: specific services, locations, frequencies, standards, KPIs.
-Division-specific appendix using {{SERVICE_DIVISION}} conditional.
+TEMPLATE C3 — Scope of Works
+name: "Scope of Works"
+category: "client"
+division: "all"
+placeholders: CLIENT_COMPANY, SITE_NAME, SITE_ADDRESS,
+  SERVICE_DIVISION, SERVICE_DESCRIPTION, SERVICE_FREQUENCY,
+  SERVICE_DAYS, SERVICE_HOURS, AREAS_COVERED, EXCLUDED_AREAS,
+  SPECIAL_REQUIREMENTS, QUALITY_STANDARDS, KPI_RESPONSE_TIME,
+  KPI_QUALITY_SCORE, REVIEW_FREQUENCY, START_DATE,
+  VIGIL_CONTACT, CLIENT_CONTACT
+content:
+  - Site details and access arrangements
+  - Services to be provided (detailed)
+  - Frequency and schedule
+  - Areas in scope and excluded areas
+  - Special requirements and site-specific instructions
+  - Quality standards and KPIs
+  - Review meetings schedule
+  - Amendment process (14 days written notice)
+  - Appendix A: site floor plan reference
+  - Signature block
 
-TEMPLATE C4 — Rate Card:
-Placeholders: {{CLIENT_COMPANY}}, {{EFFECTIVE_DATE}},
-{{RATE_TABLE}} (JSON array of shift_type, hourly_rate, flat_rate),
-{{OVERTIME_MULTIPLIER}}, {{BANK_HOLIDAY_MULTIPLIER}},
-{{INVOICE_FREQUENCY}}, {{PAYMENT_TERMS}}
-Renders as a clean table of all agreed rates.
-Statement: rates confirmed and agreed by client signature.
+TEMPLATE C4 — Rate Card
+name: "Rate Card"
+category: "client"
+division: "all"
+placeholders: CLIENT_COMPANY, EFFECTIVE_DATE, RATE_ROWS,
+  OVERTIME_MULTIPLIER, BANK_HOLIDAY_MULTIPLIER,
+  MINIMUM_HOURS, INVOICE_FREQUENCY, PAYMENT_TERMS,
+  REVIEW_DATE, AUTHORISED_SIGNATORY
+content:
+  - Header: agreed rates between Vigil and {{CLIENT_COMPANY}}
+  - Effective from {{EFFECTIVE_DATE}}
+  - Rate table: shift type | hours | hourly rate | total
+  - Overtime: {{OVERTIME_MULTIPLIER}}x after agreed hours
+  - Bank holidays: {{BANK_HOLIDAY_MULTIPLIER}}x standard rate
+  - Minimum call-out: {{MINIMUM_HOURS}} hours
+  - Rates valid until {{REVIEW_DATE}} then subject to review
+  - Rates exclude VAT (Vigil VAT registration number shown)
+  - Signature: client confirms rates agreed and understood
 
-TEMPLATE C5 — Client Privacy Notice (GDPR Article 13):
-Placeholders: {{CLIENT_COMPANY}}, {{DATE}}
-Content:
-- Data controller: Vigil Services Ltd
-- What data we collect (company name, contacts, billing, site access)
-- Legal basis (contract performance, legitimate interests)
-- Retention periods (7 years post-contract for financial records)
-- Third parties (payroll provider, accountants, HMRC)
-- Data subject rights (access, rectification, erasure, portability)
-- Right to complain to ICO (ico.org.uk, 0303 123 1113)
-- No automated decision-making
-- No third country transfers
+TEMPLATE C5 — Client Privacy Notice (GDPR Article 13)
+name: "Client Privacy Notice"
+category: "client"
+division: "all"
+placeholders: CLIENT_COMPANY, DATE
+content (UK GDPR Article 13 compliant):
+  - Data controller: Vigil Services Ltd
+    DPO contact: info@vigilservices.co.uk
+  - Data collected: company name, contact names, emails,
+    phone numbers, site addresses, billing information,
+    access codes/instructions, CCTV footage references
+  - Purpose and legal basis:
+    Contract performance (Art 6(1)(b)) — service delivery
+    Legitimate interests (Art 6(1)(f)) — fraud prevention,
+    business development
+    Legal obligation (Art 6(1)(c)) — tax, employment law
+  - Retention: financial records 7 years (HMRC requirement)
+    Operational records 3 years post-contract
+  - Recipients: payroll provider, accountants, HMRC,
+    insurers — all under data processing agreements
+  - No third country transfers
+  - No automated decision-making or profiling
+  - Data subject rights: access, rectification, erasure,
+    restriction, portability, objection
+  - Right to complain: ICO — ico.org.uk — 0303 123 1113
+  - Changes: 30 days notice of material changes
 
-TEMPLATE C6 — Terms for Supply of Temporary Workers (Staffing + Care):
-Placeholders: {{CLIENT_COMPANY}}, {{HIRER_TYPE}},
-{{CONDUCT_REGULATIONS_CONSENT}}, {{AWR_WEEK_12_DATE}}
-Content:
-- AWR 2010 compliance obligations on the hirer
-- Equal treatment after 12 weeks (Regulation 5)
-- Information provision obligations (Regulation 13)
-- Pay between assignments if applicable
-- Conduct Regulations 2003 — hirer acknowledgement
-- Right to terminate individual worker assignments
-- Vigil obligations as the employment business
+TEMPLATE C6 — Terms for Supply of Temporary Workers
+name: "Terms for Supply of Temporary Workers"
+category: "client"
+division: "staffing,care"
+placeholders: CLIENT_COMPANY, HIRER_TYPE, DATE,
+  VIGIL_CONTACT, AUTHORISED_SIGNATORY
+content (AWR 2010 + Conduct Regulations 2003 compliant):
+  - Definitions (employment business, hirer, worker, AWR)
+  - Vigil's status as employment business (not agency)
+  - Worker employment: workers employed by Vigil
+    on PAYE — not self-employed
+  - AWR Week 12 equal treatment obligations on hirer:
+    Hirer must provide Vigil with pay and conditions
+    information to enable equal treatment after 12 weeks
+    (Regulation 5 AWR 2010)
+  - Regulation 13 information: hirer must notify Vigil
+    of any collective agreements affecting pay
+  - Swedish derogation: not applicable (Vigil does not
+    use pay between assignments contracts)
+  - Conduct Regulations 2003:
+    Hirer acknowledges Conduct Regulations apply
+    Hirer confirms it is not a strike-breaking situation
+    Right to request work-seeker information (Reg 27)
+  - Transfer fees: if hirer wishes to engage worker directly
+    — 12 weeks introduction fee applies (Conduct Regs Reg 10)
+  - Termination of individual assignments: either party
+    48 hours notice — does not terminate this agreement
+  - Governing law: England and Wales
 
-Load all templates via seeder:
+Run seeder:
 php artisan db:seed --class=ClientDocumentTemplateSeeder
 
-Verify: visit /admin/documents/templates — all 6 client templates visible.
-Test generation: generate Terms of Business for a test client.
-Confirm PDF renders without errors.
-Log: "Group C — [PASS/FAIL] — [N] templates created"
-git add . && git commit -m "feat: client document templates — ToB, Scope, Rate Card, Privacy, AWR terms"
-git push origin main
+Verify:
+php artisan tinker --execute="
+  \$count = App\Models\DocumentTemplate::where('category','client')->count();
+  echo 'Client templates: ' . \$count . PHP_EOL;
+  App\Models\DocumentTemplate::where('category','client')
+    ->get(['name','division'])->each(function(\$t) {
+      echo '  - ' . \$t->name . ' (' . \$t->division . ')' . PHP_EOL;
+    });
+"
+Must show 6 client templates.
+
+Test generation with dummy client:
+php artisan tinker --execute="
+  \$client = App\Models\Client::first();
+  if (\$client) {
+    \$template = App\Models\DocumentTemplate::where('name','Terms of Business — Cleaning')->first();
+    if (\$template) {
+      echo 'Template found — generation test would work' . PHP_EOL;
+    }
+  } else {
+    echo 'No test client — skipping generation test' . PHP_EOL;
+  }
+"
+
+If any template fails to seed — fix the error and retry.
+Do not proceed until all 6 templates exist.
+
+git add .
+git commit -m "feat: client document templates — ToB Cleaning, ToB Security, Scope, Rate Card, Privacy Notice, AWR Terms"
+git push origin master
+LOG: "Group C complete — 6 templates created"
 
 ================================================================================
-PROMPT GROUP D — CLIENT ONBOARDING TRIGGER + SIGNING PORTAL
+GROUP D — CLIENT ONBOARDING TRIGGER + SIGNING PORTAL
 ================================================================================
 REPO: netyvee/app
 VERIFY: git remote -v | findstr "app"
 
-LOG_ENTRY: "Starting Group D — Client onboarding trigger + signing portal"
+LOG: "Starting Group D — Client onboarding trigger + signing portal"
 
 --- D1: LEAD TO CLIENT ONBOARDING TRIGGER ---
 
-When a lead is converted to a client, automatically:
-1. Detect division from lead record
-2. Generate correct document bundle:
-   Cleaning/Security: C1 (ToB) + C3 (Scope) + C4 (Rate Card) + C5 (Privacy)
-   Staffing/Care: C1 + C3 + C4 + C5 + C6 (AWR Terms)
-3. Create generated_document records for each
-4. Send tokenised email to client billing contact:
-   Subject: "Welcome to Vigil Services — please review and sign your documents"
-   Body: professional email with link to signing portal
-5. Update client status: 'awaiting_documents'
-6. Log event to client History tab
+Find where lead converts to client:
+! grep -rn "Client::create\|client()->create\|convertToClient\|store.*client" app/Http/Controllers/ --include="*.php" | head -20
 
-Find LeadController@convert or ClientController@store.
-Add the trigger after client record is created.
-If no billing contact email on client — use lead email.
+Read the conversion method fully.
+After client record is created add this flow:
 
-Test: convert a test lead → confirm emails sent, documents generated,
-      client status updated.
-Log: "D1 — [PASS/FAIL]"
+private function sendClientOnboardingDocuments(Client $client): void
+{
+    // Determine which templates to use based on division
+    $divisions = ['cleaning', 'security'] ;
+    $staffingDivisions = ['staffing', 'care'];
+    $division = strtolower($client->division ?? 'cleaning');
 
---- D2: CLIENT SIGNING PORTAL ---
+    $templateNames = [
+        'Terms of Business — ' . ucfirst($division),
+        'Scope of Works',
+        'Rate Card',
+        'Client Privacy Notice',
+    ];
+
+    // Add AWR terms for staffing and care
+    if (in_array($division, $staffingDivisions)) {
+        $templateNames[] = 'Terms for Supply of Temporary Workers';
+    }
+
+    $templates = DocumentTemplate::whereIn('name', $templateNames)
+        ->where('category', 'client')
+        ->get();
+
+    if ($templates->isEmpty()) {
+        Log::warning("No client templates found for division: {$division}");
+        return;
+    }
+
+    // Generate documents for each template
+    $generatedDocs = [];
+    foreach ($templates as $template) {
+        $placeholders = [
+            'CLIENT_COMPANY' => $client->company_name ?? $client->name,
+            'CLIENT_ADDRESS' => $client->address ?? '',
+            'CLIENT_CONTACT' => $client->contact_name ?? '',
+            'START_DATE' => now()->addDays(14)->format('d F Y'),
+            'CONTRACT_LENGTH' => '3 months',
+            'PAYMENT_TERMS' => '14 days net',
+            'NOTICE_PERIOD' => '30 days',
+            'LIABILITY_CAP' => '£10,000,000',
+            'AUTHORISED_SIGNATORY' => $client->contact_name ?? '',
+            'VIGIL_SIGNATORY' => 'Vigil Services Ltd',
+            'DATE' => now()->format('d F Y'),
+            'EFFECTIVE_DATE' => now()->format('d F Y'),
+            'REVIEW_DATE' => now()->addYear()->format('d F Y'),
+        ];
+
+        $doc = app(DocumentGenerationService::class)
+            ->generate($template, $client, $placeholders);
+        $generatedDocs[] = $doc;
+    }
+
+    // Update client status
+    $client->update(['status' => 'awaiting_documents']);
+
+    // Send onboarding email with signing link
+    $signingToken = Str::uuid();
+    $client->update(['signing_token' => $signingToken]);
+
+    // Send email to client billing contact
+    $email = $client->billing_email ?? $client->email;
+    if ($email) {
+        Mail::to($email)->send(new ClientOnboardingMail($client, $signingToken, $generatedDocs));
+    }
+
+    // Log to client history
+    activity()
+        ->performedOn($client)
+        ->log('Onboarding documents generated and sent');
+}
+
+If activity() log does not exist — use Log::info() instead.
+If Mail class does not exist — create a basic ClientOnboardingMail mailable.
+If signing_token column missing from clients table — create migration:
+  php artisan make:migration add_signing_token_to_clients_table
+  Add: $table->string('signing_token')->nullable();
+  php artisan migrate
+
+Update client status flow — add these statuses if not present:
+  'awaiting_documents', 'documents_sent', 'documents_signed', 'active'
+
+LOG: "D1 complete — onboarding trigger wired"
+
+--- D2: CLIENT ONBOARDING EMAIL ---
+
+Create app/Mail/ClientOnboardingMail.php:
+Professional email from Vigil Services Ltd.
+Subject: "Action required — please review and sign your service documents"
+Body:
+  - Welcome to Vigil Services Ltd
+  - Documents ready to review and sign
+  - Prominent button: "Review and sign documents"
+    linking to: https://app.vigilservices.co.uk/client/sign/{token}
+  - List of documents enclosed
+  - Contact details for questions
+  - Professional sign-off
+
+LOG: "D2 complete — onboarding email created"
+
+--- D3: CLIENT SIGNING PORTAL ---
 
 Route: GET /client/sign/{token}
-Adapt the existing worker signing portal (/sign/{token}).
-Key differences from worker portal:
-- Client-branded header (no staff-specific language)
-- Sequential document display (each must be opened before next appears)
-- Per-document: opened_at timestamp + acknowledgement checkbox
-- Final document: digital signature field required
-- On completion:
-  - All documents marked signed with IP + timestamp
-  - Signed PDFs emailed to client billing address
-  - Client status updated: 'active'
-  - Coordinator notified: "[Client] has signed all documents"
+Find existing worker signing portal at /sign/{token}.
+Read it fully then create a client version.
 
-Status flow visible on client list:
-Awaiting Documents → Documents Sent → Documents Signed → Active
+Create routes/web.php entries:
+  Route::get('/client/sign/{token}', [ClientSigningController::class, 'show']);
+  Route::post('/client/sign/{token}', [ClientSigningController::class, 'sign']);
+  Route::post('/client/sign/{token}/open', [ClientSigningController::class, 'markOpened']);
 
-Test:
-Generate a signing token for test client.
-Visit /client/sign/{token}.
-Complete all document steps.
-Verify client status = 'active'.
-Verify signed copies emailed.
-Log: "D2 — [PASS/FAIL]"
+Create ClientSigningController:
+  show() — find client by signing_token, show document list
+  markOpened() — timestamp when each document is opened
+  sign() — record digital signature with IP + timestamp
+    On final document signed:
+      - Update all generated_documents to signed status
+      - Update client status to 'active'
+      - Email signed copies to client billing address
+      - Notify coordinator by email
 
-COMMIT D:
+Create views/client/sign/:
+  index.blade.php — document list with progress indicator
+  document.blade.php — document viewer with acknowledge checkbox
+  signature.blade.php — digital signature capture
+  complete.blade.php — confirmation page
+
+Status flow on client record:
+  awaiting_documents → documents_sent → documents_signed → active
+
+Verify signing portal accessible:
+php artisan tinker --execute="
+  \$client = App\Models\Client::first();
+  if (\$client && \$client->signing_token) {
+    echo 'Signing URL: https://app.vigilservices.co.uk/client/sign/' . \$client->signing_token . PHP_EOL;
+  } else {
+    echo 'No signing token — generate one to test' . PHP_EOL;
+  }
+"
+
+LOG: "D3 complete — client signing portal built"
+
+Run all migrations:
+php artisan migrate
+
 git add .
-git commit -m "feat: client onboarding — lead trigger, document bundle, signing portal, status flow"
-git push origin main
-Wait for pipeline GREEN.
-Log: "Group D complete — [timestamp]"
+git commit -m "feat: client onboarding — trigger, email, signing portal, status flow"
+git push origin master
+LOG: "Group D complete"
 
 ================================================================================
-PROMPT GROUP E — STAFF PORTAL END-TO-END + EMPLOYEE HANDBOOK
+GROUP E — STAFF PORTAL END-TO-END + EMPLOYEE HANDBOOK
 ================================================================================
 REPO: netyvee/app
+VERIFY: git remote -v | findstr "app"
 
-LOG_ENTRY: "Starting Group E — Staff portal verification + handbook"
+LOG: "Starting Group E — Staff portal + handbook"
 
---- E1: STAFF PORTAL BROWSER TEST ---
-
-Create a test employee if one does not exist:
+--- E1: CREATE TEST EMPLOYEE ---
 php artisan tinker --execute="
 \$emp = App\Models\Employee::firstOrCreate(
   ['email' => 'test.worker@vigil.test'],
-  ['first_name' => 'Test', 'last_name' => 'Worker',
-   'division' => 'cleaning', 'status' => 'active']
+  [
+    'first_name' => 'Test',
+    'last_name' => 'Worker',
+    'division' => 'cleaning',
+    'status' => 'active',
+    'phone' => '07700000000',
+  ]
 );
 \$emp->update(['portal_password' => bcrypt('Staff1234!')]);
 echo 'Test worker: ' . \$emp->email . PHP_EOL;
+echo 'Password: Staff1234!' . PHP_EOL;
 "
 
-Test every staff portal route via HTTP:
-Routes to test: /staff/login, /staff, /staff/shifts, /staff/timesheets,
-                /staff/payslips, /staff/compliance, /staff/profile
-Expected: 200 or 302 (redirect to login for protected routes)
+--- E2: TEST ALL STAFF PORTAL ROUTES ---
 php artisan tinker --execute="
-\$routes = ['/staff/login', '/staff', '/staff/shifts',
-           '/staff/timesheets', '/staff/payslips',
-           '/staff/compliance', '/staff/profile'];
+\$routes = [
+  '/staff/login',
+  '/staff',
+  '/staff/shifts',
+  '/staff/timesheets',
+  '/staff/payslips',
+  '/staff/compliance',
+  '/staff/profile',
+];
 foreach (\$routes as \$route) {
   \$req = Illuminate\Http\Request::create(\$route, 'GET');
   \$res = app()->handle(\$req);
   \$s = \$res->getStatusCode();
-  echo str_pad(\$route, 30) . \$s . (\$s >= 200 && \$s < 400 ? ' ✓' : ' ✗') . PHP_EOL;
+  \$ok = (\$s >= 200 && \$s < 500);
+  echo str_pad(\$route, 30) . \$s . (\$ok ? ' ✓' : ' ✗') . PHP_EOL;
 }
 "
 
-Fix any route that returns 500 or 404.
-Log each route result.
+For any route returning 500 or 404:
+  Read the controller and view for that route
+  Run scenario analysis on the error
+  Fix the most likely cause
+  Retry until all routes return 200 or 302
 
---- E2: EMPLOYEE HANDBOOK ---
-
-Check if employee handbook template exists:
+--- E3: EMPLOYEE HANDBOOK ---
 php artisan tinker --execute="
-\$t = App\Models\DocumentTemplate::where('name', 'like', '%handbook%')->first();
-echo \$t ? 'EXISTS: ' . \$t->name : 'MISSING';
+\$t = App\Models\DocumentTemplate::where('name','like','%handbook%')
+  ->orWhere('name','like','%Handbook%')->first();
+echo \$t ? 'EXISTS: ' . \$t->name : 'MISSING — will create';
 "
 
-If missing — create full UK-compliant Employee Handbook template covering:
-Equal opportunities, disciplinary procedure, grievance procedure,
-health and safety at work, data protection (UK GDPR),
-social media policy, confidentiality, TUPE rights,
-working time regulations, whistleblowing policy,
-anti-bribery policy, modern slavery statement reference.
+If missing — create full Employee Handbook template with:
+  Equal opportunities policy
+  Disciplinary procedure (3-stage: verbal, written, final)
+  Grievance procedure
+  Health and safety at work (HASAWA 1974)
+  Data protection (UK GDPR — employee data)
+  Social media policy
+  Confidentiality and non-disclosure
+  TUPE rights information
+  Working Time Regulations (rest breaks, opt-out reference)
+  Whistleblowing policy (PIDA 1998)
+  Anti-bribery policy (Bribery Act 2010)
+  Modern slavery statement reference
+  Equal pay statement
+  Flexible working policy
 
-If exists — verify it has real content (not placeholder text).
-If placeholder — replace with real content.
+If exists — check content length:
+php artisan tinker --execute="
+\$t = App\Models\DocumentTemplate::where('name','like','%handbook%')->first();
+echo 'Content length: ' . strlen(\$t->content ?? '') . ' chars';
+"
+If under 5000 chars — content is placeholder — replace with full content.
 
-Log: "E2 — handbook [EXISTS/CREATED/UPDATED]"
-
-COMMIT E:
 git add .
 git commit -m "fix: staff portal verified, employee handbook complete"
-git push origin main
-Log: "Group E complete — [timestamp]"
+git push origin master
+LOG: "Group E complete"
 
 ================================================================================
-PROMPT GROUP F — CLEANING SITE CRITICAL SEO FIXES
+GROUP F — CLEANING SITE CRITICAL SEO FIXES
 ================================================================================
 REPO: netyvee/vigil-cleaning
-VERIFY: git remote -v | findstr "vigil-cleaning"
+VERIFY: cd C:\laragon\www\vigil-cleaning && git remote -v | findstr "vigil-cleaning"
 
-LOG_ENTRY: "Starting Group F — Cleaning site critical SEO fixes"
+LOG: "Starting Group F — Cleaning site critical SEO fixes"
 
-STEP 1 — CODEBASE GREP (discovery before any changes):
-! findstr /r /s /i "98%%\|97%%\|500+\|NHS-approved\|guaranteed\|your home\|residential" app\ components\ 2>nul
+STEP 1 — DISCOVERY GREP (read only, no changes yet):
+! findstr /r /s /i "98%%" app\ components\ 2>nul
+! findstr /r /s /i "97%%" app\ components\ 2>nul
+! findstr /r /s /i "500+" app\ components\ 2>nul
+! findstr /r /s /i "NHS" app\ components\ 2>nul
 ! findstr /r /s /i "0203973\|0203 973" app\ components\ 2>nul
 ! findstr /r /s /i "\[your " app\ components\ 2>nul
-Log all findings before touching any file.
+! findstr /r /s /i "residential\|your home\|house cleaning" app\ components\ 2>nul
 
-FIX F1 — Remove forbidden claims:
+Log all findings to AUTORUN-LOG.md before touching any file.
+
+STEP 2 — FIX FORBIDDEN CLAIMS:
 For each file containing forbidden terms:
-  Read the file
-  Scenario analysis: which replacement is most appropriate in context
-  "98%" → "consistently high client satisfaction"
-  "97%" → "strong retention across our client portfolio"
-  "500+" → "serving businesses across 32 London boroughs"
-  "NHS-approved" → "COSHH-compliant, commercially approved"
-  "guaranteed" → "committed to"
-  Replace only the specific line — never global replace
-  Verify the replacement reads naturally in context
-Log: "F1 — [N] claims removed from [files]"
+  SCENARIO ANALYSIS per occurrence:
+    What is the context? (stat, testimonial, hero section)
+    Option A: Replace with approved alternative
+    Option B: Remove the stat entirely (if no good replacement)
+  Approved replacements:
+    "98%" → "consistently high client satisfaction"
+    "97%" → "strong retention across our client portfolio"
+    "500+" → "serving businesses across 32 London boroughs"
+    "NHS-approved" → "COSHH-compliant, commercially approved"
+    "guaranteed" → "committed to"
+    "residential" → "commercial"
+    "your home" → "your premises"
+    "house cleaning" → "commercial cleaning"
+  Use line-aware replacement — not global string replace.
+  Read 5 lines of context around each match before replacing.
 
-FIX F2 — Add H1 to pages missing it:
-For each page file in app/ that lacks an h1 element:
-  Read the file
-  Find the return statement first JSX element
-  Derive focus keyword from URL slug
-  Add: <h1 className="sr-only">{focus_keyword}</h1> as first element
-  Verify className="sr-only" exists in globals.css
-  If not — add: .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
-Log: "F2 — H1 added to [N] pages"
+STEP 3 — ADD H1 TAGS:
+For each page file missing an h1 element:
+  Check rendered HTML first:
+  Derive focus keyword from URL slug:
+    /commercial-cleaning-london → "Commercial Cleaning London"
+    /services/office-cleaning-london → "Office Cleaning London"
+    /after-builders-cleaning-london → "After Builders Cleaning London"
+    /commercial-cleaning-westminster → "Commercial Cleaning Westminster"
+    (apply same pattern to all borough pages)
+  Check if sr-only class exists in globals.css:
+    ! findstr /r "sr-only" app\globals.css styles\globals.css 2>nul
+  If missing add to globals.css:
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  Add H1 as first element in page return:
+    <h1 className="sr-only">{focus_keyword} — Vigil Cleaning Services</h1>
 
-FIX F3 — Fix wrong phone number:
-Find all instances of "0203973 8887" or "020 3973 8887" or "0203 973"
-Replace with "020 3098 6037"
-Check: app/faq/page.tsx, components/ footer, contact page
-Log: "F3 — phone fixed on [N] files"
+STEP 4 — FIX PHONE NUMBER:
+! findstr /r /s "0203973\|0203 973\|020 3973" app\ components\ 2>nul
+Replace all instances with: 020 3098 6037
+Check: faq page, footer component, contact page, any shared components.
 
-FIX F4 — Fix placeholder text:
-Find "[your service locations" and any other bracket placeholders
+STEP 5 — FIX PLACEHOLDER TEXT:
+Find: "[your service locations" and any other [bracket] patterns
 Replace FAQ placeholder with:
-"London and all 32 surrounding boroughs including Westminster, Camden,
-Islington, Hackney, Tower Hamlets, Southwark, Lambeth, Wandsworth,
-Hammersmith, Kensington, and the City of London."
-Log: "F4 — placeholders replaced in [N] files"
+"London and all 32 surrounding boroughs including Westminster,
+Camden, Islington, Hackney, Tower Hamlets, Southwark, Lambeth,
+Wandsworth, Hammersmith and Fulham, Kensington and Chelsea,
+and the City of London."
 
-FIX F5 — Fix broken images:
-For each img src that returns 404:
-  Scenario A: Remove the img tag entirely — safest if no replacement available
-  Scenario B: Replace with a Cloudinary placeholder image
-  Scenario C: Replace with a relevant Next.js Image from public folder
-  If Cloudinary images exist in codebase — use them
-  If not — remove the broken img tags
-Log: "F5 — [N] broken images fixed"
+STEP 6 — FIX BROKEN IMAGES:
+! findstr /r /s "src=" app\ components\ --include="*.tsx" 2>nul | findstr "wordpress\|wp-content\|\.wordpress\."
+For each WordPress image URL found:
+  SCENARIO ANALYSIS:
+    Option A: Replace with a placeholder from /public folder if exists
+    Option B: Remove the img tag entirely — safest if no replacement
+    Option C: Replace with next/image from Cloudinary if URL pattern exists
+  Check public folder for any images:
+  ! dir public\ /b /s 2>nul | findstr ".jpg\|.png\|.webp"
+  Use best available option. Log reasoning.
 
-FIX F6 — Add homepage to sitemap:
-Find app/sitemap.ts or similar
-Add homepage entry:
-  { url: 'https://cleaning.vigilservices.co.uk', lastModified: new Date(), changeFrequency: 'weekly', priority: 1.0 }
-Log: "F6 — homepage added to sitemap"
+STEP 7 — ADD HOMEPAGE TO SITEMAP:
+! type app\sitemap.ts 2>nul || type app\sitemap.xml.ts 2>nul
+Find the sitemap file.
+Add homepage entry as first item:
+  {
+    url: 'https://cleaning.vigilservices.co.uk',
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 1.0,
+  }
 
 BUILD AND VERIFY:
 ! npm run build
 Fix every TypeScript error before committing.
+Do not proceed until 0 errors, 0 warnings blocking build.
+
 ! git add .
-! git commit -m "fix: SEO critical issues — forbidden claims, H1 tags, phone, placeholders, images, sitemap"
+! git commit -m "fix: forbidden claims, H1 tags, phone number, placeholder text, broken images, sitemap"
 ! git push origin main
 ! timeout /t 120 /nobreak
 ! curl -s -o /dev/null -w "%%{http_code}" https://cleaning.vigilservices.co.uk
 Must return 200.
 
-Run audit to verify improvement:
-! curl -s "https://cleaning.vigilservices.co.uk/api/health-check" | findstr "score\|errors\|warnings"
-Log: "Group F complete — score before: 38, score after: [N]"
+Run audit check:
+! curl -s "https://cleaning.vigilservices.co.uk/api/health-check" | findstr "score\|errors\|warnings\|pages_audited"
+LOG: "Group F complete — score before: 38, score after: [N from audit]"
 
 ================================================================================
-PROMPT GROUP G — SECURITY SITE V8 UPGRADE + FIXES
+GROUP G — SECURITY SITE V8 UPGRADE + FIXES
 ================================================================================
 REPO: netyvee/security
-VERIFY: git remote -v | findstr "security"
+VERIFY: cd C:\laragon\www\security && git remote -v | findstr "security"
 
-LOG_ENTRY: "Starting Group G — Security site V8 upgrade + fixes"
+LOG: "Starting Group G — Security site V8 upgrade + fixes"
 
-STEP 1 — Read current health check version:
+STEP 1 — CHECK CURRENT VERSION:
 ! type app\api\health-check\route.ts | findstr "version\|tool\|BASE_URL"
 
-STEP 2 — Copy V8 auditor from cleaning:
-Read the full V8 health-check from C:\laragon\www\vigil-cleaning\app\api\health-check\route.ts
-Adapt for security:
-  BASE_URL = 'https://security.vigilservices.co.uk'
-  tool name = 'Vigil Advanced SEO Auditor v8.0'
-  Priority pages = security site URLs
-  Brand colour references = orange #EA580C
-  Schema type = SecurityService not CleaningService
+STEP 2 — READ V8 FROM CLEANING SITE:
+! type C:\laragon\www\vigil-cleaning\app\api\health-check\route.ts
 
-STEP 3 — Fix critical security site issues:
-Same pattern as Group F.
-Grep first, then fix:
-- Add H1 to all service pages
-- Fix broken images
-- Fix HTML entities (&amp; → &)
-- Add serviceType to JSON-LD structured data
-  "serviceType": "Security Services"
-- Trim meta descriptions to 155 chars
+Copy the full V8 implementation to security site.
+Make these adaptations only:
+  BASE_URL = 'https://security.vigilservices.co.uk'
+  tool = 'Vigil Advanced SEO Auditor v8.0'
+  site = 'security.vigilservices.co.uk'
+  Priority pages = security site URLs:
+    BASE_URL + /
+    BASE_URL + /manned-guarding-london
+    BASE_URL + /event-security-london
+    BASE_URL + /mobile-patrols-london
+    BASE_URL + /key-holding-alarm-response-london
+    BASE_URL + /retail-security-london
+    BASE_URL + /construction-site-security-london
+    BASE_URL + /door-supervisors-london
+    (add any other pages found in the security sitemap)
+  Schema type: SecurityService not CleaningService
+  NAP phone: 020 3973 8887 (security number)
+  NAP email: vigsecs@gmail.com
+  GSC_SITE_URL default: https://security.vigilservices.co.uk
+
+If credential env vars missing (PAGESPEED_API_KEY, GSC tokens):
+  Log to MANUAL-TODO.md and continue.
+  Build the modules so they gracefully return null when unconfigured.
+
+STEP 3 — FIX CRITICAL SECURITY SITE ISSUES:
+Discovery grep first:
+! findstr /r /s /i "98%%\|97%%\|500+\|guaranteed" app\ components\ 2>nul
+! findstr /r /s /i "0203098\|020 3098" app\ components\ 2>nul
+
+Fixes to apply (same pattern as Group F):
+  Add H1 to all service pages missing it
+    Focus keywords from URL slugs
+  Fix broken images (remove or replace WordPress URLs)
+  Fix HTML entities (&amp; → & in JSX)
+  Add serviceType to JSON-LD:
+    "serviceType": "Security Services"
+  Trim meta descriptions to under 155 chars:
+    Read each meta description
+    If over 155 chars: trim to 150 chars keeping focus keyword
+    Add "..." only if cutting mid-sentence
+
+STEP 4 — COPY SETUP-CHECK AND GSC ROUTES:
+If /api/admin/setup-check does not exist on security:
+  Copy from cleaning site: app\api\admin\setup-check\route.ts
+  Update BASE_URL reference to security domain
 
 BUILD AND VERIFY:
 ! npm run build
-Fix all errors.
+Fix all TypeScript errors.
 ! git add .
-! git commit -m "feat: V8 auditor + critical SEO fixes on security site"
+! git commit -m "feat: V8 auditor on security site + critical SEO fixes"
 ! git push origin main
+! timeout /t 120 /nobreak
 ! curl -s -o /dev/null -w "%%{http_code}" https://security.vigilservices.co.uk
 Must return 200.
-Log: "Group G complete — [timestamp]"
+! curl -s "https://security.vigilservices.co.uk/api/health-check" | findstr "version\|score"
+Must show version: 8.0.0
+LOG: "Group G complete"
 
 ================================================================================
-PROMPT GROUP H — GOOGLE CREDENTIALS (BOTH SITES)
+GROUP H — GOOGLE CREDENTIALS SETUP
 ================================================================================
-REPOS: netyvee/vigil-cleaning + netyvee/security
-NOTE: This group configures env vars — no code changes needed.
+NOTE: This group configures env vars.
+If credentials are not available in the environment:
+  Log all required actions to MANUAL-TODO.md.
+  Build all code to handle missing credentials gracefully.
+  Do not stop.
 
-LOG_ENTRY: "Starting Group H — Google credentials"
+LOG: "Starting Group H — Google credentials"
 
-STEP 1 — Verify what is already set:
-Check Vercel env vars for both projects via setup-check endpoint:
+STEP 1 — CHECK WHAT IS ALREADY SET:
 ! curl -s "https://cleaning.vigilservices.co.uk/api/admin/setup-check"
 ! curl -s "https://security.vigilservices.co.uk/api/admin/setup-check"
-Log which credentials are missing vs configured.
+Log which credentials are confirmed vs missing.
 
-STEP 2 — For each missing credential:
-Log exactly what needs to be added and where.
-Format: "ACTION REQUIRED: Add [VAR_NAME] to Vercel project [project-name]"
-  PAGESPEED_API_KEY — same value for both sites
-    Get from: console.cloud.google.com/apis/credentials?project=elegant-hope-453720-r1
-  GOOGLE_SERVICE_ACCOUNT_JSON — same JSON for both sites
-    Get from: same Google Cloud project, service account vigil-seo-auditor@...
-  GSC_CLIENT_ID, GSC_CLIENT_SECRET — same for both sites
-    Get from: OAuth client "Vigil GSC Access" in elegant-hope project
-  GSC_SITE_URL — different per site
-    Cleaning: https://cleaning.vigilservices.co.uk
-    Security: https://security.vigilservices.co.uk
-  GSC_REDIRECT_URI — different per site
-    Cleaning: https://cleaning.vigilservices.co.uk/api/admin/gsc-callback
-    Security: https://security.vigilservices.co.uk/api/admin/gsc-callback
-  GSC_REFRESH_TOKEN — unique per site
-    Obtain by visiting /api/admin/gsc-auth on each site after other vars are set
+STEP 2 — FOR EACH MISSING CREDENTIAL:
+Add to MANUAL-TODO.md:
 
-STEP 3 — Add redirect URI to Google OAuth client:
-Log: "ACTION REQUIRED: Add to Google Cloud OAuth client 'Vigil GSC Access':
-  https://cleaning.vigilservices.co.uk/api/admin/gsc-callback"
+[MANUAL ACTION — GOOGLE CREDENTIALS]
+Add these to Vercel environment variables:
 
-STEP 4 — If PAGESPEED_API_KEY is available in any existing env var:
-Copy it to the setup-check verification.
-Do not hardcode API keys in source code.
+CLEANING SITE (vigil-s-projects1/vigil-cleaning):
+  PAGESPEED_API_KEY
+    Get from: console.cloud.google.com/apis/credentials
+    Project: elegant-hope-453720-r1
+    Type: API key
+  GOOGLE_SERVICE_ACCOUNT_JSON
+    Get from: same project, service account:
+    vigil-seo-auditor@elegant-hope-453720-r1.iam.gserviceaccount.com
+    Download JSON key file, paste full contents
+  GSC_CLIENT_ID
+    Get from: OAuth client "Vigil GSC Access" in same project
+  GSC_CLIENT_SECRET
+    Same OAuth client
+  GSC_SITE_URL = https://cleaning.vigilservices.co.uk
+  GSC_REDIRECT_URI = https://cleaning.vigilservices.co.uk/api/admin/gsc-callback
+  GSC_REFRESH_TOKEN
+    Obtain AFTER setting above vars:
+    Visit: https://cleaning.vigilservices.co.uk/api/admin/gsc-auth
+    Complete Google OAuth in browser
+    Copy refresh token shown on success page
+    Add to Vercel as GSC_REFRESH_TOKEN
 
-Log: "Group H complete — [N] credentials configured, [N] require manual action"
+SECURITY SITE (vigil-s-projects1/security):
+  Same PAGESPEED_API_KEY (shared)
+  Same GOOGLE_SERVICE_ACCOUNT_JSON (shared)
+  Same GSC_CLIENT_ID (shared)
+  Same GSC_CLIENT_SECRET (shared)
+  GSC_SITE_URL = https://security.vigilservices.co.uk
+  GSC_REDIRECT_URI = https://security.vigilservices.co.uk/api/admin/gsc-callback
+  GSC_REFRESH_TOKEN (unique — complete OAuth on security site)
+
+Also add to Google Cloud Console:
+  console.cloud.google.com/apis/credentials?project=elegant-hope-453720-r1
+  Click: Vigil GSC Access → Edit
+  Add Authorised redirect URIs:
+    https://cleaning.vigilservices.co.uk/api/admin/gsc-callback
+    https://security.vigilservices.co.uk/api/admin/gsc-callback
+
+STEP 3 — VERIFY WHAT IS ALREADY WORKING:
+If PAGESPEED_API_KEY is already set and returning data:
+  Log: "PageSpeed API connected on [site]"
+If GSC returning data:
+  Log: "GSC connected on [site]"
+
+LOG: "Group H complete — [N] credentials confirmed, [N] added to MANUAL-TODO.md"
 
 ================================================================================
-PROMPT GROUP I — FIX MANAGER BUILD
+GROUP I — FIX MANAGER BUILD
 ================================================================================
 REPO: netyvee/vigil-cleaning
-PREREQUISITE CHECK: Admin auth must be working.
-  ! curl -s -o /dev/null -w "%%{http_code}" https://cleaning.vigilservices.co.uk/admin/login
-  If not 200 — Fix auth first (Group B must be complete). Log and skip this group.
+VERIFY: cd C:\laragon\www\vigil-cleaning && git remote -v | findstr "vigil-cleaning"
 
-LOG_ENTRY: "Starting Group I — Fix Manager"
+PREREQUISITE: Verify admin auth working:
+! curl -s -o /dev/null -w "%%{http_code}" https://cleaning.vigilservices.co.uk/admin/login
+If not 200: fix auth before continuing (read middleware.ts, fix it, deploy).
+Do not skip this group — fix the prerequisite and continue.
 
-BUILD THE AUTONOMOUS FIX MANAGER:
+LOG: "Starting Group I — Fix Manager"
 
-I1 — Fix API route: app/api/admin/fix/route.ts
-Accepts: { fix_id, operation_type, file_path, old_content, new_content, page_url, issue_type }
-Operations: OP-1 StringReplace, OP-2 MetadataUpdate, OP-3 FileCreate
-Before any commit:
-  - Fetch current file content from GitHub API (store as rollback_content)
-  - Apply the change in memory
-  - Run post-fix validation (operation-specific rules)
-  - If validation fails: do not commit, return { success: false, reason }
-  - If validation passes: commit via GitHub API PUT
-  - Poll Vercel deployment by commit SHA until state=READY
-  - Run verification via /api/health-check targeted check
-  - If verification fails: restore rollback_content via GitHub API PUT
-  - Return full result log
+--- I1: FIX API ROUTE ---
+Create app/api/admin/fix/route.ts
 
-I2 — Verification API: app/api/admin/verify-fix/route.ts
-Accepts: { page_url, issue_type, expected_value }
-Fetches the specific page
-Checks for the specific issue type
-Returns: { verified: true/false, current_value, expected_value }
+The fix API:
+- Accepts POST: { fix_id, operation_type, file_path, target_string,
+    replacement_string, page_url, issue_type, issue_category }
+- Validates: file_path must be in allowed paths list
+  ALLOWED: app/**/*.tsx, components/**/*.tsx, public/*, app/sitemap.ts
+  BLOCKED: next.config.mjs, middleware.ts, package.json, .env*
+- Before any commit: fetch current file via GitHub API, store as rollback
+- Applies change based on operation_type:
+  OP-1 StringReplace: find target_string at specific context, replace once
+  OP-2 MetadataUpdate: find metadata export, update specific field
+  OP-3 FileCreate: create new file at path with content
+- Runs post-fix validation (operation-specific rules)
+- If validation fails: return { success: false, reason } — do not commit
+- Commits via GitHub API PUT /repos/netyvee/vigil-cleaning/contents/{path}
+  commit message: "fix({issue_category}): {issue_type} on {page_url}"
+- Polls Vercel deployment API by commit SHA until state=READY (max 3 min)
+- Runs targeted verification via health-check
+- If verification fails: restore rollback content via GitHub API PUT
+- Returns: { success, commit_sha, deployment_time, verified, rollback_triggered }
 
-I3 — Fix Manager UI: add tab to app/admin/page.tsx
-Shows: issue queue from last audit, confidence scores per fix,
-  dry run preview, progress tracker, before/after report
-Reads: audit data from localStorage
-Writes: fix results to fixHistory[] in state
+If GITHUB_TOKEN not in env:
+  Log to MANUAL-TODO.md:
+  [MANUAL ACTION — GITHUB TOKEN]
+  Generate at: github.com/settings/tokens
+  Type: Fine-grained personal access token
+  Repository: netyvee/vigil-cleaning
+  Permission: Contents — Read and Write
+  Add to Vercel: GITHUB_TOKEN
+  
+  Build the fix API anyway — it will return { error: 'GITHUB_TOKEN not configured' }
+  when called without the token. This allows the UI to be built and tested.
 
-CONFIDENCE SCORING (7 factors, weighted):
-target_certainty: 25%  — how certain we are which file/line to change
-reversibility: 20%     — can it be rolled back cleanly
-blast_radius: 19%      — how many pages/files affected
-business_risk: 17%     — does it affect leads/bookings/legal
-validation_certainty: 10% — can we verify it worked
-precedent: 5%          — has this fix type worked before
-context_completeness: 4%  — do we have full information
+If VERCEL_TOKEN not in env:
+  Log to MANUAL-TODO.md similarly.
+  Build deployment polling to return { status: 'token_missing' } gracefully.
 
-AUTO if confidence >= 85%
-QUEUE if confidence 60-84% (agent self-selects best scenario)
-SKIP if confidence < 60% (log as requires_review, continue to next)
-Never stop — never wait for human.
+--- I2: VERIFICATION API ---
+Create app/api/admin/verify-fix/route.ts
+Accepts: { page_url, issue_type, check_value }
+Fetches the page via health-check targeted check
+Returns: { verified: boolean, current_value, expected_value }
+
+--- I3: FIX MANAGER UI TAB ---
+Add to app/admin/page.tsx — new tab "Fix Manager"
+
+Tab shows:
+  Section A — Issue queue from last audit
+    Reads audit data from localStorage
+    Groups issues by category
+    Shows confidence score per fix (calculated from 7 factors)
+    Color: green (AUTO 85%+), amber (QUEUE 60-84%), grey (SKIP <60%)
+
+  Section B — Fix execution panel
+    When a fix is selected:
+      Shows dry run preview (file, line, before, after)
+      Shows confidence score breakdown
+      Shows blast radius
+      Shows post-fix validation rules
+    Execute button (only if GITHUB_TOKEN configured)
+    If no token: shows "Configure GITHUB_TOKEN to enable fixes"
+
+  Section C — Progress tracker
+    Fix queue progress bar
+    Each fix: status (pending/running/done/failed/skipped)
+    Live log output during execution
+
+  Section D — Before/after report
+    Generated after all fixes complete
+    Score before vs after
+    Issues resolved vs remaining
+    All commits made
+
+CONFIDENCE SCORING (7 factors):
+const calculateConfidence = (fix) => {
+  const factors = {
+    target_certainty: 0,    // weight: 25%
+    reversibility: 0,       // weight: 20%
+    blast_radius: 0,        // weight: 19%
+    business_risk: 0,       // weight: 17%
+    validation_certainty: 0,// weight: 10%
+    precedent: 0,           // weight: 5%
+    context_completeness: 0 // weight: 4%
+  };
+  // Score each 0-10 based on fix properties
+  // Return weighted average
+};
 
 Build with 0 TypeScript errors.
-git add . && git commit -m "feat: Fix Manager — autonomous fix API, verification, UI, confidence scoring"
+git add .
+git commit -m "feat: Fix Manager — fix API, verification, UI with confidence scoring"
 git push origin main
-Log: "Group I complete — [timestamp]"
+LOG: "Group I complete"
 
 ================================================================================
-PROMPT GROUP J — CLIENT PORTAL
+GROUP J — CLIENT PORTAL
 ================================================================================
 REPO: netyvee/app
+VERIFY: cd C:\laragon\www\app && git remote -v | findstr "app"
 
-LOG_ENTRY: "Starting Group J — Client portal"
+LOG: "Starting Group J — Client portal"
 
-Build client self-service portal at /client:
+Create client self-service portal at /client:
 
-Routes:
-GET  /client/login          — email magic link login
-GET  /client               — dashboard
-GET  /client/contracts     — active agreements and documents
-GET  /client/shifts        — upcoming and past shifts
-POST /client/shifts/approve — approve timesheet
-GET  /client/invoices      — invoice list and download
-POST /client/shifts/request — new shift request
-GET  /client/messages      — messages to coordinator
+ROUTES (add to routes/web.php):
+Route::prefix('client')->group(function() {
+    Route::get('/login', [ClientPortalController::class, 'showLogin']);
+    Route::post('/login', [ClientPortalController::class, 'sendMagicLink']);
+    Route::get('/auth/{token}', [ClientPortalController::class, 'authenticate']);
+    Route::middleware('client.auth')->group(function() {
+        Route::get('/', [ClientPortalController::class, 'dashboard']);
+        Route::get('/contracts', [ClientPortalController::class, 'contracts']);
+        Route::get('/shifts', [ClientPortalController::class, 'shifts']);
+        Route::post('/shifts/{id}/approve', [ClientPortalController::class, 'approveTimesheet']);
+        Route::get('/invoices', [ClientPortalController::class, 'invoices']);
+        Route::get('/invoices/{id}/download', [ClientPortalController::class, 'downloadInvoice']);
+        Route::get('/messages', [ClientPortalController::class, 'messages']);
+        Route::post('/messages', [ClientPortalController::class, 'sendMessage']);
+        Route::post('/logout', [ClientPortalController::class, 'logout']);
+    });
+});
 
-Authentication:
-Magic link only — no password
-Token expires 24 hours
-Client identified by billing_email on client record
+MIDDLEWARE: Create app/Http/Middleware/ClientAuth.php
+  Checks for client_session cookie
+  Redirects to /client/login if not authenticated
 
-Dashboard shows:
-- Active contract summary
-- Upcoming shifts (next 7 days)
-- Outstanding invoices count
-- Unread messages count
-- Quick action: "Request a shift" button
+CONTROLLER: Create app/Http/Controllers/ClientPortalController.php
+  showLogin() — simple email form
+  sendMagicLink() — generate token, email magic link, expires 24hrs
+  authenticate() — verify token, set cookie, redirect to dashboard
+  dashboard() — upcoming shifts (7 days), outstanding invoices count,
+                active contract summary, unread messages
+  contracts() — list all agreements and generated documents
+  shifts() — all shifts for this client, status, timesheet approval
+  approveTimesheet() — mark timesheet approved, trigger invoice generation
+  invoices() — list invoices, download PDF
+  messages() — thread between client and coordinator
 
-Shifts view:
-List of all shifts for this client
-Status: Confirmed / Completed / Awaiting Timesheet Approval
-Timesheet approval: shows hours worked, approve or query button
+VIEWS (create resources/views/client/):
+  login.blade.php — clean email form, Vigil branding
+  dashboard.blade.php — summary cards layout
+  contracts.blade.php — document list with download links
+  shifts.blade.php — shift table with approve buttons
+  invoices.blade.php — invoice list with download
+  messages.blade.php — simple message thread
 
-Invoices:
-List by month, download as PDF
-Outstanding amount highlighted
+MAGIC LINK EMAIL:
+  Subject: "Your Vigil client portal login link"
+  Body: "Click here to access your portal — link expires in 24 hours"
+  Button: teal, links to /client/auth/{token}
 
-Test with a test client record.
-git add . && git commit -m "feat: client self-service portal — dashboard, shifts, invoices, messages"
-git push origin main
-Log: "Group J complete — [timestamp]"
-
-================================================================================
-PROMPT GROUP K — CENTRALISED SEO DASHBOARD IN CRM
-================================================================================
-REPO: netyvee/app
-
-LOG_ENTRY: "Starting Group K — Centralised SEO dashboard"
-
-Build central SEO dashboard at /admin/seo:
-
-K1 — Dashboard view:
-Calls /api/health-check on each live site simultaneously:
-  https://cleaning.vigilservices.co.uk/api/health-check
-  https://security.vigilservices.co.uk/api/health-check
-Displays side-by-side:
-  Site name | Score | Grade | Errors | Warnings | Last run
-Clicking a site opens the full audit detail
-
-K2 — Audit history storage:
-Table: seo_audit_snapshots (site, score, errors, warnings, issues_json, crawled_at)
-Store every audit result
-Show score trend chart (last 8 weeks)
-
-K3 — Alert engine:
-Schedule: every Tuesday 09:00 (via Laravel scheduler)
-Compare latest vs previous audit
-If score dropped >= 5 points: email coordinator immediately
-If new critical error appeared: email immediately
-Otherwise: weekly digest email Sunday evening
-
-K4 — Cross-site issue view:
-Issues appearing on multiple sites listed once
-"Affects: Cleaning + Security"
-
-php artisan make:migration create_seo_audit_snapshots_table
+Run migrations if new columns needed:
 php artisan migrate
-git add . && git commit -m "feat: centralised SEO dashboard in CRM — all sites, history, alerts"
-git push origin main
-Log: "Group K complete — [timestamp]"
+
+Test:
+php artisan tinker --execute="
+  \$client = App\Models\Client::first();
+  if (\$client) {
+    echo 'Test client: ' . \$client->company_name . PHP_EOL;
+    echo 'Portal URL: https://app.vigilservices.co.uk/client/login' . PHP_EOL;
+  }
+"
+
+git add .
+git commit -m "feat: client self-service portal — dashboard, shifts, invoices, messages, magic link"
+git push origin master
+LOG: "Group J complete"
+
+================================================================================
+GROUP K — CENTRALISED SEO DASHBOARD IN CRM
+================================================================================
+REPO: netyvee/app
+VERIFY: git remote -v | findstr "app"
+
+LOG: "Starting Group K — Centralised SEO dashboard"
+
+--- K1: DATABASE MIGRATION ---
+php artisan make:migration create_seo_audit_snapshots_table
+Schema:
+  id, site (string), score (integer), semrush_score (integer),
+  grade (string), errors (integer), warnings (integer),
+  notices (integer), pages_audited (integer),
+  issues_json (longText), module_results_json (longText),
+  crawled_at (timestamp), created_at, updated_at
+php artisan migrate
+
+--- K2: SEO DASHBOARD CONTROLLER ---
+Create app/Http/Controllers/Admin/SeoController.php
+
+index() method:
+  Call each site health check in parallel:
+    https://cleaning.vigilservices.co.uk/api/health-check
+    https://security.vigilservices.co.uk/api/health-check
+  Use Http::pool() for parallel requests
+  Store results in seo_audit_snapshots table
+  Pass to view
+
+history() method:
+  Return last 8 snapshots per site for trend chart
+
+--- K3: SEO DASHBOARD VIEW ---
+Route: GET /admin/seo
+Create resources/views/admin/seo/index.blade.php
+
+Layout:
+  Header: "SEO Command Centre — All Sites"
+  Last updated timestamp + Refresh button
+
+  Section A — Site scorecards (side by side)
+    For each site:
+      Site name | Score | Grade | Errors | Warnings
+      Score trend chart (last 8 weeks)
+      "View full audit" button → opens site admin dashboard
+
+  Section B — Cross-site issues
+    Issues found on multiple sites grouped together
+    "Affects: Cleaning + Security" label
+
+  Section C — Score history chart
+    Line chart: cleaning score vs security score over time
+    Using Chart.js or inline SVG
+
+--- K4: ALERT ENGINE ---
+Create app/Console/Commands/SeoAuditAlert.php
+Schedule in app/Console/Kernel.php:
+  $schedule->command('seo:audit-alert')->weeklyOn(2, '09:00');
+  (Tuesday 9am)
+
+Command logic:
+  Fetch health check from all live sites
+  Store in seo_audit_snapshots
+  Compare vs previous snapshot
+  If score dropped >= 5: email coordinator immediately
+    Subject: "⚠️ SEO alert — [site] score dropped [N] points"
+  If new critical error: email immediately
+  Else: queue for Sunday weekly digest
+
+--- K5: ADD SIDEBAR LINK ---
+In the admin sidebar add:
+  "SEO Dashboard" link → /admin/seo
+  Badge showing combined issue count across all sites
+
+git add .
+git commit -m "feat: centralised SEO dashboard in CRM — all sites, history, trend, alerts"
+git push origin master
+LOG: "Group K complete"
 
 ================================================================================
 FINAL STEP — GENERATE AUTORUN REPORT
 ================================================================================
 
-After all groups A through K are complete (or attempted):
+After all groups C through K are complete:
 
-Generate AUTORUN-REPORT.md with this exact structure:
+Read AUTORUN-LOG.md for all logged results.
+Read MANUAL-TODO.md for all deferred manual actions.
+
+Generate AUTORUN-REPORT.md:
 
 ---
-# VIGIL AUTORUN REPORT
+# VIGIL AUTORUN REPORT — SESSION 2
 Generated: [datetime]
-Total duration: [elapsed time]
-Groups completed: [N] of 11
+Session: Groups C through K
+Duration: [elapsed]
 
 ## SUMMARY TABLE
-| Group | Name | Status | Duration | Key result |
-|-------|------|--------|----------|------------|
-| A | Compliance + Webhook | [✅/❌/⚠️] | [time] | [one line] |
-| B | Auth + CTAs | [✅/❌/⚠️] | [time] | [one line] |
-| C | Client documents | [✅/❌/⚠️] | [time] | [one line] |
-| D | Onboarding trigger | [✅/❌/⚠️] | [time] | [one line] |
-| E | Staff portal | [✅/❌/⚠️] | [time] | [one line] |
-| F | Cleaning SEO fixes | [✅/❌/⚠️] | [time] | [one line] |
-| G | Security V8 | [✅/❌/⚠️] | [time] | [one line] |
-| H | Google credentials | [✅/❌/⚠️] | [time] | [one line] |
-| I | Fix Manager | [✅/❌/⚠️] | [time] | [one line] |
-| J | Client portal | [✅/❌/⚠️] | [time] | [one line] |
-| K | Centralised dashboard | [✅/❌/⚠️] | [time] | [one line] |
+| Group | Name | Status | Key result |
+|-------|------|--------|------------|
+| A | Compliance + Webhook | ✅ DONE (Session 1) | 4 links fixed |
+| B | Auth + CTAs | ✅ DONE (Session 1) | Both sites live |
+| C | Client documents | [✅/❌/⚠️] | [result] |
+| D | Onboarding trigger | [✅/❌/⚠️] | [result] |
+| E | Staff portal | [✅/❌/⚠️] | [result] |
+| F | Cleaning SEO fixes | [✅/❌/⚠️] | Score: [N] |
+| G | Security V8 | [✅/❌/⚠️] | [result] |
+| H | Google credentials | [✅/❌/⚠️] | [N] configured |
+| I | Fix Manager | [✅/❌/⚠️] | [result] |
+| J | Client portal | [✅/❌/⚠️] | [result] |
+| K | SEO dashboard | [✅/❌/⚠️] | [result] |
 
-## WHAT TO TEST (in this order)
-1. CRM compliance chain
-   URL: https://app.vigilservices.co.uk/admin/compliance/verify-queue
-   Test: Register a test employee → verify checklist auto-created
-   Test: Upload a document → verify compliance record updates
-   Test: Mark all critical items verified → verify status becomes 'cleared'
-   Test: Try to schedule an uncompliant employee → verify it is blocked
+## WHAT TO TEST (in priority order)
 
-2. Client onboarding pathway
-   URL: https://app.vigilservices.co.uk/admin/leads
-   Test: Create a lead → convert to client → verify document bundle sent
-   Test: Visit signing link → complete all documents → verify client = Active
-   Test: Check coordinator notification received
+### 1. Client onboarding pathway (most critical)
+- CRM: app.vigilservices.co.uk/admin/leads
+  → Create a test lead
+  → Convert to client
+  → Verify onboarding email sent
+  → Click signing link in email
+  → Sign all documents
+  → Verify client status = Active
 
-3. Booking CTAs
-   URL: https://cleaning.vigilservices.co.uk
-   Test: CTA visible in header on desktop
-   Test: CTA visible in homepage hero
-   Test: CTA visible on service pages
-   URL: https://security.vigilservices.co.uk
-   Test: Same checks
+### 2. Compliance chain (regulatory)
+- CRM: Register test employee → compliance checklist auto-created?
+- Upload a document → compliance record updates?
+- Mark all critical items verified → status = cleared?
+- Try to schedule uncompliant employee → blocked?
 
-4. Staff portal
-   URL: https://app.vigilservices.co.uk/staff/login
-   Test: Magic link login works
-   Test: Shifts visible
-   Test: Timesheet submission works
+### 3. Booking CTAs (revenue)
+- cleaning.vigilservices.co.uk → CTA visible on service pages?
+- CTA on homepage? (should NOT be there)
+- Click CTA → lands on homepage qualification flow?
+- security.vigilservices.co.uk → same checks, orange buttons?
 
-5. SEO scores
-   URL: https://cleaning.vigilservices.co.uk/api/health-check
-   Test: Score improved from 38
-   Test: Forbidden claims count = 0
-   Test: H1 missing count reduced
-   URL: https://security.vigilservices.co.uk/api/health-check
-   Test: Version shows v8.0.0
+### 4. Staff portal
+- app.vigilservices.co.uk/staff/login
+- Login as test.worker@vigil.test / Staff1234!
+- View shifts → works?
+- Submit timesheet → works?
+- View compliance → shows status?
 
-6. Admin dashboards
-   URL: https://cleaning.vigilservices.co.uk/admin
-   Test: Login works
-   Test: Run audit → results display
-   URL: https://app.vigilservices.co.uk/admin/seo
-   Test: Both site scores visible
+### 5. SEO scores
+- cleaning.vigilservices.co.uk/api/health-check
+  → Score above 38?
+  → Forbidden claims count = 0?
+  → H1 missing count reduced?
+- security.vigilservices.co.uk/api/health-check
+  → Version = 8.0.0?
 
-## DECISIONS MADE (autonomous)
-[List every scenario analysis decision with reasoning]
+### 6. Client portal
+- app.vigilservices.co.uk/client/login
+- Enter test client email → magic link sent?
+- Click link → dashboard loads?
 
-## ERRORS ENCOUNTERED AND FIXED
-[List every error with: what it was, what caused it, how it was fixed]
+### 7. SEO dashboard in CRM
+- app.vigilservices.co.uk/admin/seo
+- Both sites showing scores side by side?
 
-## ACTIONS REQUIRING MANUAL FOLLOW-UP
-[List only items that genuinely could not be automated:
- e.g. Vercel env vars that need credentials only you have,
- GSC OAuth that needs browser login]
+## MANUAL ACTIONS REQUIRED
+[Populated from MANUAL-TODO.md — all items that need credentials
+or actions only the user can perform]
 
-## COMMITS MADE
-[List all git commits with hash, message, repo, timestamp]
+## AUTONOMOUS DECISIONS MADE
+[Every scenario analysis decision logged during execution]
+
+## ALL COMMITS
+[List: repo | hash | message | timestamp]
+
+## ERRORS ENCOUNTERED AND HOW FIXED
+[Every error with diagnosis and resolution]
 ---
 
 Save AUTORUN-REPORT.md to repo root.
-git add AUTORUN-REPORT.md AUTORUN-LOG.md
-git commit -m "docs: autorun complete — report and log"
-git push origin main (to app repo)
+git add AUTORUN-REPORT.md AUTORUN-LOG.md MANUAL-TODO.md
+git commit -m "docs: session 2 autorun complete — report, log, manual todo"
+git push origin master
 
-AUTORUN COMPLETE.
+COPY REPORT TO CLEANING AND SECURITY REPOS:
+copy AUTORUN-REPORT.md C:\laragon\www\vigil-cleaning\AUTORUN-REPORT.md
+cd C:\laragon\www\vigil-cleaning
+git add AUTORUN-REPORT.md
+git commit -m "docs: autorun session 2 report"
+git push origin main
+
+copy AUTORUN-REPORT.md C:\laragon\www\security\AUTORUN-REPORT.md
+cd C:\laragon\www\security
+git add AUTORUN-REPORT.md
+git commit -m "docs: autorun session 2 report"
+git push origin main
+
+SESSION 2 COMPLETE.
