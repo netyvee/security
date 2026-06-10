@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     locale: 'en_GB',
     type: 'website',
   },
+  alternates: { canonical: '/blog/' },
 }
 
 const blogPosts = [

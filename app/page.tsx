@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     description:
       'Vigil provides professional security services London businesses rely on — manned guarding, mobile patrols and SIA licensed officers. Free security assessment.',
   },
+  alternates: { canonical: '/' },
 }
 
 const homepageSchema = {
