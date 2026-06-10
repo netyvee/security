@@ -82,20 +82,40 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const crmPayload = {
+      // Required fields
+      name: body.name,
+      email: body.email,
+      phone: body.phone || '',
+      company: body.company || '',
+      service_type: 'Security',
+      lead_source: 'Security Website',
+
+      // Structured funnel fields
+      venue_type: body.premisesType || body.premises || body.sector || '',
+      interestedIn: body.serviceType || body.service || '',
+      security_hours_per_week: body.hours ? parseInt(body.hours) : null,
+      postcode: body.postcode || '',
+      startDate: body.startPreference || body.preferredStart || '',
+
+      // Booking
+      discovery_call_date: body.bookedSlot || body.bookedCallTime || null,
+
+      // Notes — fallback summary
+      notes: [
+        body.premisesType ? `Premises: ${body.premisesType}` : '',
+        body.serviceType ? `Service: ${body.serviceType}` : '',
+        body.hours ? `Hours: ${body.hours}` : '',
+        body.postcode ? `Postcode: ${body.postcode}` : '',
+        body.startPreference ? `Start: ${body.startPreference}` : '',
+        body.contractLength ? `Contract: ${body.contractLength}` : '',
+      ].filter(Boolean).join(' | '),
+    };
+
     await fetch('https://app.vigilservices.co.uk/enquiry', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: body.name,
-        email: body.email,
-        phone: body.phone || '',
-        company: body.company || '',
-        service_type: 'Security',
-        lead_source: 'website',
-        interestedIn: body.serviceType || body.premisesType || 'Security services',
-        message: `Premises: ${body.premisesType || 'N/A'} | Service: ${body.serviceType || 'N/A'} | Hours: ${body.hours || 'N/A'} | Postcode: ${body.postcode || 'N/A'} | Start: ${body.startPreference || 'N/A'} | Contract: ${body.contractLength || 'N/A'}`,
-        discovery_call_date: body.bookedSlot || null,
-      })
+      body: JSON.stringify(crmPayload)
     }).catch(err => console.error('CRM post failed:', err));
 
     return NextResponse.json({
