@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
       startDate: crmPayload.startDate,
     });
 
-    const crmResponse = await fetch('https://app.vigilservices.co.uk/enquiry', {
+    const crmResponse = await fetch('https://app.vigilservices.co.uk/api/enquiry', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(crmPayload)
