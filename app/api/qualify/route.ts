@@ -82,6 +82,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Helper to parse hours into number
+    function parseHours(hours: string | undefined): number | null {
+      if (!hours) return null;
+
+      // Map common hour patterns to numbers
+      const hourMap: Record<string, number> = {
+        'day-shift': 40,      // 8 hours x 5 days
+        'night-shift': 40,    // 8 hours x 5 days
+        'weekend': 16,        // 8 hours x 2 days
+        '247': 168,           // 24/7 = 168 hours per week
+        'out-of-hours': 30,   // Evenings & weekends estimate
+      };
+
+      // Check if it's a known pattern
+      if (hourMap[hours]) return hourMap[hours];
+
+      // Try to extract first number found
+      const match = hours.match(/\d+/);
+      return match ? parseInt(match[0]) : null;
+    }
+
     const crmPayload = {
       // Required fields
       name: body.name,
@@ -94,7 +115,7 @@ export async function POST(request: NextRequest) {
       // Structured funnel fields
       venue_type: body.premisesType || body.premises || body.sector || '',
       interestedIn: body.serviceType || body.service || '',
-      security_hours_per_week: body.hours ? parseInt(body.hours) : null,
+      security_hours_per_week: parseHours(body.hours),
       postcode: body.postcode || '',
       startDate: body.startPreference || body.preferredStart || '',
 
@@ -112,11 +133,27 @@ export async function POST(request: NextRequest) {
       ].filter(Boolean).join(' | '),
     };
 
-    await fetch('https://app.vigilservices.co.uk/enquiry', {
+    console.log('[Security] Sending to CRM:', {
+      venue_type: crmPayload.venue_type,
+      security_hours_per_week: crmPayload.security_hours_per_week,
+      postcode: crmPayload.postcode,
+      interestedIn: crmPayload.interestedIn,
+      startDate: crmPayload.startDate,
+    });
+
+    const crmResponse = await fetch('https://app.vigilservices.co.uk/enquiry', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(crmPayload)
-    }).catch(err => console.error('CRM post failed:', err));
+    });
+
+    if (!crmResponse.ok) {
+      const errorText = await crmResponse.text();
+      console.error('[Security] CRM responded with error:', crmResponse.status, errorText);
+    } else {
+      const crmResult = await crmResponse.json();
+      console.log('[Security] CRM response:', crmResult);
+    }
 
     return NextResponse.json({
       success: true,
