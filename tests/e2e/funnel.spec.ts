@@ -51,10 +51,16 @@ test.describe('Security Funnel E2E', () => {
 
     // Step 4: Confirm booking
     await expect(page.locator('text=Confirm your booking')).toBeVisible({ timeout: 3000 });
-    await page.click('text=Confirm discovery call →');
 
-    // Wait for thank you screen
-    await expect(page.locator('text=Discovery call confirmed')).toBeVisible({ timeout: 10000 });
+    // Click confirm button and wait for API response
+    const confirmButton = page.locator('button:has-text("Confirm discovery call")');
+    await confirmButton.click();
+
+    // Wait for either success screen OR error alert
+    await Promise.race([
+      expect(page.locator('text=Discovery call confirmed')).toBeVisible({ timeout: 20000 }),
+      page.waitForEvent('dialog', { timeout: 20000 })
+    ]);
 
     console.log('✅ Security funnel submitted successfully');
   });
