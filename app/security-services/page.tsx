@@ -5,6 +5,14 @@ import Coverage from '@/components/Coverage'
 export const metadata: Metadata = {
   title: 'Security Services London | All Security Solutions',
   description: 'Professional security services across Greater London — manned guarding, mobile patrols, key holding, event security, retail security, construction site security, CCTV monitoring, concierge security.',
+  openGraph: {
+    title: 'Security Services London | All Security Solutions',
+    description: 'Professional security services across Greater London — manned guarding, mobile patrols, key holding, event, retail, construction, CCTV, concierge. Directly employed, SIA-licensed.',
+    url: 'https://security.vigilservices.co.uk/security-services/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/security-services/',
   },

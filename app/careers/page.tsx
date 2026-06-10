@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Careers at Vigil Security | Security Officer Jobs in London',
   description: 'Join Vigil Security — SIA-licensed security officer positions across Greater London. Directly employed, competitive rates, stable rotas. Apply now.',
+  openGraph: {
+    title: 'Careers at Vigil Security | Security Officer Jobs in London',
+    description: 'Join Vigil Security — SIA-licensed security officer positions across Greater London. Directly employed, competitive rates, stable rotas.',
+    url: 'https://security.vigilservices.co.uk/careers/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/careers/' },
   robots: { index: true, follow: true },
 }

@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Terms of Service | Vigil Security Services',
   description: 'Vigil Security terms of service for commercial security contracts across Greater London.',
+  openGraph: {
+    title: 'Terms of Service | Vigil Security Services',
+    description: 'Vigil Security terms of service for commercial security contracts across Greater London.',
+    url: 'https://security.vigilservices.co.uk/terms-of-service/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/terms-of-service/' },
   robots: { index: true, follow: true },
 }

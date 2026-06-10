@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Privacy Policy | Vigil Security Services',
   description: 'Vigil Security privacy policy — how we collect, use, and protect your personal data in compliance with UK GDPR.',
+  openGraph: {
+    title: 'Privacy Policy | Vigil Security Services',
+    description: 'Vigil Security privacy policy — how we collect, use, and protect your personal data in compliance with UK GDPR.',
+    url: 'https://security.vigilservices.co.uk/privacy-policy/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/privacy-policy/' },
   robots: { index: true, follow: true },
 }

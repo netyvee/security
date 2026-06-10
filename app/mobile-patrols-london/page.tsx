@@ -11,6 +11,14 @@ const serviceTitle = 'Mobile Patrols London'
 export const metadata: Metadata = {
   title: `${serviceTitle} | Mobile Patrol Security Services`,
   description: `${focusKeyword} — SIA-licensed mobile patrol officers across Greater London. Cost-effective security patrols for offices, retail, and industrial premises. Directly employed, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | Mobile Patrol Security Services`,
+    description: `${focusKeyword} — SIA-licensed mobile patrol officers across Greater London. Cost-effective patrols for offices, retail, and industrial premises. Directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/mobile-patrols-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/mobile-patrols-london/',
   },

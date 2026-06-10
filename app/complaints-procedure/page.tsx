@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Complaints Procedure | Vigil Security Services',
   description: 'How to make a complaint about Vigil Security services.',
+  openGraph: {
+    title: 'Complaints Procedure | Vigil Security Services',
+    description: 'How to make a complaint about Vigil Security services — contact details, timelines, and escalation procedure.',
+    url: 'https://security.vigilservices.co.uk/complaints-procedure/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/complaints-procedure/' },
   robots: { index: true, follow: true },
 }

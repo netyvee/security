@@ -5,6 +5,14 @@ import { buildFAQSchema, buildBreadcrumbSchema } from '@/components/shared/Schem
 export const metadata: Metadata = {
   title: 'Frequently Asked Questions | Vigil Security Services',
   description: 'Common questions about our SIA-licensed security services in London. Learn about manned guarding, mobile patrols, key holding, pricing, and deployment across Greater London.',
+  openGraph: {
+    title: 'Frequently Asked Questions | Vigil Security Services',
+    description: 'Common questions about SIA-licensed security services in London — manned guarding, mobile patrols, key holding, pricing, and deployment across Greater London.',
+    url: 'https://security.vigilservices.co.uk/faq/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/faq/',
   },

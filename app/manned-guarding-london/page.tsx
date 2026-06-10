@@ -11,6 +11,14 @@ const serviceTitle = 'Manned Guarding London'
 export const metadata: Metadata = {
   title: `${serviceTitle} | SIA-Licensed Security Officers`,
   description: `${focusKeyword} — SIA-licensed officers, directly employed, £10M insured. Professional on-site security for offices, retail, and commercial premises across Greater London.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed Security Officers`,
+    description: `${focusKeyword} — SIA-licensed officers, directly employed, £10M insured. On-site security for offices, retail, and commercial premises across Greater London.`,
+    url: 'https://security.vigilservices.co.uk/manned-guarding-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/manned-guarding-london/',
   },

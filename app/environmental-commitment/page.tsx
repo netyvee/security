@@ -5,6 +5,14 @@ import { buildBreadcrumbSchema } from '@/components/shared/SchemaMarkup'
 export const metadata: Metadata = {
   title: 'Environmental Commitment | Vigil Security Services',
   description: 'Vigil Security commitment to environmental sustainability. Learn about our carbon reduction initiatives, paperless operations, and sustainable security practices.',
+  openGraph: {
+    title: 'Environmental Commitment | Vigil Security Services',
+    description: 'Vigil Security commitment to environmental sustainability — carbon reduction, paperless operations, and sustainable security practices across Greater London.',
+    url: 'https://security.vigilservices.co.uk/environmental-commitment/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/environmental-commitment/',
   },

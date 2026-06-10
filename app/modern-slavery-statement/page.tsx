@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Modern Slavery Statement | Vigil Security Services',
   description: 'Vigil Security modern slavery statement in compliance with Modern Slavery Act 2015.',
+  openGraph: {
+    title: 'Modern Slavery Statement | Vigil Security Services',
+    description: 'Vigil Security modern slavery and human trafficking statement in compliance with Modern Slavery Act 2015.',
+    url: 'https://security.vigilservices.co.uk/modern-slavery-statement/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/modern-slavery-statement/' },
   robots: { index: true, follow: true },
 }

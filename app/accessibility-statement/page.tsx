@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Accessibility Statement | Vigil Security Services',
   description: 'Vigil Security accessibility statement — our commitment to website accessibility.',
+  openGraph: {
+    title: 'Accessibility Statement | Vigil Security Services',
+    description: 'Vigil Security accessibility statement — our commitment to WCAG 2.1 AA website accessibility.',
+    url: 'https://security.vigilservices.co.uk/accessibility-statement/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/accessibility-statement/' },
   robots: { index: true, follow: true },
 }

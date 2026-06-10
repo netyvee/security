@@ -11,6 +11,14 @@ const serviceTitle = 'Event Security London'
 export const metadata: Metadata = {
   title: `${serviceTitle} | SIA-Licensed Event Security Officers`,
   description: `${focusKeyword} — SIA-licensed Door Supervisors and event security officers for corporate events, private functions, and public gatherings across Greater London. £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed Event Security Officers`,
+    description: `${focusKeyword} — SIA-licensed Door Supervisors for corporate events, private functions, and public gatherings across Greater London. £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/event-security-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/event-security-london/',
   },

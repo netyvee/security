@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Cookie Policy | Vigil Security Services',
   description: 'Vigil Security cookie policy — how we use cookies on our website.',
+  openGraph: {
+    title: 'Cookie Policy | Vigil Security Services',
+    description: 'Vigil Security cookie policy — how we use cookies on our website and how to manage your preferences.',
+    url: 'https://security.vigilservices.co.uk/cookie-policy/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/cookie-policy/' },
   robots: { index: true, follow: true },
 }

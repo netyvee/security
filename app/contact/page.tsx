@@ -4,6 +4,14 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Contact Vigil Security Services | 020 3973 8892',
   description: 'Contact Vigil Security — Call 020 3973 8892 or email security@vigilservices.co.uk for SIA-licensed security across Greater London. Free site assessments available.',
+  openGraph: {
+    title: 'Contact Vigil Security Services | 020 3973 8892',
+    description: 'Contact Vigil Security — Call 020 3973 8892 or email security@vigilservices.co.uk. Free site assessments across Greater London.',
+    url: 'https://security.vigilservices.co.uk/contact/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/contact/' },
   robots: { index: true, follow: true },
 }
