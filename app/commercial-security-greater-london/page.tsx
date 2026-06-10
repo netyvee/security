@@ -9,8 +9,16 @@ const focusKeyword = 'commercial security Greater London'
 const serviceTitle = 'Commercial Security Greater London'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security Across All 32 London Boroughs`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for offices, retail, construction, and hospitality across all 32 London boroughs. Directly employed, DBS-checked, £10M insured, 24/7 availability.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers across all 32 London boroughs. Offices, retail, construction, hospitality. Directly employed, £10M insured, 24/7.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-greater-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/commercial-security-greater-london/' },
   robots: { index: true, follow: true },
 }

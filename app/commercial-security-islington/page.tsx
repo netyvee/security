@@ -11,8 +11,16 @@ const borough = 'Islington'
 const postcodes = 'N1, EC1, N5'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security Services in ${borough}`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for Angel, Old Street, and corporate offices in ${postcodes}. Directly employed, DBS-checked, £10M insured. 24/7 cover available.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for Angel, Old Street, and corporate offices in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-islington/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/commercial-security-islington/',
   },

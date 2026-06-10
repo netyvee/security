@@ -11,8 +11,16 @@ const borough = 'Barnet'
 const postcodes = 'NW4, N12, EN5'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security Services in ${borough}`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for offices, retail, and construction sites in ${postcodes}. Directly employed, DBS-checked, £10M insured. 24/7 cover available.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for offices, retail, and construction sites in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-barnet/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/commercial-security-barnet/',
   },

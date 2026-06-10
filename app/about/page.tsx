@@ -2,8 +2,16 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'About Vigil Security Services | SIA-Licensed Security Across Greater London',
+  title: 'About Vigil Security Services | SIA-Licensed London',
   description: 'About Vigil Security — SIA-licensed, directly employed security officers across Greater London. £10M insured, DBS-checked, serving offices, retail, construction, and hospitality.',
+  openGraph: {
+    title: 'About Vigil Security Services | SIA-Licensed London',
+    description: 'Vigil Security — SIA-licensed, directly employed security officers across Greater London. £10M insured, DBS-checked.',
+    url: 'https://security.vigilservices.co.uk/about/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/about/' },
   robots: { index: true, follow: true },
 }

@@ -9,10 +9,18 @@ const focusKeyword = 'concierge security London'
 const serviceTitle = 'Concierge Security London'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Store Security & Loss Prevention`,
-  description: `${focusKeyword} — SIA-licensed concierge security officers and concierge officers for residential buildings across Greater London. Loss prevention, unauthorized access deterrence.`,
+  title: `${serviceTitle} | SIA-Licensed Officers | Vigil`,
+  description: `${focusKeyword} — SIA-licensed concierge security officers for residential buildings and corporate premises across Greater London. Directly employed, DBS-checked, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed Officers | Vigil`,
+    description: `${focusKeyword} — SIA-licensed concierge officers for residential and corporate premises across Greater London. Directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/concierge-security-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
-    canonical: '/retail-security-london/',
+    canonical: '/concierge-security-london/',
   },
   robots: {
     index: true,

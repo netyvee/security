@@ -9,8 +9,16 @@ const focusKeyword = 'retail security London'
 const serviceTitle = 'Retail Security London'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Store Security & Loss Prevention`,
+  title: `${serviceTitle} | Loss Prevention | Vigil`,
   description: `${focusKeyword} — SIA-licensed retail security officers and store detectives for shops and shopping centres across Greater London. Loss prevention, shoplifting deterrence.`,
+  openGraph: {
+    title: `${serviceTitle} | Loss Prevention | Vigil`,
+    description: `${focusKeyword} — SIA-licensed retail security officers and store detectives across Greater London. Loss prevention, shoplifting deterrence.`,
+    url: 'https://security.vigilservices.co.uk/retail-security-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/retail-security-london/',
   },

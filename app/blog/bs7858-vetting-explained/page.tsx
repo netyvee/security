@@ -9,15 +9,16 @@ import TrustBar from '@/components/shared/TrustBar'
 import FAQAccordion from '@/components/shared/FAQAccordion'
 
 export const metadata: Metadata = {
-  title: 'What is BS7858 Vetting and Why Does It Matter | Security Industry Guide',
+  title: 'BS7858 Vetting Explained: Why It Matters | Vigil',
   description:
     'Understanding BS7858 vetting standards for security personnel. Learn what BS7858 screening involves, why it matters for your business, and how it differs from basic DBS checks.',
+  alternates: { canonical: '/blog/bs7858-vetting-explained/' },
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
-    title: 'What is BS7858 Vetting and Why Does It Matter',
+    title: 'BS7858 Vetting Explained: Why It Matters | Vigil',
     description:
       'Complete guide to BS7858 screening standards for security personnel and what they mean for your business.',
     url: 'https://security.vigilservices.co.uk/blog/bs7858-vetting-explained',

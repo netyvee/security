@@ -11,8 +11,16 @@ const borough = 'Hackney'
 const postcodes = 'E8, N16, E9'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security Services in ${borough}`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for co-working spaces, creative industries, retail, and offices in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for co-working, creative industries, retail, and offices in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-hackney/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/commercial-security-hackney/',
   },

@@ -9,10 +9,18 @@ const focusKeyword = 'CCTV monitoring London'
 const serviceTitle = 'CCTV Monitoring London'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Store Security & Loss Prevention`,
+  title: `${serviceTitle} | SIA-Licensed Security | Vigil`,
   description: `${focusKeyword} — SIA-licensed CCTV monitoring officers and CCTV operators for commercial premises across Greater London. Loss prevention, security breaches deterrence.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed Security | Vigil`,
+    description: `${focusKeyword} — SIA-licensed CCTV monitoring for commercial premises across Greater London. Directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/cctv-monitoring-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
-    canonical: '/retail-security-london/',
+    canonical: '/cctv-monitoring-london/',
   },
   robots: {
     index: true,

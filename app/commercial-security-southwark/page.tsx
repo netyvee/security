@@ -11,8 +11,16 @@ const borough = 'Southwark'
 const postcodes = 'SE1'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security London Bridge, Borough, Bankside`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for London Bridge, construction sites, and offices in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for London Bridge, construction sites, and offices in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-southwark/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/commercial-security-southwark/' },
   robots: { index: true, follow: true },
 }

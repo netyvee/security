@@ -9,15 +9,16 @@ import TrustBar from '@/components/shared/TrustBar'
 import FAQAccordion from '@/components/shared/FAQAccordion'
 
 export const metadata: Metadata = {
-  title: 'Licensing Act 2003 — Security Obligations for London Licensed Premises',
+  title: 'Licensing Act 2003: Security for London Venues | Vigil',
   description:
     'Complete guide to security requirements under the Licensing Act 2003 for pubs, clubs, and licensed premises in London. Understand your legal obligations and conditions.',
+  alternates: { canonical: '/blog/licensing-act-2003-security/' },
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
-    title: 'Licensing Act 2003 — Security Obligations for London Licensed Premises',
+    title: 'Licensing Act 2003: Security for London Venues | Vigil',
     description:
       'Understand security requirements for pubs, clubs, and licensed premises under the Licensing Act 2003.',
     url: 'https://security.vigilservices.co.uk/blog/licensing-act-2003-security',

@@ -11,8 +11,16 @@ const borough = 'Camden'
 const postcodes = 'NW1, NW3'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security for Hospitality, Events, Retail`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for hospitality venues, events, and retail in ${postcodes}. Door supervision, manned guarding, DBS-checked, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for hospitality, events, and retail in ${postcodes}. Door supervision, manned guarding. Directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-camden/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/commercial-security-camden/' },
   robots: { index: true, follow: true },
 }

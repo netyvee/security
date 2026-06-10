@@ -9,15 +9,16 @@ import TrustBar from '@/components/shared/TrustBar'
 import FAQAccordion from '@/components/shared/FAQAccordion'
 
 export const metadata: Metadata = {
-  title: 'SIA Licensing Explained — What to Check Before Hiring Security in London',
+  title: 'SIA Licensing Explained: Hiring Security London | Vigil',
   description:
     'Complete guide to SIA licensing for security officers in London. Learn what SIA approval means, how to verify licenses, and why it matters for your business.',
+  alternates: { canonical: '/blog/sia-licensing-explained/' },
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
-    title: 'SIA Licensing Explained — What to Check Before Hiring Security',
+    title: 'SIA Licensing Explained: Hiring Security London | Vigil',
     description:
       'Understand SIA licensing requirements, how to verify security officers, and what questions to ask before hiring.',
     url: 'https://security.vigilservices.co.uk/blog/sia-licensing-explained',

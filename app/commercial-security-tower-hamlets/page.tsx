@@ -11,8 +11,16 @@ const borough = 'Tower Hamlets'
 const postcodes = 'E1, E2, E14'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security Services Docks, Construction Sites`,
-  description: `${focusKeyword} — SIA-licensed officers for Canary Wharf (see dedicated page), docks, construction sites in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
+  description: `${focusKeyword} — SIA-licensed officers for Canary Wharf, docks, and construction sites in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for Canary Wharf, docks, and construction sites in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-tower-hamlets/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/commercial-security-tower-hamlets/' },
   robots: { index: true, follow: true },
 }

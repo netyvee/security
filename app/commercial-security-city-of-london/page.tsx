@@ -11,8 +11,16 @@ const area = 'City of London'
 const postcodes = 'EC1, EC2, EC3, EC4'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security for Law Firms, Financial Services`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for law firms, financial services, and early-morning access in ${postcodes}. Enhanced DBS checks, directly employed, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for law firms and financial services in ${postcodes}. Enhanced DBS checks, directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-city-of-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/commercial-security-city-of-london/' },
   robots: { index: true, follow: true },
 }

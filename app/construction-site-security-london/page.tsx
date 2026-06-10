@@ -9,10 +9,18 @@ const focusKeyword = 'construction site security London'
 const serviceTitle = 'Construction Site Security London'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Store Security & Loss Prevention`,
-  description: `${focusKeyword} — SIA-licensed construction site security officers and site supervisors for construction sites across Greater London. Loss prevention, site theft deterrence.`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
+  description: `${focusKeyword} — SIA-licensed officers and site supervisors for construction sites across Greater London. Access control, site theft deterrence. Directly employed, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for construction sites across Greater London. Access control, site theft deterrence. Directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/construction-site-security-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
-    canonical: '/retail-security-london/',
+    canonical: '/construction-site-security-london/',
   },
   robots: {
     index: true,

@@ -9,8 +9,16 @@ const focusKeyword = 'key holding alarm response London'
 const serviceTitle = 'Key Holding & Alarm Response London'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Keyholding Services`,
+  title: `${serviceTitle} | 24/7 Alarm Response | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers respond to your alarm activations 24/7. Professional keyholding for offices, retail, and commercial premises across Greater London.`,
+  openGraph: {
+    title: `${serviceTitle} | 24/7 Alarm Response | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for 24/7 alarm response and professional keyholding across Greater London. Directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/key-holding-alarm-response-london/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: {
     canonical: '/key-holding-alarm-response-london/',
   },

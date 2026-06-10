@@ -11,8 +11,16 @@ const borough = 'Westminster'
 const postcodes = 'SW1, W1, WC2'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security for Government, Law Firms, Hospitality`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for government buildings, law firms, and hospitality venues in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for government buildings, law firms, and hospitality in ${postcodes}. Directly employed, DBS-checked, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-westminster/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/commercial-security-westminster/' },
   robots: { index: true, follow: true },
 }

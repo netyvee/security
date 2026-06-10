@@ -11,8 +11,16 @@ const area = 'Canary Wharf'
 const postcodes = 'E14'
 
 export const metadata: Metadata = {
-  title: `${serviceTitle} | SIA-Licensed Security for Corporate Finance, High-Rise Offices`,
+  title: `${serviceTitle} | SIA-Licensed | Vigil`,
   description: `${focusKeyword} — SIA-licensed officers for corporate finance, high-rise offices, and 24/7 business operations in ${postcodes}. Enhanced DBS checks, directly employed, £10M insured.`,
+  openGraph: {
+    title: `${serviceTitle} | SIA-Licensed | Vigil`,
+    description: `${focusKeyword} — SIA-licensed officers for corporate finance and high-rise offices in ${postcodes}. Enhanced DBS checks, directly employed, £10M insured.`,
+    url: 'https://security.vigilservices.co.uk/commercial-security-canary-wharf/',
+    siteName: 'Vigil Security Services',
+    locale: 'en_GB',
+    type: 'website',
+  },
   alternates: { canonical: '/commercial-security-canary-wharf/' },
   robots: { index: true, follow: true },
 }
