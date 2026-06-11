@@ -36,7 +36,7 @@ export default function FloatingCTA() {
 
   return (
     <Link
-      href="/"
+      href="https://app.vigilservices.co.uk/enquire/security"
       className={`fixed left-1/2 -translate-x-1/2 bg-[#4ecdc4] hover:bg-[#3dbdb4] text-[#0a1628] font-medium px-6 py-2.5 rounded-full transition-all duration-300 z-40 shadow-lg ${
         visible ? "opacity-100 bottom-6" : "opacity-0 pointer-events-none -bottom-12"
       }`}
