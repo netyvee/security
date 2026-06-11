@@ -2,11 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Contact Vigil Security Services | 020 3973 8887',
-  description: 'Contact Vigil Security — Call 020 3973 8887 or email security@vigilservices.co.uk for SIA-licensed security across Greater London. Free site assessments available.',
+  title: 'Contact Vigil Security Services | 020 3973 8892',
+  description: 'Contact Vigil Security — Call 020 3973 8892 or email security@vigilservices.co.uk for SIA-licensed security across Greater London. Free site assessments available.',
   openGraph: {
-    title: 'Contact Vigil Security Services | 020 3973 8887',
-    description: 'Contact Vigil Security — Call 020 3973 8887 or email security@vigilservices.co.uk. Free site assessments across Greater London.',
+    title: 'Contact Vigil Security Services | 020 3973 8892',
+    description: 'Contact Vigil Security — Call 020 3973 8892 or email security@vigilservices.co.uk. Free site assessments across Greater London.',
     url: 'https://security.vigilservices.co.uk/contact/',
     siteName: 'Vigil Security Services',
     locale: 'en_GB',
@@ -48,8 +48,8 @@ export default function ContactPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-white font-semibold text-[16px] mb-2">Phone</h3>
-                  <a href="tel:+442039738887" className="text-[#4ecdc4] text-[20px] hover:underline">
-                    020 3973 8887
+                  <a href="tel:+442039738892" className="text-[#4ecdc4] text-[20px] hover:underline">
+                    020 3973 8892
                   </a>
                   <p className="text-white/60 text-[14px] mt-1">
                     24/7 for emergencies, business hours for new enquiries
@@ -140,10 +140,10 @@ export default function ContactPage() {
             Emergency security required?
           </h2>
           <p className="text-white/70 text-[17px] mb-8 max-w-2xl mx-auto">
-            Call us now on 020 3973 8887 for immediate assistance. We maintain a pool of trained officers and can often deploy within 24 hours.
+            Call us now on 020 3973 8892 for immediate assistance. We maintain a pool of trained officers and can often deploy within 24 hours.
           </p>
-          <a href="tel:+442039738887" className="btn-primary inline-block">
-            Call 020 3973 8887
+          <a href="tel:+442039738892" className="btn-primary inline-block">
+            Call 020 3973 8892
           </a>
         </div>
       </section>

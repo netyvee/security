@@ -29,7 +29,7 @@ const homepageSchema = {
   description:
     'Professional manned guarding, mobile patrols and SIA licensed security officers across London.',
   url: 'https://security.vigilservices.co.uk',
-  telephone: '020 3973 8887',
+  telephone: '020 3973 8892',
   email: 'security@vigilservices.co.uk',
   address: {
     '@type': 'PostalAddress',

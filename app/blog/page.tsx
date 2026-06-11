@@ -205,8 +205,8 @@ export default function BlogPage() {
         subtext="Our team can help you understand security requirements and find the right solution for your premises."
         primaryLabel="Get a Free Quote"
         primaryHref="/"
-        outlineLabel="Call us: 020 3973 8887"
-        outlineHref="tel:+442039738887"
+        outlineLabel="Call us: 020 3973 8892"
+        outlineHref="tel:+442039738892"
       />
 
       <Footer />

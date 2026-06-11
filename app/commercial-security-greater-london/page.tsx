@@ -69,7 +69,7 @@ export default function CommercialSecurityGreaterLondonPage() {
           description: 'SIA-licensed commercial security services across all 32 Greater London boroughs.',
           provider: {
             '@type': 'LocalBusiness', name: 'Vigil Security Services',
-            telephone: '+442039738887', email: 'security@vigilservices.co.uk',
+            telephone: '+442039738892', email: 'security@vigilservices.co.uk',
             address: {
               '@type': 'PostalAddress', streetAddress: 'Ferguson House, 113 Cranbrook Road',
               addressLocality: 'Ilford', postalCode: 'IG1 4PU', addressCountry: 'GB'
@@ -112,7 +112,7 @@ export default function CommercialSecurityGreaterLondonPage() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link href="/" className="btn-primary">Get a quote</Link>
-              <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
+              <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
             </div>
           </div>
           <div className="relative h-[400px] rounded-xl overflow-hidden">
@@ -163,7 +163,7 @@ export default function CommercialSecurityGreaterLondonPage() {
             Vigil provides consolidated security contracts covering all your Greater London sites under a single agreement. Benefits include one account manager coordinating all locations and serving as single point of contact, unified reporting with consolidated incident logs, shift reports, and performance metrics across all sites, consistent service standards with same training, procedures, and quality regardless of borough, centralised invoicing with one monthly invoice covering all locations, coordinated officer deployment with officers deployed across multiple sites as needed, and simplified contract management with one renewal date, one set of terms, and one relationship to manage.
           </p>
           <p>
-            We currently serve multi-site clients with locations spanning 5+ boroughs under single consolidated contracts. For more information about multi-site security, call <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a> or complete our online qualification form specifying all your Greater London locations.
+            We currently serve multi-site clients with locations spanning 5+ boroughs under single consolidated contracts. For more information about multi-site security, call <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a> or complete our online qualification form specifying all your Greater London locations.
           </p>
 
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-3 mt-12">Services available across all Greater London boroughs</h2>
@@ -254,9 +254,9 @@ export default function CommercialSecurityGreaterLondonPage() {
           </p>
 
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-3 mt-12">How to book commercial security services in Greater London</h2>
-          <p className="tldr mb-6">Request a quote online, speak with our team on 020 3973 8887, or book a site assessment for your Greater London premises.</p>
+          <p className="tldr mb-6">Request a quote online, speak with our team on 020 3973 8892, or book a site assessment for your Greater London premises.</p>
           <p>
-            To arrange commercial security services for your Greater London premises — whether single-site or multi-site — complete our online qualification form specifying all locations or call <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a>. We'll arrange free site visits to evaluate your security requirements at each location. You'll receive a detailed quote within 24 hours outlining recommended services, officer deployment, and costs. For multi-site contracts, we provide consolidated quotes covering all locations.
+            To arrange commercial security services for your Greater London premises — whether single-site or multi-site — complete our online qualification form specifying all locations or call <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a>. We'll arrange free site visits to evaluate your security requirements at each location. You'll receive a detailed quote within 24 hours outlining recommended services, officer deployment, and costs. For multi-site contracts, we provide consolidated quotes covering all locations.
           </p>
           <p>
             Once you approve the quote, we mobilise within 48–72 hours for standard contracts or within 24 hours for emergencies. Our account manager remains your single point of contact for all Greater London services, handling scheduling, invoicing, incident reporting, and service adjustments across all your locations.
@@ -290,7 +290,7 @@ export default function CommercialSecurityGreaterLondonPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/" className="btn-primary">Get a quote</Link>
-            <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
+            <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
           </div>
         </div>
       </section>
@@ -305,7 +305,7 @@ export default function CommercialSecurityGreaterLondonPage() {
             Unlike national security companies that rely on agency staff, Vigil employs all officers directly. This ensures consistent assignment, accountability, and adherence to our service standards across all Greater London boroughs. We provide both single-site contracts for individual premises and consolidated contracts for multi-site organisations, simplifying procurement and ensuring consistent security standards across your entire London operation.
           </p>
           <p>
-            All officers hold current SIA licences and enhanced DBS checks. We carry £10M public liability insurance and £10M employer's liability insurance. For more information, call <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>.
+            All officers hold current SIA licences and enhanced DBS checks. We carry £10M public liability insurance and £10M employer's liability insurance. For more information, call <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>.
           </p>
         </div>
       </section>

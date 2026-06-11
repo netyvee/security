@@ -24,7 +24,7 @@ const organizationSchema = {
   description: 'Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured.',
   url: 'https://security.vigilservices.co.uk',
   logo: 'https://security.vigilservices.co.uk/logo.svg',
-  telephone: '+442039738887',
+  telephone: '+442039738892',
   email: 'security@vigilservices.co.uk',
   address: {
     '@type': 'PostalAddress',

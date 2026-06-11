@@ -68,7 +68,7 @@ export default function CommercialSecurityLewishamPage() {
           provider: {
             '@type': 'LocalBusiness',
             name: 'Vigil Security Services',
-            telephone: '+442039738887',
+            telephone: '+442039738892',
             email: 'security@vigilservices.co.uk',
             address: {
               '@type': 'PostalAddress',
@@ -119,7 +119,7 @@ export default function CommercialSecurityLewishamPage() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link href="/contact/" className="btn-primary">Get a quote</Link>
-              <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
+              <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
             </div>
           </div>
           <div className="relative h-[400px] rounded-xl overflow-hidden">
@@ -205,7 +205,7 @@ export default function CommercialSecurityLewishamPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/contact/" className="btn-primary">Get a quote</Link>
-            <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
+            <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
           </div>
         </div>
       </section>

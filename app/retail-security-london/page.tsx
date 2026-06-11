@@ -79,7 +79,7 @@ export default function RetailSecurityPage() {
             provider: {
               '@type': 'LocalBusiness',
               name: 'Vigil Security Services',
-              telephone: '+442039738887',
+              telephone: '+442039738892',
               email: 'security@vigilservices.co.uk',
               address: { '@type': 'PostalAddress', streetAddress: 'Ferguson House, 113 Cranbrook Road', addressLocality: 'Ilford', postalCode: 'IG1 4PU', addressCountry: 'GB' }
             },
@@ -123,7 +123,7 @@ export default function RetailSecurityPage() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link href="/" className="btn-primary">Get a quote</Link>
-              <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
+              <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
             </div>
           </div>
           <div className="relative h-[400px] rounded-xl overflow-hidden">
@@ -255,7 +255,7 @@ export default function RetailSecurityPage() {
           <p className="text-white/60 text-[17px] leading-relaxed mb-8 max-w-2xl mx-auto">Get a free site assessment and tailored quotation. SIA-licensed officers, loss prevention specialists, flexible deployment.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/" className="btn-primary text-base px-8 py-4">Get a free quote</Link>
-            <a href="tel:+442039738887" className="btn-outline text-base px-8 py-4">020 3973 8887</a>
+            <a href="tel:+442039738892" className="btn-outline text-base px-8 py-4">020 3973 8892</a>
           </div>
         </div>
       </section>

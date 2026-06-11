@@ -40,7 +40,7 @@ export function buildServiceSchema(opts: {
     provider: {
       "@type": "LocalBusiness",
       name: "Vigil Cleaning Services",
-      telephone: "+442030986037",
+      telephone: "+442039738892",
       address: {
         "@type": "PostalAddress",
         streetAddress: "Ferguson House, 113 Cranbrook Road",

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         html: `<div style="font-family:Arial;background:#0a1628;padding:24px;border-radius:8px;color:#fff;">
           <h2 style="color:#4ecdc4;margin:0 0 16px;">Thank you ${name}</h2>
           <p style="color:rgba(255,255,255,0.7);">We have received your enquiry and will respond within 24 hours.</p>
-          <p style="color:rgba(255,255,255,0.7);">For urgent matters call 020 3973 8887.</p>
+          <p style="color:rgba(255,255,255,0.7);">For urgent matters call 020 3973 8892.</p>
           <p style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:24px;">Vigil Services Ltd · Ferguson House, 113 Cranbrook Road, Ilford IG1 4PU</p>
         </div>`,
       })

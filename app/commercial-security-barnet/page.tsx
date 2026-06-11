@@ -84,7 +84,7 @@ export default function CommercialSecurityBarnetPage() {
             provider: {
               '@type': 'LocalBusiness',
               name: 'Vigil Security Services',
-              telephone: '+442039738887',
+              telephone: '+442039738892',
               email: 'security@vigilservices.co.uk',
               address: {
                 '@type': 'PostalAddress',
@@ -147,8 +147,8 @@ export default function CommercialSecurityBarnetPage() {
               <Link href="/" className="btn-primary">
                 Get a quote
               </Link>
-              <a href="tel:+442039738887" className="btn-outline">
-                020 3973 8887
+              <a href="tel:+442039738892" className="btn-outline">
+                020 3973 8892
               </a>
             </div>
           </div>
@@ -366,10 +366,10 @@ export default function CommercialSecurityBarnetPage() {
             How to book commercial security services in {borough}
           </h2>
           <p className="tldr mb-6">
-            Request a quote online, speak with our team on 020 3973 8887, or book a site assessment for {borough} premises.
+            Request a quote online, speak with our team on 020 3973 8892, or book a site assessment for {borough} premises.
           </p>
           <p>
-            To arrange commercial security services for your {borough} premises, complete our online qualification form — you'll answer questions about your site location, service requirements, shift patterns, and any specific security concerns. This takes under two minutes and provides enough detail for us to prepare an accurate quote. Alternatively, call our team on <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a> to discuss your requirements — we're available 24/7 for emergency callouts and during business hours for new contract enquiries.
+            To arrange commercial security services for your {borough} premises, complete our online qualification form — you'll answer questions about your site location, service requirements, shift patterns, and any specific security concerns. This takes under two minutes and provides enough detail for us to prepare an accurate quote. Alternatively, call our team on <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a> to discuss your requirements — we're available 24/7 for emergency callouts and during business hours for new contract enquiries.
           </p>
           <p>
             Once we understand your needs, we'll arrange a site visit to your {borough} premises. Our assessor will evaluate access points, CCTV coverage, alarm systems, perimeter security, and any site-specific risks such as high-value stock, hazardous materials, or public access areas. The assessment is free and typically lasts 30–60 minutes depending on site size. For straightforward office or retail sites, we can often provide quotes without a visit based on your description and any site plans or photos you can share.
@@ -419,8 +419,8 @@ export default function CommercialSecurityBarnetPage() {
             <Link href="/" className="btn-primary">
               Get a quote
             </Link>
-            <a href="tel:+442039738887" className="btn-outline">
-              020 3973 8887
+            <a href="tel:+442039738892" className="btn-outline">
+              020 3973 8892
             </a>
           </div>
         </div>
@@ -442,7 +442,7 @@ export default function CommercialSecurityBarnetPage() {
             All officers hold current SIA licences and enhanced DBS checks. We carry £10M public liability insurance and £10M employer's liability insurance covering all contracts. Vigil is committed to delivering professional, reliable, and cost-effective security solutions for {borough} businesses of all sizes, from single-site retailers to multi-site corporate clients operating across London.
           </p>
           <p>
-            For more information about our services, call <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>. We provide free site assessments and quotes for all {borough} commercial premises.
+            For more information about our services, call <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>. We provide free site assessments and quotes for all {borough} commercial premises.
           </p>
         </div>
       </section>

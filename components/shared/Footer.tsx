@@ -107,7 +107,7 @@ export default function Footer() {
             © {year} Vigil Security Services. Company registered in England & Wales.
           </p>
           <p className="text-[12px] text-[rgba(255,255,255,0.35)]">
-            <a href="tel:+442039738887" className="hover:text-[#4ecdc4] transition-colors">020 3973 8887</a>
+            <a href="tel:+442039738892" className="hover:text-[#4ecdc4] transition-colors">020 3973 8892</a>
             {" · "}
             <a href="mailto:security@vigilservices.co.uk" className="hover:text-[#4ecdc4] transition-colors">
               security@vigilservices.co.uk

@@ -14,8 +14,8 @@ export default function CTASection({
   subtext = "Get a free site assessment — we quote after seeing your premises, not before.",
   primaryLabel = "Get started",
   primaryHref = "/get-started/",
-  outlineLabel = "Call us: 020 3973 8887",
-  outlineHref = "tel:+442039738887",
+  outlineLabel = "Call us: 020 3973 8892",
+  outlineHref = "tel:+442039738892",
 }: CTASectionProps) {
   return (
     <section

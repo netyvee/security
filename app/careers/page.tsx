@@ -76,7 +76,7 @@ export default function CareersPage() {
             Ready to apply?
           </h2>
           <p className="text-white/70 text-[17px] mb-8 max-w-2xl mx-auto">
-            Email your CV to security@vigilservices.co.uk or call 020 3973 8887 to discuss current opportunities.
+            Email your CV to security@vigilservices.co.uk or call 020 3973 8892 to discuss current opportunities.
           </p>
           <a href="mailto:security@vigilservices.co.uk" className="btn-primary inline-block">
             Email your CV

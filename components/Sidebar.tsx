@@ -16,7 +16,7 @@ const services = [
 
 const quickLinks = [
   { label: "All locations", href: "/security-services/", icon: "ti-map-pin" },
-  { label: "020 3973 8887", href: "tel:02039738887", icon: "ti-phone" },
+  { label: "020 3973 8892", href: "tel:02039738892", icon: "ti-phone" },
   { label: "Contact us", href: "/contact/", icon: "ti-mail" },
 ];
 

@@ -86,7 +86,7 @@ export default function DoorSupervisorsPage() {
             provider: {
               '@type': 'LocalBusiness',
               name: 'Vigil Security Services',
-              telephone: '+442039738887',
+              telephone: '+442039738892',
               email: 'security@vigilservices.co.uk',
               address: {
                 '@type': 'PostalAddress',
@@ -146,8 +146,8 @@ export default function DoorSupervisorsPage() {
               <Link href="/contact/" className="btn-primary">
                 Request door supervisors
               </Link>
-              <a href="tel:+442039738887" className="btn-outline">
-                020 3973 8887
+              <a href="tel:+442039738892" className="btn-outline">
+                020 3973 8892
               </a>
             </div>
           </div>
@@ -314,8 +314,8 @@ export default function DoorSupervisorsPage() {
         subtext="SIA-licensed officers for pubs, bars, nightclubs, and licensed events across Greater London. Free site visit and same-day quote."
         primaryLabel="Request door supervisors"
         primaryHref="/contact/"
-        outlineLabel="Call: 020 3973 8887"
-        outlineHref="tel:+442039738887"
+        outlineLabel="Call: 020 3973 8892"
+        outlineHref="tel:+442039738892"
       />
 
       {/* SEO Content Block */}
