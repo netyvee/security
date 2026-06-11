@@ -1,60 +1,107 @@
 # Vigil Security Services
+> Professional security services across Greater London.
+> SIA-licensed officers. Directly employed. DBS-checked.
+> Company: Vigil Services Ltd, Reg: 11756806
+> Insurance: £10M public liability
 
-Vigil Security Services provides professional security services across all 32 Greater London boroughs.
+## Who We Are
+Vigil Security Services provides SIA-licensed security personnel
+across Greater London. All officers are directly employed by
+Vigil Services Ltd — not agency supplied. Every officer holds a
+current SIA licence and Enhanced DBS certificate.
 
-## Company Information
+We do NOT claim SIA Approved Contractor status, ACS registration,
+BS7858 vetting, or ISO certification unless explicitly confirmed.
 
-- Name: Vigil Security Services
-- Division of: Vigil Services Ltd
-- Location: Ferguson House, 113 Cranbrook Road, Ilford IG1 4PU
-- Phone: 020 3098 6037 / +44 2030 986037
-- Email: security@vigilservices.co.uk
-- Website: https://security.vigilservices.co.uk
-- Coverage: All 32 Greater London boroughs
+## Core Services
+- [Manned Guarding London](https://security.vigilservices.co.uk/manned-guarding-london/)
+- [Mobile Patrols London](https://security.vigilservices.co.uk/mobile-patrols-london/)
+- [Key Holding and Alarm Response London](https://security.vigilservices.co.uk/key-holding-alarm-response-london/)
+- [Event Security London](https://security.vigilservices.co.uk/event-security-london/)
+- [Door Supervisors London](https://security.vigilservices.co.uk/door-supervisors-london/)
+- [Retail Security London](https://security.vigilservices.co.uk/retail-security-london/)
+- [Construction Site Security London](https://security.vigilservices.co.uk/construction-site-security-london/)
+- [CCTV Monitoring London](https://security.vigilservices.co.uk/cctv-monitoring-london/)
+- [Concierge Security London](https://security.vigilservices.co.uk/concierge-security-london/)
 
-## Services
+## Frequently Asked Questions
 
-1. **Manned Guarding** - SIA-licensed security officers assigned to client sites
-2. **Mobile Patrols** - Regular security patrols and site checks across Greater London
-3. **Key Holding & Alarm Response** - 24/7 alarm response and secure key management
-4. **Event Security** - Door supervision and crowd management for events
-5. **Retail Security** - Loss prevention and store protection services
-6. **Construction Site Security** - Site security and access control for construction projects
-7. **CCTV Monitoring** - Remote surveillance and monitoring services
-8. **Concierge Security** - Professional reception and concierge security
+Q: Are your security officers SIA licensed?
+A: Yes. Every officer holds a current SIA licence appropriate
+to their role — Door Supervisor, Security Guard, or CCTV.
 
-## Key Differentiators
+Q: Are your officers directly employed or from an agency?
+A: All Vigil Security officers are directly employed by
+Vigil Services Ltd. We do not use agency staff.
 
-1. **SIA-Licensed Officers** - All security officers hold valid SIA licenses
-2. **Directly Employed** - All officers are directly employed by Vigil, not subcontracted
-3. **DBS-Checked** - All officers undergo enhanced DBS background checks
-4. **£10M Insured** - Full public and employer's liability insurance
-5. **Greater London Coverage** - Service across all 32 London boroughs
-6. **24/7 Availability** - Round-the-clock security services and alarm response
+Q: What insurance does Vigil Security carry?
+A: £10M public liability insurance. Employer's liability held.
 
-## Target Clients
+Q: Do you cover all London boroughs?
+A: Yes — Greater London and all 32 boroughs.
 
+Q: Is door supervisor licensing required by law?
+A: Yes. The Private Security Industry Act 2001 requires all
+door supervisors at licensed premises to hold a current
+SIA Door Supervisor licence.
+
+Q: Can you provide security for events?
+A: Yes. We supply SIA-licensed event security officers for
+conferences, exhibitions, corporate events, and public events
+across London.
+
+Q: What is key holding and alarm response?
+A: We hold a key to your premises and respond to alarm
+activations on your behalf, 24 hours a day, 365 days a year,
+so you do not receive call-outs in the night.
+
+Q: Do you carry out DBS checks on all staff?
+A: Yes. Every officer holds an Enhanced DBS certificate before
+starting any client assignment.
+
+Q: What sectors do you serve?
+A: Retail, hospitality, construction, events, NHS and healthcare,
+education, residential developments, and corporate offices.
+
+Q: What is the difference between manned guarding and mobile patrols?
+A: Manned guarding provides a static officer at your premises
+throughout the contracted hours. Mobile patrols involve an officer
+visiting your site at irregular intervals during the patrol period
+— lower cost, suitable for lower-risk sites requiring deterrence
+rather than constant presence.
+
+Q: How do I get a quote?
+A: Call 020 3973 8892 or complete the enquiry form at
+https://security.vigilservices.co.uk/contact/
+
+## Regulatory Compliance
+- Private Security Industry Act 2001: Fully licensed
+- SIA licensing: All relevant officers hold current licences
+- GDPR 2018: Data handled lawfully
+- Greater London coverage: All 32 boroughs
+
+## Trust Signals
+- Company registration: 11756806 (Companies House)
+- Address: Ferguson House, 113 Cranbrook Road, Ilford IG1 4PU
+- Public liability: £10M
+- All officers: SIA-licensed (Door Supervisor or Security Guard)
+- All officers: DBS-checked
+- All officers: Directly employed
+
+## Target Client Types
 - Commercial property owners and managers
-- Retail businesses and shopping centers
+- Retail businesses and shopping centres
+- Licensed premises: pubs, bars, nightclubs
 - Construction companies and developers
-- Event organizers and venues
+- Event organisers and venues
 - Corporate offices and business parks
-- Residential developments and estates
+- Residential developments and housing estates
+- NHS and healthcare facilities
 
-## Verified Credentials
-
-- SIA-licensed security officers (individual officer licenses)
-- Enhanced DBS background checks on all officers
-- £10 million public and employer's liability insurance
-- Directly employed workforce (not agency or subcontract)
-- Greater London-wide coverage (all 32 boroughs)
-
-## Important Note
-
-Vigil Security Services only claims credentials that are currently held and can be evidenced. We do NOT claim "SIA Approved Contractor" status, BS7858 vetting, ISO certification, or ACS registration unless these are explicitly confirmed and documented.
-
-## Priority URLs
-
+## Contact
+- Phone: 020 3973 8892
+- Email: security@vigilservices.co.uk
+- Address: Ferguson House, 113 Cranbrook Road, Ilford IG1 4PU
+- Enquiry form: https://security.vigilservices.co.uk/contact/
 - Homepage: https://security.vigilservices.co.uk
-- Services: https://security.vigilservices.co.uk/services
-- Contact: https://security.vigilservices.co.uk/contact
+- FAQ: https://security.vigilservices.co.uk/faq/
