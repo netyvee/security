@@ -565,7 +565,7 @@ export default function SIALicensingPost() {
         heading="Looking for SIA-Licensed Security Officers in London?"
         subtext="All our officers are SIA-licensed, DBS-checked, and directly employed. Get a free quote for manned guarding, mobile patrols, or event security."
         primaryLabel="Get a Free Quote"
-        primaryHref="/"
+        primaryHref="https://app.vigilservices.co.uk/enquire/security"
       />
 
       <Footer />

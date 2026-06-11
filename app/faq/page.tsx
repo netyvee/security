@@ -170,7 +170,7 @@ export default function FAQPage() {
             Speak to our team for tailored advice on your security requirements.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/contact/" className="btn-primary">
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">
               Get a quote
             </Link>
             <a href="tel:+442039738892" className="btn-outline">

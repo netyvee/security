@@ -122,7 +122,7 @@ export default function CommercialSecurityLambethPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-4">
-              <Link href="/contact/" className="btn-primary">Get a quote</Link>
+              <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
               <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
             </div>
           </div>
@@ -231,7 +231,7 @@ export default function CommercialSecurityLambethPage() {
             Free site assessment across all {borough} postcodes — {postcodes}. SIA-licensed officers, directly employed, £10M insured.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/contact/" className="btn-primary">Get a quote</Link>
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
             <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
           </div>
         </div>

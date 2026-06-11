@@ -582,7 +582,7 @@ export default function BS7858VettingPost() {
         heading="Looking for Security Officers Who Meet the Highest Standards?"
         subtext="Our officers undergo comprehensive vetting including DBS checks and thorough background verification. Get a free quote today."
         primaryLabel="Get a Free Quote"
-        primaryHref="/"
+        primaryHref="https://app.vigilservices.co.uk/enquire/security"
       />
 
       <Footer />

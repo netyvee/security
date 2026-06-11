@@ -205,7 +205,7 @@ export default function BlogPage() {
         heading="Need Expert Security Guidance?"
         subtext="Our team can help you understand security requirements and find the right solution for your premises."
         primaryLabel="Get a Free Quote"
-        primaryHref="/"
+        primaryHref="https://app.vigilservices.co.uk/enquire/security"
         outlineLabel="Call us: 020 3973 8892"
         outlineHref="tel:+442039738892"
       />

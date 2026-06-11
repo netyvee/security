@@ -106,7 +106,7 @@ export default function AboutPage() {
             Get a free quote for SIA-licensed security services across Greater London.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/contact/" className="btn-primary">Get a quote</Link>
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
             <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
           </div>
         </div>
