@@ -562,9 +562,9 @@ export default function SIALicensingPost() {
       </article>
 
       <CTASection
-        heading="Looking for SIA-Licensed Security Officers in London?"
-        subtext="All our officers are SIA-licensed, DBS-checked, and directly employed. Get a free quote for manned guarding, mobile patrols, or event security."
-        primaryLabel="Get a Free Quote"
+        heading="Looking for SIA-licensed security?"
+        subtext="All Vigil security officers hold current SIA licences. DBS-checked, directly employed."
+        primaryLabel="Get a security quote"
         primaryHref="https://app.vigilservices.co.uk/enquire/security"
       />
 

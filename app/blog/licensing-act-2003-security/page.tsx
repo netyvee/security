@@ -572,9 +572,9 @@ export default function LicensingAct2003Post() {
       </article>
 
       <CTASection
-        heading="Need SIA-Licensed Door Supervision for Your Licensed Premises?"
-        subtext="We provide professional door supervisors for pubs, clubs, and licensed venues across London. All officers are SIA licensed and experienced in licensed premises security."
-        primaryLabel="Get a Free Quote"
+        heading="Need SIA-licensed door supervisors?"
+        subtext="Vigil provides licensed door supervisors for all venue types across London."
+        primaryLabel="Book door supervisors"
         primaryHref="https://app.vigilservices.co.uk/enquire/security"
       />
 

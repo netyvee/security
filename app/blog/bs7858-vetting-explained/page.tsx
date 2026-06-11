@@ -579,9 +579,9 @@ export default function BS7858VettingPost() {
       </article>
 
       <CTASection
-        heading="Looking for Security Officers Who Meet the Highest Standards?"
-        subtext="Our officers undergo comprehensive vetting including DBS checks and thorough background verification. Get a free quote today."
-        primaryLabel="Get a Free Quote"
+        heading="Need BS7858-screened security officers?"
+        subtext="Every Vigil officer is vetted to BS7858 standard before deployment."
+        primaryLabel="Get a security quote"
         primaryHref="https://app.vigilservices.co.uk/enquire/security"
       />
 
