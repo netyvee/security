@@ -10,10 +10,10 @@ interface CTASectionProps {
 }
 
 export default function CTASection({
-  heading = "Ready to discuss your cleaning contract?",
-  subtext = "Get a free site assessment — we quote after seeing your premises, not before.",
-  primaryLabel = "Get started",
-  primaryHref = "/get-started/",
+  heading = "Ready to discuss your security requirements?",
+  subtext = "SIA-licensed, DBS-checked officers across Greater London.",
+  primaryLabel = "Get a security quote",
+  primaryHref = "https://app.vigilservices.co.uk/enquire/security",
   outlineLabel = "Call us: 020 3973 8892",
   outlineHref = "tel:+442039738892",
 }: CTASectionProps) {
