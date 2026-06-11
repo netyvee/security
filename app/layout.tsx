@@ -17,10 +17,13 @@ export const metadata: Metadata = {
 
 const organizationSchema = {
   '@context': 'https://schema.org',
-  '@type': 'SecurityAndInvestigationsService',
+  '@type': 'Organization',
   name: 'Vigil Security Services',
+  legalName: 'Vigil Services Ltd',
+  identifier: '11756806',
   description: 'Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured.',
   url: 'https://security.vigilservices.co.uk',
+  logo: 'https://security.vigilservices.co.uk/logo.svg',
   telephone: '+442039738892',
   email: 'security@vigilservices.co.uk',
   address: {
@@ -32,10 +35,12 @@ const organizationSchema = {
   },
   areaServed: {
     '@type': 'City',
-    name: 'Greater London',
+    name: 'London',
   },
   sameAs: [
     'https://www.instagram.com/vigil.security/',
+    'https://cleaning.vigilservices.co.uk',
+    'https://app.vigilservices.co.uk',
   ],
 }
 
