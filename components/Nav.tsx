@@ -395,10 +395,10 @@ export default function Nav({ minimal = false }: NavProps) {
 
             <li>
               <a
-                href="tel:+442039738892"
+                href="tel:+442039738887"
                 className="text-[13px] text-[#4ecdc4] hover:text-white transition-colors duration-200 font-medium"
               >
-                020 3973 8892
+                020 3973 8887
               </a>
             </li>
           </ul>
@@ -418,10 +418,10 @@ export default function Nav({ minimal = false }: NavProps) {
         {!minimal && (
           <div className="flex lg:hidden items-center gap-4">
             <a
-              href="tel:+442039738892"
+              href="tel:+442039738887"
               className="text-[13px] text-[#4ecdc4] hover:text-white transition-colors font-medium"
             >
-              020 3973 8892
+              020 3973 8887
             </a>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -457,10 +457,10 @@ export default function Nav({ minimal = false }: NavProps) {
         {/* Minimal mode: Phone only */}
         {minimal && (
           <a
-            href="tel:+442039738892"
+            href="tel:+442039738887"
             className="text-[13px] text-[#4ecdc4] hover:text-white transition-colors font-medium"
           >
-            020 3973 8892
+            020 3973 8887
           </a>
         )}
       </div>

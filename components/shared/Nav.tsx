@@ -56,10 +56,10 @@ export default function Nav() {
       {/* Right: phone + CTA */}
       <div className="hidden md:flex items-center gap-4">
         <a
-          href="tel:+442039738892"
+          href="tel:+442039738887"
           className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-white transition-colors"
         >
-          020 3973 8892
+          020 3973 8887
         </a>
         <Link
           href="/"
@@ -108,10 +108,10 @@ export default function Nav() {
             ))}
             <li>
               <a
-                href="tel:+442039738892"
+                href="tel:+442039738887"
                 className="block text-[14px] text-[#4ecdc4] hover:text-white transition-colors"
               >
-                020 3973 8892
+                020 3973 8887
               </a>
             </li>
           </ul>

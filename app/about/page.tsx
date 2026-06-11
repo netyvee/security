@@ -85,11 +85,11 @@ export default function AboutPage() {
 
           <h2 className="font-display text-[32px] font-medium text-white mb-4 mt-12">Contact us</h2>
           <p>
-            For more information about our services or to arrange a free site assessment, call <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>. We're available 24/7 for emergency callouts and during business hours for new contract enquiries.
+            For more information about our services or to arrange a free site assessment, call <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>. We're available 24/7 for emergency callouts and during business hours for new contract enquiries.
           </p>
           <p>
             <strong>Address:</strong> Ferguson House, 113 Cranbrook Road, Ilford, IG1 4PU<br/>
-            <strong>Phone:</strong> 020 3973 8892<br/>
+            <strong>Phone:</strong> 020 3973 8887<br/>
             <strong>Email:</strong> security@vigilservices.co.uk
           </p>
 
@@ -106,7 +106,7 @@ export default function AboutPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/" className="btn-primary">Get a quote</Link>
-            <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
+            <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
           </div>
         </div>
       </section>

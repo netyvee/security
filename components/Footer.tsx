@@ -97,10 +97,10 @@ export default function Footer() {
 
             <div className="space-y-2">
               <a
-                href="tel:+442039738892"
+                href="tel:+442039738887"
                 className="block text-[13px] text-[#4ecdc4] hover:text-white transition-colors"
               >
-                020 3973 8892
+                020 3973 8887
               </a>
               <a
                 href="mailto:security@vigilservices.co.uk"

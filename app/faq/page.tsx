@@ -172,8 +172,8 @@ export default function FAQPage() {
             <Link href="/" className="btn-primary">
               Get a quote
             </Link>
-            <a href="tel:+442039738892" className="btn-outline">
-              020 3973 8892
+            <a href="tel:+442039738887" className="btn-outline">
+              020 3973 8887
             </a>
             <a href="mailto:security@vigilservices.co.uk" className="btn-outline">
               Email us

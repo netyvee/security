@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         </div>
         <div style="background:rgba(78,205,196,0.08);border:1px solid rgba(78,205,196,0.2);border-radius:8px;padding:14px 16px;">
           <p style="color:#fff;font-size:13px;font-weight:600;margin:0 0 6px;">Questions before your call?</p>
-          <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0 0 3px;">Call: 020 3973 8892</p>
+          <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0 0 3px;">Call: 020 3973 8887</p>
           <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0 0 3px;">Email: security@vigilservices.co.uk</p>
           <p style="color:rgba(255,255,255,0.4);font-size:11px;margin:4px 0 0;">Monday to Friday, 8am to 6pm</p>
         </div>

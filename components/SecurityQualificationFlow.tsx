@@ -536,7 +536,7 @@ export default function SecurityQualificationFlow() {
           </p>
           <p className="text-white/50 text-base mb-8">
             Questions in the meantime — call{' '}
-            <a href="tel:02039738892" className="text-[#4ecdc4] hover:underline">020 3973 8892</a>
+            <a href="tel:02039738887" className="text-[#4ecdc4] hover:underline">020 3973 8887</a>
             {' '}or email{' '}
             <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] hover:underline">security@vigilservices.co.uk</a>
           </p>

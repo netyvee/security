@@ -86,7 +86,7 @@ export default function MannedGuardingPage() {
             provider: {
               '@type': 'LocalBusiness',
               name: 'Vigil Security Services',
-              telephone: '+442039738892',
+              telephone: '+442039738887',
               email: 'security@vigilservices.co.uk',
               address: {
                 '@type': 'PostalAddress',
@@ -146,8 +146,8 @@ export default function MannedGuardingPage() {
               <Link href="/" className="btn-primary">
                 Get a quote
               </Link>
-              <a href="tel:+442039738892" className="btn-outline">
-                020 3973 8892
+              <a href="tel:+442039738887" className="btn-outline">
+                020 3973 8887
               </a>
             </div>
           </div>
@@ -451,8 +451,8 @@ export default function MannedGuardingPage() {
             <Link href="/" className="btn-primary text-base px-8 py-4">
               Get a free quote
             </Link>
-            <a href="tel:+442039738892" className="btn-outline text-base px-8 py-4">
-              020 3973 8892
+            <a href="tel:+442039738887" className="btn-outline text-base px-8 py-4">
+              020 3973 8887
             </a>
           </div>
         </div>

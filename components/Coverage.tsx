@@ -74,10 +74,10 @@ export default function Coverage() {
         >
           Don't see your area? We cover all Greater London boroughs — call{" "}
           <a
-            href="tel:+442039738892"
+            href="tel:+442039738887"
             className="hover:text-[#4ecdc4] transition-colors"
           >
-            020 3973 8892
+            020 3973 8887
           </a>{" "}
           to confirm coverage.
         </p>

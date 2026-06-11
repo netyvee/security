@@ -59,7 +59,7 @@ export default function CommercialSecurityWestminsterPage() {
           description: `SIA-licensed commercial security for ${borough} government, law firms, and hospitality venues.`,
           provider: {
             '@type': 'LocalBusiness', name: 'Vigil Security Services',
-            telephone: '+442039738892', email: 'security@vigilservices.co.uk',
+            telephone: '+442039738887', email: 'security@vigilservices.co.uk',
             address: {
               '@type': 'PostalAddress', streetAddress: 'Ferguson House, 113 Cranbrook Road',
               addressLocality: 'Ilford', postalCode: 'IG1 4PU', addressCountry: 'GB'
@@ -102,7 +102,7 @@ export default function CommercialSecurityWestminsterPage() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link href="/" className="btn-primary">Get a quote</Link>
-              <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
+              <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
             </div>
           </div>
           <div className="relative h-[400px] rounded-xl overflow-hidden">
@@ -248,9 +248,9 @@ export default function CommercialSecurityWestminsterPage() {
           </p>
 
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-3 mt-12">How to book commercial security services in {borough}</h2>
-          <p className="tldr mb-6">Request a quote online, speak with our team on 020 3973 8892, or book a site assessment for {borough} premises.</p>
+          <p className="tldr mb-6">Request a quote online, speak with our team on 020 3973 8887, or book a site assessment for {borough} premises.</p>
           <p>
-            To arrange commercial security services for your {borough} premises, complete our online qualification form or call <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a> — we're available 24/7 for emergency callouts and during business hours for new contract enquiries. We'll arrange a free site visit to evaluate your security requirements, access points, and any site-specific risks. You'll receive a detailed quote within 24 hours outlining recommended services, officer deployment patterns, and costs.
+            To arrange commercial security services for your {borough} premises, complete our online qualification form or call <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a> — we're available 24/7 for emergency callouts and during business hours for new contract enquiries. We'll arrange a free site visit to evaluate your security requirements, access points, and any site-specific risks. You'll receive a detailed quote within 24 hours outlining recommended services, officer deployment patterns, and costs.
           </p>
           <p>
             Once you approve the quote, we mobilise within 48–72 hours for standard contracts or within 24 hours for emergencies. Our account manager remains your single point of contact for all {borough} services.
@@ -284,7 +284,7 @@ export default function CommercialSecurityWestminsterPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/" className="btn-primary">Get a quote</Link>
-            <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
+            <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
           </div>
         </div>
       </section>
@@ -299,7 +299,7 @@ export default function CommercialSecurityWestminsterPage() {
             Unlike national security companies that rely on agency staff, Vigil employs all officers directly. This ensures consistent assignment, accountability, and alignment with sector-specific security protocols. Officers assigned to {borough} understand the unique requirements of government, legal, hospitality, and retail environments, and are trained to provide professional security that integrates seamlessly with your operations.
           </p>
           <p>
-            All officers hold current SIA licences and enhanced DBS checks. We carry £10M public liability insurance and £10M employer's liability insurance covering all contracts. For more information, call <a href="tel:+442039738892" className="text-[#4ecdc4] underline">020 3973 8892</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>.
+            All officers hold current SIA licences and enhanced DBS checks. We carry £10M public liability insurance and £10M employer's liability insurance covering all contracts. For more information, call <a href="tel:+442039738887" className="text-[#4ecdc4] underline">020 3973 8887</a> or email <a href="mailto:security@vigilservices.co.uk" className="text-[#4ecdc4] underline">security@vigilservices.co.uk</a>.
           </p>
         </div>
       </section>
