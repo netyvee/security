@@ -211,26 +211,6 @@ export default function EnvironmentalCommitmentPage() {
 
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="bg-[#0a1628] py-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-display text-[clamp(28px,3vw,38px)] font-medium leading-tight mb-6 text-white">
-            Questions about our environmental commitment?
-          </h2>
-          <p className="text-[rgba(255,255,255,0.65)] text-[17px] leading-relaxed mb-8">
-            Contact our team to discuss how we integrate sustainability into our security services.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">
-              Get a quote
-            </Link>
-            <a href="mailto:security@vigilservices.co.uk" className="btn-outline">
-              Email us
-            </a>
-          </div>
-        </div>
-      </section>
     </>
   )
 }
