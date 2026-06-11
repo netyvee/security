@@ -32,6 +32,9 @@ const pages: Array<{ url: string; priority: number; changeFrequency: MetadataRou
   { url: '/commercial-security-southwark',           priority: 0.7, changeFrequency: 'monthly' },
   { url: '/commercial-security-tower-hamlets',       priority: 0.7, changeFrequency: 'monthly' },
   { url: '/commercial-security-westminster',         priority: 0.7, changeFrequency: 'monthly' },
+  { url: '/commercial-security-lambeth',            priority: 0.7, changeFrequency: 'monthly' },
+  { url: '/commercial-security-lewisham',           priority: 0.7, changeFrequency: 'monthly' },
+  { url: '/commercial-security-ealing',             priority: 0.7, changeFrequency: 'monthly' },
 
   // Tier 4 — Supporting pages
   { url: '/blog',                                    priority: 0.6, changeFrequency: 'weekly' },
