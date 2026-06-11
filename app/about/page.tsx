@@ -105,7 +105,7 @@ export default function AboutPage() {
             Get a free quote for SIA-licensed security services across Greater London.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/" className="btn-primary">Get a quote</Link>
+            <Link href="/contact/" className="btn-primary">Get a quote</Link>
             <a href="tel:+442039738887" className="btn-outline">020 3973 8887</a>
           </div>
         </div>
