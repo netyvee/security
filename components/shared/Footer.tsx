@@ -9,6 +9,7 @@ const services = [
   { label: "Construction Site Security", href: "/construction-site-security-london/" },
   { label: "CCTV Monitoring",            href: "/cctv-monitoring-london/" },
   { label: "Concierge Security",         href: "/concierge-security-london/" },
+  { label: "Door Supervisors",           href: "/door-supervisors-london/" },
 ];
 
 const company = [
@@ -17,6 +18,7 @@ const company = [
   { label: "FAQ",                  href: "/faq/" },
   { label: "Contact",              href: "/contact/" },
   { label: "Careers",              href: "/careers/" },
+  { label: "Environmental Commitment", href: "/environmental-commitment/" },
 ];
 
 const legal = [
@@ -25,6 +27,7 @@ const legal = [
   { label: "Modern Slavery",       href: "/modern-slavery-statement/" },
   { label: "Equal Opportunities",  href: "/equal-opportunities-policy/" },
   { label: "Accessibility",        href: "/accessibility-statement/" },
+  { label: "Complaints Procedure", href: "/complaints-procedure/" },
 ];
 
 export default function Footer() {
