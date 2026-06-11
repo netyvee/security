@@ -222,7 +222,7 @@ export default function EnvironmentalCommitmentPage() {
             Contact our team to discuss how we integrate sustainability into our security services.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/" className="btn-primary">
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">
               Get a quote
             </Link>
             <a href="mailto:security@vigilservices.co.uk" className="btn-outline">

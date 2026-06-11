@@ -144,7 +144,7 @@ export default function MobilePatrolsPage() {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <Link href="/" className="btn-primary">
+              <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">
                 Get a quote
               </Link>
               <a href="tel:+442039738892" className="btn-outline">
@@ -453,7 +453,7 @@ export default function MobilePatrolsPage() {
             Get a free site assessment and tailored quotation. SIA-licensed officers, GPS-tracked visits, detailed patrol reports.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/" className="btn-primary text-base px-8 py-4">
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary text-base px-8 py-4">
               Get a free quote
             </Link>
             <a href="tel:+442039738892" className="btn-outline text-base px-8 py-4">

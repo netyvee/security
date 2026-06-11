@@ -16,10 +16,10 @@ export default function MidPageCTA() {
             </p>
           </div>
           <Link
-            href="/"
+            href="https://app.vigilservices.co.uk/enquire/security"
             className="bg-[#4ecdc4] hover:bg-[#3dbdb4] text-[#0a1628] font-medium px-6 py-3 rounded-lg transition-all duration-200 whitespace-nowrap flex items-center gap-2"
           >
-            Start now
+            Get a security quote
             <svg
               width="16"
               height="16"

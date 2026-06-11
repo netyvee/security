@@ -102,7 +102,7 @@ export default function CommercialSecurityCanaryWharfPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-4">
-              <Link href="/" className="btn-primary">Get a quote</Link>
+              <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
               <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function CommercialSecurityCanaryWharfPage() {
             Get a free quote for SIA-licensed security services in {area}. Enhanced DBS checks, 24/7 availability, and corporate finance expertise.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/" className="btn-primary">Get a quote</Link>
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
             <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
           </div>
         </div>

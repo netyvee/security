@@ -145,7 +145,7 @@ export default function CommercialSecurityHackneyPage() {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <Link href="/" className="btn-primary">
+              <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">
                 Get a quote
               </Link>
               <a href="tel:+442039738892" className="btn-outline">
@@ -417,7 +417,7 @@ export default function CommercialSecurityHackneyPage() {
             Get a free quote for SIA-licensed security services in {borough}. Speak with our team or complete our 2-minute qualification form.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/" className="btn-primary">
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">
               Get a quote
             </Link>
             <a href="tel:+442039738892" className="btn-outline">

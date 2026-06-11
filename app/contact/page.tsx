@@ -96,7 +96,7 @@ export default function ContactPage() {
               <p className="text-white/70 mb-6">
                 For a detailed quote, please use our online qualification form which takes under 2 minutes to complete. You'll answer questions about your premises, service requirements, and operating hours.
               </p>
-              <Link href="/" className="btn-primary inline-block">
+              <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary inline-block">
                 Start qualification form
               </Link>
             </div>

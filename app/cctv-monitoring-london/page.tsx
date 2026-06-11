@@ -123,7 +123,7 @@ export default function RetailSecurityPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-4">
-              <Link href="/" className="btn-primary">Get a quote</Link>
+              <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
               <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
             </div>
           </div>
@@ -255,7 +255,7 @@ export default function RetailSecurityPage() {
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-6">Need professional CCTV monitoring for your London store?</h2>
           <p className="text-white/60 text-[17px] leading-relaxed mb-8 max-w-2xl mx-auto">Get a free site assessment and tailored quotation. SIA-licensed officers, surveillance specialists, flexible deployment.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/" className="btn-primary text-base px-8 py-4">Get a free quote</Link>
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary text-base px-8 py-4">Get a free quote</Link>
             <a href="tel:+442039738892" className="btn-outline text-base px-8 py-4">020 3973 8892</a>
           </div>
         </div>

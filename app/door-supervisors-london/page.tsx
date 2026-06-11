@@ -313,7 +313,7 @@ export default function DoorSupervisorsPage() {
       <CTASection
         heading="Ready to discuss door supervisors for your premises?"
         subtext="SIA-licensed officers for pubs, bars, nightclubs, and licensed events across Greater London. Free site visit and same-day quote."
-        primaryLabel="Request door supervisors"
+        primaryLabel="Book door supervisors"
         primaryHref="https://app.vigilservices.co.uk/enquire/security"
         outlineLabel="Call: 020 3973 8892"
         outlineHref="tel:+442039738892"

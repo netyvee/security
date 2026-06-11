@@ -102,7 +102,7 @@ export default function CommercialSecurityCamdenPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-4">
-              <Link href="/" className="btn-primary">Get a quote</Link>
+              <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
               <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function CommercialSecurityCamdenPage() {
             Get a free quote for SIA-licensed security services in {borough}. Door supervision, event security, and manned guarding.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/" className="btn-primary">Get a quote</Link>
+            <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
             <a href="tel:+442039738892" className="btn-outline">020 3973 8892</a>
           </div>
         </div>
