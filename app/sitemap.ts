@@ -16,6 +16,7 @@ const pages: Array<{ url: string; priority: number; changeFrequency: MetadataRou
   { url: '/key-holding-alarm-response-london',       priority: 0.85, changeFrequency: 'monthly' },
   { url: '/cctv-monitoring-london',                  priority: 0.8,  changeFrequency: 'monthly' },
   { url: '/event-security-london',                   priority: 0.8,  changeFrequency: 'monthly' },
+  { url: '/door-supervisors-london',                 priority: 0.9,  changeFrequency: 'monthly' },
   { url: '/construction-site-security-london',       priority: 0.8,  changeFrequency: 'monthly' },
   { url: '/retail-security-london',                  priority: 0.8,  changeFrequency: 'monthly' },
   { url: '/concierge-security-london',               priority: 0.75, changeFrequency: 'monthly' },
