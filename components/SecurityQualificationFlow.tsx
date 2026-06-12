@@ -167,10 +167,10 @@ export default function SecurityQualificationFlow() {
       <div className="min-h-screen bg-navy pt-20 pb-12 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <p className="section-tag justify-center mb-6">Security matching</p>
-          <h1 className="font-display text-[clamp(32px,4vw,48px)] font-medium leading-tight mb-6 text-white">
+          <h2 className="font-display text-[clamp(32px,4vw,48px)] font-medium leading-tight mb-6 text-white">
             The security partner that shows up,{' '}
             <em className="text-[#4ecdc4] not-italic italic">stays sharp, and reports everything</em>
-          </h1>
+          </h2>
           <p className="text-[rgba(255,255,255,0.65)] text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
             Answer four quick questions and we'll match you to the right security programme for your premises.
           </p>
@@ -356,7 +356,7 @@ export default function SecurityQualificationFlow() {
             What's the site postcode?
           </h2>
           <p className="text-white/60 text-base mb-8">
-            We serve all 32 Greater London boroughs. Enter your postcode to confirm coverage.
+            We serve Greater London. Enter your postcode to confirm coverage.
           </p>
 
           <div className="max-w-md">

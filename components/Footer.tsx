@@ -5,6 +5,7 @@ const services = [
   { label: "Mobile Patrols", href: "/mobile-patrols-london/" },
   { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/" },
   { label: "Event Security", href: "/event-security-london/" },
+  { label: "Door Supervisors", href: "/door-supervisors-london/" },
   { label: "Retail Security", href: "/retail-security-london/" },
   { label: "Construction Site Security", href: "/construction-site-security-london/" },
   { label: "CCTV Monitoring", href: "/cctv-monitoring-london/" },

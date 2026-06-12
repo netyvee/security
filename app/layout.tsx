@@ -15,32 +15,60 @@ export const metadata: Metadata = {
   description: 'Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured. Manned guarding, mobile patrols, key holding, event security.',
 }
 
-const organizationSchema = {
+const siteSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'Vigil Security Services',
-  legalName: 'Vigil Services Ltd',
-  identifier: '11756806',
-  description: 'Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured.',
-  url: 'https://security.vigilservices.co.uk',
-  logo: 'https://security.vigilservices.co.uk/logo.svg',
-  telephone: '+442039738892',
-  email: 'security@vigilservices.co.uk',
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: 'Ferguson House, 113 Cranbrook Road',
-    addressLocality: 'Ilford',
-    postalCode: 'IG1 4PU',
-    addressCountry: 'GB',
-  },
-  areaServed: {
-    '@type': 'City',
-    name: 'London',
-  },
-  sameAs: [
-    'https://www.instagram.com/vigil.security/',
-    'https://cleaning.vigilservices.co.uk',
-    'https://app.vigilservices.co.uk',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'Vigil Security Services',
+      legalName: 'Vigil Services Ltd',
+      identifier: '11756806',
+      description: 'Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured.',
+      url: 'https://security.vigilservices.co.uk',
+      logo: 'https://security.vigilservices.co.uk/logo.svg',
+      telephone: '+442039738892',
+      email: 'security@vigilservices.co.uk',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Ferguson House, 113 Cranbrook Road',
+        addressLocality: 'Ilford',
+        addressRegion: 'London',
+        postalCode: 'IG1 4PU',
+        addressCountry: 'GB',
+      },
+      areaServed: { '@type': 'City', name: 'London' },
+      sameAs: [
+        'https://www.instagram.com/vigil.security/',
+        'https://cleaning.vigilservices.co.uk',
+        'https://app.vigilservices.co.uk',
+      ],
+    },
+    {
+      '@type': 'LocalBusiness',
+      '@id': 'https://security.vigilservices.co.uk/#business',
+      name: 'Vigil Security Services',
+      legalName: 'Vigil Services Ltd',
+      description: 'SIA-licensed, DBS-checked security officers across Greater London. Manned guarding, event security, mobile patrols, key holding and door supervisors.',
+      telephone: '+442039738892',
+      email: 'security@vigilservices.co.uk',
+      url: 'https://security.vigilservices.co.uk',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Ferguson House, 113 Cranbrook Road',
+        addressLocality: 'Ilford',
+        addressRegion: 'London',
+        postalCode: 'IG1 4PU',
+        addressCountry: 'GB',
+      },
+      areaServed: { '@type': 'City', name: 'London' },
+      priceRange: '££',
+      openingHoursSpecification: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+        opens: '00:00',
+        closes: '23:59',
+      },
+    },
   ],
 }
 
@@ -54,7 +82,7 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchema) }}
         />
         {/* Google Tag Manager */}
         <Script id="gtm" strategy="afterInteractive">

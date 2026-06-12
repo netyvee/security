@@ -406,12 +406,12 @@ export default function Nav({ minimal = false }: NavProps) {
 
         {/* Right: CTA Button (Desktop) */}
         <div className="hidden lg:flex items-center">
-          <Link
-            href={process.env.NEXT_PUBLIC_BOOKING_URL || "/contact"}
+          <a
+            href="https://app.vigilservices.co.uk/enquire/security"
             className="bg-[#EA580C] hover:bg-[#EA580C]/90 text-white text-[13px] font-medium px-5 py-2.5 rounded-md transition-all duration-200"
           >
             Get a free quote
-          </Link>
+          </a>
         </div>
 
         {/* Right: Phone + Hamburger (Mobile/Tablet) */}
@@ -626,13 +626,13 @@ export default function Nav({ minimal = false }: NavProps) {
 
             {/* Bottom: CTA */}
             <div className="pt-4 border-t border-[rgba(255,255,255,0.1)]">
-              <Link
-                href="/"
+              <a
+                href="https://app.vigilservices.co.uk/enquire/security"
                 className="block w-full bg-[#4ecdc4] hover:bg-[#3dbdb4] text-white text-center text-[14px] font-medium px-5 py-3 rounded-md transition-all"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Get a quote
-              </Link>
+                Get a free quote
+              </a>
             </div>
           </div>
         </div>
