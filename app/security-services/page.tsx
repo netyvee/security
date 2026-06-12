@@ -39,7 +39,7 @@ const services = [
   {
     title: 'Key Holding & Alarm Response',
     href: '/key-holding-alarm-response-london/',
-    description: 'Secure key storage and 24/7 alarm response with guaranteed attendance times. Officers respond to all alarm activations.',
+    description: 'Secure key storage and 24/7 alarm response. SIA-licensed officers respond to all alarm activations across Greater London.',
     icon: '🔑'
   },
   {
@@ -139,7 +139,7 @@ export default function SecurityServicesPage() {
             Every officer deployed by Vigil Security is SIA-licensed, DBS-checked, and directly employed — ensuring accountability, consistency, and service quality across all London locations. We tailor security solutions to the specific risk profiles and operational needs of each borough, whether responding to high footfall in Westminster's tourist zones, securing construction sites under the CDM 2015 framework in Tower Hamlets, or providing concierge security for Build-to-Rent developments in Canary Wharf.
           </p>
           <p className="text-white/65 text-[16px] leading-relaxed">
-            Our operations centre coordinates mobile patrols, key holding, and alarm response services across all covered boroughs, with guaranteed response times and 24/7 availability. From single-site manned guarding contracts to multi-site mobile patrol schedules spanning Greater London, Vigil Security delivers scalable, reliable, and compliant security services backed by £10M public and employer's liability insurance.
+            Our operations centre coordinates mobile patrols, key holding, and alarm response services across all covered boroughs, with 24/7 availability. From single-site manned guarding contracts to multi-site mobile patrol schedules spanning Greater London, Vigil Security delivers scalable, reliable, and compliant security services backed by £10M public and employer's liability insurance.
           </p>
         </div>
       </section>

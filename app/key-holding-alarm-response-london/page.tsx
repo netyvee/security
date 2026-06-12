@@ -32,11 +32,11 @@ export const metadata: Metadata = {
 const faqs = [
   {
     question: 'What is a key holding and alarm response service?',
-    answer: 'Key holding and alarm response means Vigil holds spare keys to your premises and responds to alarm activations 24/7. When your intruder alarm, fire alarm, or panic alarm activates out of hours, our control room receives the signal and immediately dispatches an SIA-licensed officer to your site. The officer arrives within the guaranteed response time (typically 20–30 minutes in central London), uses our held keys to gain entry, investigates the cause of the activation, secures the premises, and contacts you with a detailed report. This service eliminates the need for you or your staff to attend site in the middle of the night and ensures professional response to genuine security incidents.'
+    answer: 'Key holding and alarm response means Vigil holds spare keys to your premises and responds to alarm activations 24/7. When your intruder alarm, fire alarm, or panic alarm activates out of hours, our control room receives the signal and immediately dispatches an SIA-licensed officer to your site. The officer attends promptly, uses our held keys to gain entry, investigates the cause of the activation, secures the premises, and contacts you with a detailed report. This service eliminates the need for you or your staff to attend site in the middle of the night and ensures professional response to genuine security incidents.'
   },
   {
     question: 'How quickly do you respond to alarm activations?',
-    answer: 'Response times are contractually guaranteed and vary by location. For central London boroughs (Westminster, Camden, Islington, Tower Hamlets, Southwark), our standard response time is 20 minutes from alarm activation. For outer London boroughs, response times are typically 30 minutes. Response times are measured from the moment our control room receives the alarm signal to the moment our officer arrives on site. We track every response and provide monthly performance reports showing actual attendance times. If we fail to meet the guaranteed response time, the monthly retainer is reduced proportionately under our service level agreement.'
+    answer: 'Response times are written into your service level agreement and vary by location. We aim to attend as quickly as possible — typically faster in central London boroughs such as Westminster, Camden, Islington, Tower Hamlets, and Southwark than in outer London. Response time is measured from the moment our control room receives the alarm signal to the moment our officer arrives on site. We track every response electronically and provide monthly performance reports showing actual attendance times against your SLA. If we fail to meet the agreed response time, your monthly retainer is reduced proportionately.'
   },
   {
     question: 'Where are our keys stored and how are they secured?',
@@ -83,7 +83,7 @@ export default function KeyHoldingPage() {
             '@context': 'https://schema.org',
             '@type': 'Service',
             name: serviceTitle,
-            description: 'Professional key holding and 24/7 alarm response services across Greater London. SIA-licensed officers, secure key storage, guaranteed response times.',
+            description: 'Professional key holding and 24/7 alarm response services across Greater London. SIA-licensed officers, secure key storage, fast alarm attendance.',
             provider: {
               '@type': 'LocalBusiness',
               name: 'Vigil Security Services',
@@ -117,7 +117,7 @@ export default function KeyHoldingPage() {
       <div className="bg-[#0a1628] pt-8 pb-6 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="quick-answer-block">
-            Key holding and alarm response London provides secure key storage and 24/7 SIA-licensed officer response to alarm activations at your premises. Officers attend within 20–30 minutes, investigate, secure your property, and provide detailed reports — eliminating the need for you to attend site out of hours.
+            Key holding and alarm response London provides secure key storage and 24/7 SIA-licensed officer response to alarm activations at your premises. Officers attend promptly, investigate, secure your property, and provide detailed reports — eliminating the need for you to attend site out of hours.
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export default function KeyHoldingPage() {
               Key Holding & Alarm Response <em className="text-[#4ecdc4] not-italic">London</em>
             </h1>
             <p className="text-[rgba(255,255,255,0.65)] text-[17px] leading-relaxed mb-8">
-              SIA-licensed officers respond to your alarm activations 24/7 with guaranteed response times. Secure key storage, professional attendance, detailed reporting across all Greater London boroughs.
+              SIA-licensed officers respond to your alarm activations 24/7. Secure key storage, prompt professional attendance, and detailed reporting across Greater London.
             </p>
 
             {/* Trust pills */}
@@ -179,7 +179,7 @@ export default function KeyHoldingPage() {
             Key holding and alarm response is a managed security service that eliminates the need for business owners, facilities managers, or nominated keyholders to attend their premises in the middle of the night when an alarm activates. Vigil holds spare keys to your property in a secure, BS7558-approved key safe at our operations centre. When your intruder alarm, fire alarm, or panic alarm activates out of hours, our 24/7 control room receives the signal and immediately dispatches an SIA-licensed mobile patrol officer to your site.
           </p>
           <p>
-            The officer arrives within our contractually guaranteed response time — typically 20 minutes for central London, 30 minutes for outer London — and uses our held keys to gain entry. They investigate the cause of the alarm activation by searching the premises systematically, identifying whether the activation was caused by genuine intrusion, environmental factors (e.g., wind, temperature changes), equipment fault, or user error. If a security breach is identified, the officer secures the scene and contacts the police. If the premises are secure, the officer resets the alarm, locks up, and provides you with a detailed attendance report including photographs and timestamps.
+            The officer attends promptly in accordance with your service level agreement and uses our held keys to gain entry. They investigate the cause of the alarm activation by searching the premises systematically, identifying whether the activation was caused by genuine intrusion, environmental factors (e.g., wind, temperature changes), equipment fault, or user error. If a security breach is identified, the officer secures the scene and contacts the police. If the premises are secure, the officer resets the alarm, locks up, and provides you with a detailed attendance report including photographs and timestamps.
           </p>
           <p>
             This service is essential for businesses with insurance requirements for out-of-hours alarm response, premises located in high-risk areas where false alarms are frequent, and organisations where key personnel live far from the site or where attending in the early hours creates safety or operational risks. Key holding and alarm response is widely used across retail stores, office buildings, warehouses, healthcare facilities, and construction sites throughout Greater London.
@@ -189,10 +189,10 @@ export default function KeyHoldingPage() {
             Why businesses choose Vigil for key holding
           </h2>
           <p className="tldr mb-6">
-            Guaranteed response times, secure key storage, SIA-licensed officers, and Greater London coverage.
+            SLA-backed response times, secure key storage, SIA-licensed officers, and Greater London coverage.
           </p>
           <p>
-            Most alarm response companies operate on a best-efforts basis with vague response time commitments. Vigil provides contractually guaranteed response times written into our service level agreement. For central London boroughs including Westminster, Camden, Islington, Tower Hamlets, Hackney, Southwark, and the City of London, our standard response time is 20 minutes. For outer London boroughs, response is typically within 30 minutes. We track every response electronically and provide monthly performance reports showing actual attendance times. If we fail to meet the guaranteed response time, your monthly retainer is reduced proportionately.
+            Most alarm response companies operate on a best-efforts basis with no contractual commitment. Vigil provides response times written into your service level agreement — not a vague promise. We track every response electronically and provide monthly performance reports showing actual attendance times. If we fail to meet the agreed response time, your monthly retainer is reduced proportionately. Response times vary by location and are agreed at contract stage based on your premises and borough.
           </p>
           <p>
             Our keys are stored at Ferguson House, our operations centre in Ilford, in a BS7558-approved key safe. BS7558 is the British Standard for key management systems used in security services. Our key safe is fire-rated, securely bolted, and monitored by CCTV 24/7. Each key set is allocated a unique reference number and stored in a tamper-evident seal. Only authorised officers can access keys, and every key withdrawal is logged electronically with officer ID, timestamp, and reason for withdrawal. You can request return of your keys at any time or arrange an annual audit where you attend our office to verify keys are present and correctly stored.
@@ -205,7 +205,7 @@ export default function KeyHoldingPage() {
             How our key holding and alarm response service works
           </h2>
           <p className="tldr mb-6">
-            Alarm activation → control room notified → officer dispatched → site attendance within guaranteed time → investigation and report.
+            Alarm activation → control room notified → officer dispatched → site attendance → investigation and report.
           </p>
           <p>
             <strong>Step 1 — Alarm activation:</strong> Your intruder alarm, fire alarm, or panic alarm activates. The alarm signal is transmitted to your alarm monitoring company (ARC), which in turn notifies our 24/7 control room via a secure communication link. If your alarm system has Redcare or CSL connection, the signal can be routed directly to Vigil, reducing notification time.
@@ -252,7 +252,7 @@ export default function KeyHoldingPage() {
             Key holding and alarm response is charged as a fixed monthly retainer fee, which varies by location and required response time. The retainer covers unlimited alarm responses per month (subject to fair use — typically up to 10 responses per month). This pricing model provides certainty and protects you from escalating costs if you experience frequent false alarms.
           </p>
           <p>
-            For central London boroughs with 20-minute response times, the typical monthly retainer is £120–£180 plus VAT, depending on premises size and access complexity. For outer London boroughs with 30-minute response times, the retainer is typically £90–£140 plus VAT. If your premises require response times faster than 20 minutes (e.g., 15 minutes for high-risk retail stores), this can be arranged with a higher retainer fee.
+            Pricing is based on your location, premises size, and agreed response time. Central London premises typically attract a higher retainer than outer London due to deployment costs. Contact us for a personalised quotation — we'll confirm pricing and your agreed response time at site assessment.
           </p>
           <p>
             There are no hidden fees. The monthly retainer covers key storage, 24/7 control room monitoring, officer dispatch, attendance, investigation, reporting, and key audits. If your alarm activates more than 10 times in a single month (indicating a persistent equipment fault), we may apply a supplementary charge of £40–£60 per additional attendance to encourage you to rectify the underlying issue. However, this is rare — most clients average 1–3 alarm activations per month.
@@ -271,7 +271,7 @@ export default function KeyHoldingPage() {
             <strong>Step 1 — Site assessment:</strong> We conduct a free site visit to assess your premises, understand alarm system configuration, identify entry and exit routes, and discuss your response time requirements. This informs our quotation and service setup.
           </p>
           <p>
-            <strong>Step 2 — Contract agreement:</strong> We provide a written quotation specifying monthly retainer fee, response time guarantee, and service level agreement terms. Once you accept the quote, we issue a contract for signature.
+            <strong>Step 2 — Contract agreement:</strong> We provide a written quotation specifying monthly retainer fee, agreed response time, and service level agreement terms. Once you accept the quote, we issue a contract for signature.
           </p>
           <p>
             <strong>Step 3 — Key handover and storage:</strong> You provide us with a spare set of keys to your premises. Keys are logged into our key management system with a unique reference number, placed in a tamper-evident seal, and stored in our BS7558-approved key safe. You receive written confirmation of key receipt and storage location.
@@ -316,13 +316,13 @@ export default function KeyHoldingPage() {
             A luxury fashion retailer operating a 3,000 sq ft store in Covent Garden required professional key holding and alarm response services to comply with their insurance policy and eliminate the need for the store manager to attend alarm activations out of hours. The store was experiencing 2–3 alarm activations per month, primarily caused by movement detectors reacting to temperature changes overnight.
           </p>
           <p className="text-white/60 text-[15px] leading-relaxed mb-8">
-            Vigil took over key holding from the previous provider and implemented a 20-minute response time SLA for central London. Over a 12-month period, our officers attended 28 alarm activations, identifying 24 as false alarms caused by faulty PIR sensors, 3 as genuine attempted intrusions (all deterred by alarm activation), and 1 as a water leak from the floor above. Our detailed attendance reports enabled the retailer to rectify the sensor faults, reducing false alarms by 70% over the following 6 months.
+            Vigil took over key holding from the previous provider and implemented a fast-response SLA for central London. Over a 12-month period, our officers attended 28 alarm activations, identifying 24 as false alarms caused by faulty PIR sensors, 3 as genuine attempted intrusions (all deterred by alarm activation), and 1 as a water leak from the floor above. Our detailed attendance reports enabled the retailer to rectify the sensor faults, reducing false alarms by 70% over the following 6 months.
           </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="bg-[#0f1f3d] border border-white/10 rounded-lg p-6">
-              <div className="text-[#4ecdc4] font-display text-3xl font-medium mb-2">20 mins</div>
-              <div className="text-white/60 text-sm">Average response time</div>
+              <div className="text-[#4ecdc4] font-display text-3xl font-medium mb-2">Fast</div>
+              <div className="text-white/60 text-sm">SLA-backed alarm response</div>
             </div>
             <div className="bg-[#0f1f3d] border border-white/10 rounded-lg p-6">
               <div className="text-[#4ecdc4] font-display text-3xl font-medium mb-2">24/7</div>
@@ -336,7 +336,7 @@ export default function KeyHoldingPage() {
 
           <div className="bg-[#0f1f3d] border-l-4 border-[#4ecdc4] rounded-r-lg p-6">
             <p className="text-white/75 italic leading-relaxed mb-4">
-              "Switching to Vigil for our alarm response was one of the best operational decisions we made. The guaranteed 20-minute response time gives us confidence, and the detailed attendance reports helped us identify persistent sensor faults. I no longer wake up at 3am to false alarms — Vigil handles everything professionally."
+              "Switching to Vigil for our alarm response was one of the best operational decisions we made. The fast, reliable response gives us confidence, and the detailed attendance reports helped us identify persistent sensor faults. I no longer wake up at 3am to false alarms — Vigil handles everything professionally."
             </p>
             <p className="text-white/60 text-sm">
               Store Manager, Luxury fashion retailer — Covent Garden
@@ -357,7 +357,7 @@ export default function KeyHoldingPage() {
             <div className="bg-[#0a1628] border border-white/10 rounded-lg p-6">
               <div className="text-[#c9a84c] text-sm mb-4">★★★★★</div>
               <p className="text-white/75 text-[15px] leading-relaxed mb-4">
-                "Vigil's key holding service has been faultless. Every alarm response is attended within 20 minutes and the reports are detailed and timely. Our insurance broker was impressed with the SLA documentation."
+                "Vigil's key holding service has been faultless. Every alarm response is attended quickly and the reports are detailed and timely. Our insurance broker was impressed with the SLA documentation."
               </p>
               <p className="text-white/50 text-sm">
                 Facilities Manager, Office building — EC2
@@ -424,7 +424,7 @@ export default function KeyHoldingPage() {
             Need professional key holding and 24/7 alarm response for your London premises?
           </h2>
           <p className="text-white/60 text-[17px] leading-relaxed mb-8 max-w-2xl mx-auto">
-            Get a free quotation with transparent pricing and guaranteed response times. Secure key storage, SIA-licensed officers, detailed reporting.
+            Get a free quotation with transparent pricing and SLA-backed attendance. Secure key storage, SIA-licensed officers, detailed reporting.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary text-base px-8 py-4">
@@ -465,7 +465,7 @@ export default function KeyHoldingPage() {
           <div>
             <h3 className="text-white text-[15px] font-medium mb-4">Why businesses choose Vigil key holding</h3>
             <p className="mb-4">
-              Unlike best-efforts alarm response services, Vigil provides contractually guaranteed response times with monthly performance reporting. If we fail to meet the guaranteed response time, your monthly retainer is reduced proportionately under our service level agreement.
+              Unlike best-efforts alarm response services, Vigil provides response times written into your service level agreement, with monthly performance reporting. If we fail to meet the agreed response time, your monthly retainer is reduced proportionately.
             </p>
             <p className="mb-4">
               Our monthly retainer covers unlimited alarm responses (typically up to 10 per month), with transparent pricing and no hidden fees. Contracts are rolling monthly agreements with 30 days' notice — no long tie-ins or exit penalties.

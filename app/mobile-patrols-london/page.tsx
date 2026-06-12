@@ -44,7 +44,7 @@ const faqs = [
   },
   {
     question: 'Can mobile patrols respond to our alarm activations?',
-    answer: 'Yes. Mobile patrol officers can respond to intruder alarms, fire alarms, or panic alarms at your site. If your monitoring station or alarm company detects an activation, they contact our 24/7 control room. We dispatch the nearest available officer to your premises within our agreed response time (typically 20-30 minutes for Greater London sites). The officer attends, investigates the cause, secures the premises if necessary, liaises with police or fire services if required, and produces a detailed incident report. Many clients combine mobile patrols with our dedicated key holding and alarm response service for faster callouts and keyholder access. See our Key Holding & Alarm Response page for full details.'
+    answer: 'Yes. Mobile patrol officers can respond to intruder alarms, fire alarms, or panic alarms at your site. If your monitoring station or alarm company detects an activation, they contact our 24/7 control room. We dispatch the nearest available officer to your premises promptly in line with your agreed service level. The officer attends, investigates the cause, secures the premises if necessary, liaises with police or fire services if required, and produces a detailed incident report. Many clients combine mobile patrols with our dedicated key holding and alarm response service for faster callouts and keyholder access. See our Key Holding & Alarm Response page for full details.'
   },
   {
     question: 'Are mobile patrols suitable for construction sites?',
@@ -274,7 +274,7 @@ export default function MobilePatrolsPage() {
             If your premises are protected by an intruder alarm monitored by an alarm receiving centre (ARC), you are required to nominate keyholders who can attend within a specified time if the alarm activates. Many businesses struggle to maintain a list of staff willing to attend callouts at 3am, particularly if false alarms are frequent.
           </p>
           <p>
-            Vigil offers a dedicated key holding and alarm response service. We hold copies of your keys in a secure, audited key safe. If your alarm activates, the ARC contacts our 24/7 control room. We dispatch the nearest available officer to your premises — typically within 20-30 minutes for Greater London sites. The officer attends, unlocks the premises, conducts an internal search, identifies the cause of activation (e.g., faulty sensor, open window, genuine intrusion), secures the premises, resets the alarm if appropriate, liaises with police if a crime has occurred, and produces a detailed incident report.
+            Vigil offers a dedicated key holding and alarm response service. We hold copies of your keys in a secure, audited key safe. If your alarm activates, the ARC contacts our 24/7 control room. We dispatch the nearest available officer to your premises promptly. The officer attends, unlocks the premises, conducts an internal search, identifies the cause of activation (e.g., faulty sensor, open window, genuine intrusion), secures the premises, resets the alarm if appropriate, liaises with police if a crime has occurred, and produces a detailed incident report.
           </p>
           <p>
             Many clients combine mobile patrols with key holding and alarm response to create a comprehensive overnight security solution at lower cost than manned guarding. See our <Link href="/key-holding-alarm-response-london/" className="text-[#4ecdc4] underline">Key Holding & Alarm Response page</Link> for full service details.
@@ -284,13 +284,13 @@ export default function MobilePatrolsPage() {
             Mobile patrol coverage across Greater London
           </h2>
           <p className="tldr mb-6">
-            Greater London coverage with response times of 20-30 minutes for most locations.
+            Greater London coverage with fast, SLA-backed response times.
           </p>
           <p>
             Vigil operates a fleet of marked patrol vehicles based strategically across Greater London to ensure rapid response times. We cover all Greater London boroughs including central London (Westminster, City of London, Camden, Islington), east London (Tower Hamlets, Hackney, Newham, Barking & Dagenham), south London (Southwark, Lambeth, Croydon, Bromley), west London (Ealing, Hounslow, Hillingdon), and north London (Barnet, Enfield, Haringey).
           </p>
           <p>
-            For routine patrols, we guarantee visits within your contracted time windows. For alarm response callouts, we aim for 20-30 minute attendance for most Greater London locations, with faster response for central and inner London sites. Response times are tracked and reported in your monthly KPI summary.
+            For routine patrols, we commit to visits within your contracted time windows. For alarm response callouts, response times are agreed at contract stage and tracked against your monthly KPI summary.
           </p>
           <p>
             If you operate multiple sites across London, we can provide mobile patrols under a single contract with one account manager, consolidated invoicing, and unified reporting. This simplifies procurement and ensures consistent service standards across your portfolio.
