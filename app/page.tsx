@@ -274,6 +274,30 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Sector Trust Strip ─────────────────────────────────────── */}
+      <section aria-label="Sectors served" className="bg-navy py-8 px-6 border-t border-white/5">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-[11px] text-center text-white/30 uppercase tracking-widest mb-5">
+            Trusted by London businesses in
+          </p>
+          <div className="flex gap-6 justify-center flex-wrap">
+            {[
+              { icon: '🏢', label: 'Corporate offices' },
+              { icon: '🏗️', label: 'Construction sites' },
+              { icon: '🎪', label: 'Events & venues' },
+              { icon: '🛍️', label: 'Retail' },
+              { icon: '🏥', label: 'NHS & healthcare' },
+              { icon: '🍺', label: 'Licensed premises' },
+            ].map(sector => (
+              <div key={sector.label} className="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+                <span className="text-2xl">{sector.icon}</span>
+                <span className="text-xs text-white/50">{sector.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Qualification Flow ──────────────────────────────────────── */}
       <SecurityQualificationFlow />
 

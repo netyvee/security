@@ -9,6 +9,8 @@ const navLinks = [
   { label: "About",    href: "/about/" },
   { label: "Contact",  href: "/contact/" },
   { label: "Careers",  href: "/careers/" },
+  { label: "Blog",     href: "/blog/" },
+  { label: "FAQ",      href: "/faq/" },
 ];
 
 export default function Nav() {
@@ -61,12 +63,12 @@ export default function Nav() {
         >
           020 3973 8892
         </a>
-        <Link
-          href="/"
-          className="bg-[#4ecdc4] hover:bg-[#3dbdb4] text-white text-[13px] font-medium px-5 py-2 rounded-md transition-colors"
+        <a
+          href="https://app.vigilservices.co.uk/enquire/security"
+          className="bg-[#4ecdc4] hover:bg-[#3dbdb4] text-[#0a1628] text-[13px] font-medium px-5 py-2 rounded-md transition-colors"
         >
           Get a quote
-        </Link>
+        </a>
       </div>
 
       {/* Mobile menu button */}

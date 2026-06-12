@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" fill="#0a1628"/>
+  <path d="M32 10 L50 17 L50 31 C50 43 32 54 32 54 C32 54 14 43 14 31 L14 17 Z"
+    fill="none" stroke="#4ecdc4" stroke-width="2.5" stroke-linejoin="round"/>
+  <text x="32" y="38" text-anchor="middle"
+    font-family="Georgia,serif" font-weight="900"
+    font-size="18" fill="#ffffff" letter-spacing="-0.5">VS</text>
+</svg>

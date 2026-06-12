@@ -109,6 +109,33 @@ export default function SecurityQualificationFlow() {
   const [ack, setAck] = useState('')
   const [briefSubmitted, setBriefSubmitted] = useState(false)
 
+  // Restore saved flow state on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('vigil-security-flow-state')
+      if (saved) {
+        const { screen: savedScreen, ans: savedAns, hist: savedHist } = JSON.parse(saved)
+        if (savedScreen && savedScreen !== 'thank-you') {
+          setScreen(savedScreen)
+          setAns(savedAns)
+          setHist(savedHist || [])
+          if (savedAns?.postcode) setPcVal(savedAns.postcode)
+        }
+      }
+    } catch {}
+  }, [])
+
+  // Persist flow state on every change
+  useEffect(() => {
+    if (screen === 'thank-you') {
+      sessionStorage.removeItem('vigil-security-flow-state')
+      return
+    }
+    try {
+      sessionStorage.setItem('vigil-security-flow-state', JSON.stringify({ screen, ans, hist }))
+    } catch {}
+  }, [screen, ans, hist])
+
   const go = useCallback((to: Screen, acknowledgement?: string) => {
     setHist(prev => [...prev, screen])
     setScreen(to)

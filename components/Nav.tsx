@@ -9,17 +9,17 @@ interface NavProps {
 }
 
 const guardingServices = [
-  { label: "Manned Guarding", href: "/manned-guarding-london/", icon: "ti-shield-check" },
-  { label: "Mobile Patrols", href: "/mobile-patrols-london/", icon: "ti-car" },
-  { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/", icon: "ti-key" },
-  { label: "Concierge Security", href: "/concierge-security-london/", icon: "ti-user-check" },
+  { label: "Manned Guarding", href: "/manned-guarding-london/", icon: "👮" },
+  { label: "Mobile Patrols", href: "/mobile-patrols-london/", icon: "🚗" },
+  { label: "Key Holding & Alarm Response", href: "/key-holding-alarm-response-london/", icon: "🔑" },
+  { label: "Concierge Security", href: "/concierge-security-london/", icon: "🏢" },
 ];
 
 const specialistServices = [
-  { label: "Event Security", href: "/event-security-london/", icon: "ti-confetti" },
-  { label: "Retail Security", href: "/retail-security-london/", icon: "ti-building-store" },
-  { label: "Construction Site Security", href: "/construction-site-security-london/", icon: "ti-crane" },
-  { label: "CCTV Monitoring", href: "/cctv-monitoring-london/", icon: "ti-camera" },
+  { label: "Event Security", href: "/event-security-london/", icon: "🎪" },
+  { label: "Retail Security", href: "/retail-security-london/", icon: "🛍️" },
+  { label: "Construction Site Security", href: "/construction-site-security-london/", icon: "🏗️" },
+  { label: "CCTV Monitoring", href: "/cctv-monitoring-london/", icon: "📷" },
 ];
 
 export default function Nav({ minimal = false }: NavProps) {
@@ -166,7 +166,7 @@ export default function Nav({ minimal = false }: NavProps) {
                               href={service.href}
                               className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all block py-2 px-3 rounded flex items-center gap-2"
                             >
-                              <i className={`${service.icon} text-[16px]`} style={{ minWidth: '16px' }} />
+                              <span style={{ minWidth: '18px', fontSize: '15px' }}>{service.icon}</span>
                               <span>{service.label}</span>
                             </Link>
                           </li>
@@ -186,7 +186,7 @@ export default function Nav({ minimal = false }: NavProps) {
                               href={service.href}
                               className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all block py-2 px-3 rounded flex items-center gap-2"
                             >
-                              <i className={`${service.icon} text-[16px]`} style={{ minWidth: '16px' }} />
+                              <span style={{ minWidth: '18px', fontSize: '15px' }}>{service.icon}</span>
                               <span>{service.label}</span>
                             </Link>
                           </li>
@@ -251,7 +251,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-building text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Barnet</span>
                           </Link>
                         </li>
@@ -261,7 +261,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-masks-theater text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Camden</span>
                           </Link>
                         </li>
@@ -271,7 +271,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-building-community text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Hackney</span>
                           </Link>
                         </li>
@@ -281,7 +281,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-building text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Islington</span>
                           </Link>
                         </li>
@@ -291,7 +291,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-tower text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Tower Hamlets</span>
                           </Link>
                         </li>
@@ -301,7 +301,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-building-skyscraper text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Canary Wharf</span>
                           </Link>
                         </li>
@@ -320,7 +320,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-crown text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>City of London</span>
                           </Link>
                         </li>
@@ -330,7 +330,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-building-arch text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Westminster</span>
                           </Link>
                         </li>
@@ -340,7 +340,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-bridge text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Southwark</span>
                           </Link>
                         </li>
@@ -350,7 +350,7 @@ export default function Nav({ minimal = false }: NavProps) {
                             className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
                             style={{ padding: '8px 12px' }}
                           >
-                            <i className="ti-map text-[16px]" style={{ minWidth: '16px' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
                             <span>Greater London</span>
                           </Link>
                         </li>
@@ -393,6 +393,34 @@ export default function Nav({ minimal = false }: NavProps) {
               </Link>
             </li>
 
+            {/* Blog Link */}
+            <li className="relative">
+              <Link
+                href="/blog/"
+                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 inline-block pb-1 relative"
+              >
+                Blog
+                <span
+                  className="absolute bottom-0 left-0 h-[1.5px] bg-[#4ecdc4] rounded-[1px] transition-all duration-200"
+                  style={{ width: isActive('/blog/') ? '100%' : '0%' }}
+                />
+              </Link>
+            </li>
+
+            {/* FAQ Link */}
+            <li className="relative">
+              <Link
+                href="/faq/"
+                className="text-[13px] text-[rgba(255,255,255,0.75)] hover:text-[#4ecdc4] transition-colors duration-200 inline-block pb-1 relative"
+              >
+                FAQ
+                <span
+                  className="absolute bottom-0 left-0 h-[1.5px] bg-[#4ecdc4] rounded-[1px] transition-all duration-200"
+                  style={{ width: isActive('/faq/') ? '100%' : '0%' }}
+                />
+              </Link>
+            </li>
+
             <li>
               <a
                 href="tel:+442039738892"
@@ -426,7 +454,8 @@ export default function Nav({ minimal = false }: NavProps) {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-white"
-              aria-label="Toggle menu"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
             >
               <svg
                 width="24"
@@ -622,6 +651,20 @@ export default function Nav({ minimal = false }: NavProps) {
               onClick={() => setMobileMenuOpen(false)}
             >
               Careers
+            </Link>
+            <Link
+              href="/blog/"
+              className="block text-white text-[15px] font-medium hover:text-[#4ecdc4] transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
+            </Link>
+            <Link
+              href="/faq/"
+              className="block text-white text-[15px] font-medium hover:text-[#4ecdc4] transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              FAQ
             </Link>
 
             {/* Bottom: CTA */}

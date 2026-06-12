@@ -17,8 +17,8 @@ const config: Config = {
         gold: '#c9a84c',
       },
       fontFamily: {
-        sans: ["DM Sans", "sans-serif"],
-        display: ["Playfair Display", "serif"],
+        sans: ["var(--font-dm-sans)", "DM Sans", "sans-serif"],
+        display: ["var(--font-playfair)", "Playfair Display", "serif"],
       },
       fontSize: {
         "section-tag": ["11px", { letterSpacing: "0.1em", fontWeight: "500" }],

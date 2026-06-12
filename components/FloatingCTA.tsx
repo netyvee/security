@@ -8,31 +8,25 @@ export default function FloatingCTA() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
-  // Don't show on homepage
-  if (pathname === "/") {
-    return null;
-  }
-
   useEffect(() => {
+    const threshold = pathname === "/" ? 800 : 300;
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
 
-      // Show after scrolling 300px down
-      const shouldShow = scrollY > 300;
-
-      // Hide when within 200px of footer
+      const shouldShow = scrollY > threshold;
       const nearFooter = scrollY + windowHeight >= documentHeight - 200;
 
       setVisible(shouldShow && !nearFooter);
     };
 
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Check initial state
+    handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   return (
     <Link

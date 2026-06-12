@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { seoConfig } from '@/lib/seo.config'
 import Script from 'next/script'
@@ -9,10 +10,28 @@ import FloatingCTA from '@/components/FloatingCTA'
 import Sidebar from '@/components/Sidebar'
 import LayoutClient from './layout-client'
 
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-dm-sans',
+})
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+})
+
 export const metadata: Metadata = {
   ...seoConfig,
   title: 'Vigil Security Services | SIA Licensed Security London',
   description: 'Professional security services across Greater London. SIA-licensed officers, directly employed, £10M insured. Manned guarding, mobile patrols, key holding, event security.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+  },
 }
 
 const siteSchema = {
@@ -78,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en-GB">
+    <html lang="en-GB" className={`${dmSans.variable} ${playfairDisplay.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -92,10 +111,15 @@ export default function RootLayout({
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
           })(window,document,'script','dataLayer','GTM-N74LRNBJ');`}
         </Script>
-        {/* Tabler Icons */}
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
       </head>
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        {/* Skip navigation — WCAG 2.4.1 */}
+        <a
+          href="#main-content"
+          className="absolute -top-full focus:top-4 left-4 z-[60] px-4 py-2 bg-[#4ecdc4] text-[#0a1628] font-semibold rounded-md transition-all outline-none"
+        >
+          Skip to main content
+        </a>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -107,7 +131,9 @@ export default function RootLayout({
         </noscript>
         <Nav />
         <TrustBar />
-        <LayoutClient>{children}</LayoutClient>
+        <main id="main-content" className="flex-1">
+          <LayoutClient>{children}</LayoutClient>
+        </main>
         <Footer />
         <FloatingCTA />
         <Sidebar />
