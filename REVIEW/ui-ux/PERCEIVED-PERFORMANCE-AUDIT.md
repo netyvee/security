@@ -163,13 +163,32 @@ Both sites load GTM `afterInteractive` ✓. The cleaning site uses `GTM-KRNS3652
 
 ---
 
+## CLIENT COMPONENT FOOTPRINT (from full codebase scan, 2026-06-12)
+
+Security has 23 `'use client'` components vs cleaning's 3 (admin pages only).
+
+| Site | Client components | Notes |
+|---|---|---|
+| Cleaning | 3 | All admin routes; all public pages are server components |
+| Security | 23 | SecurityQualificationFlow, BookingCalendar, BookingCTA, MobileBookingButton, Nav (both copies), FloatingCTA, layout-client, admin tabs (7+), others |
+
+The security site's high client component count increases:
+- JavaScript bundle sent to browser
+- Hydration time (INP metric)
+- Time to Interactive on mobile
+
+Many of these are correctly client-side (SecurityQualificationFlow must be). But `Nav` (two copies — `components/Nav.tsx` and `components/shared/Nav.tsx` — both `'use client'`) could be split to render the static shell server-side and isolate only the mobile toggle state in a small client island. This is a medium-complexity optimisation with low regression risk.
+
+---
+
 ## PRIORITY FIXES
 
 | # | Fix | Site | Score impact |
 |---|-----|------|-------------|
-| 1 | Replace Google Fonts @import with next/font | Security | High (+8–12pts) |
-| 2 | Remove redundant Tabler Icons CDN CSS link | Security | High (+5–8pts) |
-| 3 | Add background-color to security layout body | Security | Low |
-| 4 | Remove 'use client' from SiteFooter (use CSS hover) | Cleaning | Low (+2pts) |
-| 5 | Lazy-load qualification flows with next/dynamic | Both | Medium (+3–5pts) |
+| 1 | Add `next/font` — fonts currently not loading | Security | Critical (+10–15pts) |
+| 2 | Remove Tabler Icons CDN CSS link from `<head>` | Security | High (+5–8pts) |
+| 3 | Add `background-color: #0a1628` to security layout body | Security | Low |
+| 4 | Remove `'use client'` from `SiteFooter` (use CSS hover) | Cleaning | Low (+2pts) |
+| 5 | Lazy-load qualification flows with `next/dynamic` | Both | Medium (+3–5pts) |
 | 6 | Add loading skeleton for qualification flow area | Both | Medium (CLS) |
+| 7 | Consolidate duplicate Nav components (2 copies in security) | Security | Low |

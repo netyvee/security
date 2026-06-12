@@ -208,3 +208,16 @@ Note: Using `hidden` removes the CSS transition. For animated collapse with AT h
 
 **Overall WCAG 2.1 AA status: Non-compliant on both sites.**
 Primary failures: contrast (security), skip link (both), focus styles (both), form labels (cleaning).
+
+---
+
+## QUANTITATIVE COVERAGE (from full codebase scan, 2026-06-12)
+
+| Metric | Cleaning | Security | Gap |
+|---|---|---|---|
+| aria-* / role= / tabIndex / sr-only occurrences | **89** | **15** | Security 83% below cleaning |
+| focus: / focus-visible: / outline / ring occurrences | **601** | **10** | Security has near-zero focus styles |
+| `'use client'` components | 3 (admin only) | **23** | 23 client components increases hydration overhead |
+| Plain `<img>` tags | 3 | 0 | Cleaning: 3 images need alt verification |
+
+The security site's aria count of 15 across 41 pages and 28 components is critically low. SecurityQualificationFlow, the Sidebar component, and all service page interactive elements lack systematic aria coverage. The 10 focus-style occurrences confirm keyboard navigation is functionally broken on most of the site. The security site requires a dedicated accessibility pass before it can be considered WCAG 2.1 AA compliant.

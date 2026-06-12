@@ -173,9 +173,14 @@ The first three are numeric statistics. "DBS" is a credential, not a number. It 
 
 ## SECURITY HOMEPAGE — ADDITIONAL ISSUES
 
-The security homepage structure was not fully reviewed but the following apply from what was read:
+From full codebase analysis (2026-06-12), the security homepage (`app/page.tsx`) has 8+ sections:
+Hero → Qualification Flow → Stats → Intro → Services → Why Choose → Sectors → Coverage → FAQ → Final CTA
 
-1. **Same missing testimonials section** — SecurityQualificationFlow has inline testimonials hidden in the flow.
-2. **No hero section** — the SecurityQualificationFlow is the entire above-fold experience. A hero with headline, trust chips, and CTAs should precede the flow.
-3. **Same emoji/icon recommendation** applies.
-4. **Nav CTA broken** — as noted in Navigation and Conversion audits.
+The hero section exists and contains headline, trust chips, and CTAs. However:
+
+1. **Missing testimonials section** — SecurityQualificationFlow has inline testimonials hidden inside the flow; none appear on the homepage before the flow.
+2. **Nav CTA broken** — "Get a quote" in the nav links to `"/"` (homepage), not the CRM. See NAVIGATION-IMPROVEMENT-PLAN.md.
+3. **Same emoji/icon recommendation applies** — replace emoji with Tabler Icons SVG.
+4. **Sidebar layout offset** — `app/layout-client.tsx` applies `lg:mr-[224px]` right margin when a `Sidebar` component is visible. The Sidebar is hidden on the homepage, but the layout shift between homepage (no sidebar) and inner pages (sidebar visible) may cause visual discontinuity on wide screens. Verify the sidebar is hidden correctly on all page types and that the content width change is intentional.
+5. **Qualification flow framing** — same recommendation as cleaning: add a brief H2 + introduction above the SecurityQualificationFlow to explain its purpose to first-time visitors.
+6. **"Get a quote" flow context** — the security flow has 7 screens and captures premises type, service type, hours, and postcode. The welcome screen could benefit from a progress indicator (matching the cleaning site's progress bar in `QualificationFlow.tsx`).
