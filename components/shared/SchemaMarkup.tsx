@@ -39,7 +39,7 @@ export function buildServiceSchema(opts: {
     url: opts.url,
     provider: {
       "@type": "LocalBusiness",
-      name: "Vigil Cleaning Services",
+      name: "Vigil Security Services",
       telephone: "+442039738892",
       address: {
         "@type": "PostalAddress",
@@ -85,14 +85,14 @@ export function buildArticleSchema(opts: {
     dateModified: opts.dateModified,
     author: {
       "@type": "Organization",
-      name: "Vigil Cleaning Services",
+      name: "Vigil Security Services",
     },
     publisher: {
       "@type": "Organization",
-      name: "Vigil Cleaning Services",
+      name: "Vigil Security Services",
       logo: {
         "@type": "ImageObject",
-        url: "https://cleaning.vigilservices.co.uk/images/vigil-logo.png",
+        url: "https://security.vigilservices.co.uk/favicon.svg",
       },
     },
   };
