@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     question: 'What areas of London do you cover?',
-    answer: 'Vigil Security operates across all 32 Greater London boroughs, from the City of London and Canary Wharf to outer boroughs including Barnet, Bromley, and Hillingdon. We deploy officers to commercial offices, retail premises, construction sites, healthcare facilities, educational institutions, and residential developments. All officers are familiar with London geography and transport links. If your organisation operates multiple sites across London, we can provide manned guarding under a single contract with consolidated reporting and one account manager.'
+    answer: 'Vigil Security operates across Greater London, from the City of London and Canary Wharf to outer boroughs including Barnet, Bromley, and Hillingdon. We deploy officers to commercial offices, retail premises, construction sites, healthcare facilities, educational institutions, and residential developments. All officers are familiar with London geography and transport links. If your organisation operates multiple sites across London, we can provide manned guarding under a single contract with consolidated reporting and one account manager.'
   },
   {
     question: 'How quickly can you mobilise manned guarding for our site?',
@@ -117,7 +117,7 @@ export default function MannedGuardingPage() {
       <div className="bg-[#0a1628] pt-8 pb-6 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="quick-answer-block">
-            Manned guarding London provides SIA-licensed security officers stationed at your premises to control access, monitor CCTV, conduct patrols, and respond to incidents. All officers are directly employed, DBS-checked, and assigned on a consistent rota across all 32 Greater London boroughs.
+            Manned guarding London provides SIA-licensed security officers stationed at your premises to control access, monitor CCTV, conduct patrols, and respond to incidents. All officers are directly employed, DBS-checked, and assigned on a consistent rota across Greater London.
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function MannedGuardingPage() {
             Most security companies sub-contract their officers through agencies, rotating staff across multiple client sites with no continuity. Vigil operates differently. Every officer on your contract is directly employed by us. They are assigned to your site on a stable rota — typically the same 2–3 officers covering your shifts on a consistent basis. This continuity means officers learn your premises layout, recognise your staff and regular visitors, understand your operational routines, and can identify anomalies quickly.
           </p>
           <p>
-            We cover all 32 Greater London boroughs from a single operating base. If you manage multiple sites across London — office buildings, retail stores, or residential developments — you can consolidate all security services under one Vigil contract. One account manager, one invoice, one set of SLAs, and unified reporting across your entire portfolio. This simplifies procurement, reduces administrative overhead, and ensures consistent service standards regardless of borough.
+            We cover Greater London from a single operating base. If you manage multiple sites across London — office buildings, retail stores, or residential developments — you can consolidate all security services under one Vigil contract. One account manager, one invoice, one set of SLAs, and unified reporting across your entire portfolio. This simplifies procurement, reduces administrative overhead, and ensures consistent service standards regardless of borough.
           </p>
           <p>
             Our officers receive sector-specific training. Those deployed to construction sites understand <a href="https://www.hse.gov.uk/construction/cdm/2015/index.htm" target="_blank" rel="noopener noreferrer" className="text-[#4ecdc4] underline">CDM 2015</a> site welfare and access control obligations. Officers assigned to healthcare facilities are briefed on patient confidentiality, infection control, and <a href="https://www.cqc.org.uk/" target="_blank" rel="noopener noreferrer" className="text-[#4ecdc4] underline">CQC</a> compliance. Retail-focused officers are trained in conflict de-escalation, shoplifting deterrence, and crowd management during peak trading periods. This sector knowledge ensures our officers integrate seamlessly into your operation rather than simply occupying a post.
@@ -477,7 +477,7 @@ export default function MannedGuardingPage() {
           <div>
             <h3 className="text-white text-[15px] font-medium mb-4">Manned guarding across all London boroughs</h3>
             <p className="mb-4">
-              Vigil Security provides manned guarding London services across all 32 Greater London boroughs including the City of London, Westminster, Camden, Islington, Hackney, Tower Hamlets, Canary Wharf, Southwark, Lambeth, Barnet, Ealing, and Hillingdon. Our SIA-licensed officers are deployed to offices, retail premises, construction sites, and healthcare facilities with shift patterns from 8 hours to 24/7 continuous coverage.
+              Vigil Security provides manned guarding London services across Greater London including the City of London, Westminster, Camden, Islington, Hackney, Tower Hamlets, Canary Wharf, Southwark, Lambeth, Barnet, Ealing, and Hillingdon. Our SIA-licensed officers are deployed to offices, retail premises, construction sites, and healthcare facilities with shift patterns from 8 hours to 24/7 continuous coverage.
             </p>
             <p>
               All officers are directly employed by Vigil, never agency staff or sub-contractors. This ensures consistent assignment, accountability, and adherence to our training standards. Officers undergo enhanced DBS checks, hold current SIA licences, and complete site-specific induction training before deployment.
@@ -490,7 +490,7 @@ export default function MannedGuardingPage() {
               Unlike agencies that rotate staff across multiple sites, Vigil assigns dedicated officers to your premises on a stable rota. You receive the same 2–3 officers every week, ensuring they know your site, your staff, and your security procedures. This continuity improves security effectiveness and builds trust with your team.
             </p>
             <p className="mb-4">
-              We cover all 32 Greater London boroughs from a single operating base. If you manage multiple sites, you can consolidate all security services under one Vigil contract with unified reporting and one account manager.
+              We cover Greater London from a single operating base. If you manage multiple sites, you can consolidate all security services under one Vigil contract with unified reporting and one account manager.
             </p>
             <p>
               Related services: <Link href="/mobile-patrols-london/" className="text-[#4ecdc4] underline">Mobile patrols London</Link> · <Link href="/key-holding-alarm-response-london/" className="text-[#4ecdc4] underline">Key holding & alarm response</Link> · <Link href="/construction-site-security-london/" className="text-[#4ecdc4] underline">Construction site security</Link> · <Link href="/cctv-monitoring-london/" className="text-[#4ecdc4] underline">CCTV monitoring London</Link>

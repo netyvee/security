@@ -261,7 +261,7 @@ export default function CommercialSecurityCityOfLondonPage() {
         <div className="max-w-4xl mx-auto prose prose-invert">
           <h2 className="font-display text-[clamp(24px,2.5vw,32px)] font-medium text-white mb-6">About Vigil Security Services in the {area}</h2>
           <p>
-            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, and alarm response to commercial clients across Greater London. We operate in all 32 London boroughs including the {area}, deploying directly employed officers with enhanced DBS checks to law firms, barristers' chambers, financial services, professional services, and corporate offices.
+            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, and alarm response to commercial clients across Greater London. We operate across all Greater London boroughs including the {area}, deploying directly employed officers with enhanced DBS checks to law firms, barristers' chambers, financial services, professional services, and corporate offices.
           </p>
           <p>
             Unlike national security companies that rely on agency staff, Vigil employs all officers directly. Officers assigned to the {area} understand legal and financial sector requirements including client confidentiality, professional conduct, visitor verification, and early-morning operations from 06:00. All officers undergo enhanced DBS checks as standard for {area} deployments.

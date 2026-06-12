@@ -270,7 +270,7 @@ export default function CommercialSecurityCanaryWharfPage() {
         <div className="max-w-4xl mx-auto prose prose-invert">
           <h2 className="font-display text-[clamp(24px,2.5vw,32px)] font-medium text-white mb-6">About Vigil Security Services in {area}</h2>
           <p>
-            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, and CCTV monitoring to commercial clients across Greater London. We operate in all 32 London boroughs including {area}, deploying directly employed officers with enhanced DBS checks to corporate offices, law firms, professional services, high-rise buildings, and residential developments.
+            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, and CCTV monitoring to commercial clients across Greater London. We operate across all Greater London boroughs including {area}, deploying directly employed officers with enhanced DBS checks to corporate offices, law firms, professional services, high-rise buildings, and residential developments.
           </p>
           <p>
             Unlike national security companies that rely on agency staff, Vigil employs all officers directly. Officers assigned to {area} understand financial district requirements including confidentiality, professional conduct, stringent visitor verification, and 24/7 operations for trading floors and operations centres. All officers undergo enhanced DBS checks as standard for {area} deployments.

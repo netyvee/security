@@ -117,7 +117,7 @@ export default function MobilePatrolsPage() {
       <div className="bg-[#0a1628] pt-8 pb-6 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="quick-answer-block">
-            Mobile patrol security London provides scheduled visits by SIA-licensed officers who check your premises exterior and interior, test locks and alarms, and report issues. Patrols occur 2-4 times per shift across all 32 Greater London boroughs at a fraction of the cost of static manned guarding.
+            Mobile patrol security London provides scheduled visits by SIA-licensed officers who check your premises exterior and interior, test locks and alarms, and report issues. Patrols occur 2-4 times per shift across Greater London at a fraction of the cost of static manned guarding.
           </div>
         </div>
       </div>
@@ -481,7 +481,7 @@ export default function MobilePatrolsPage() {
           <div>
             <h3 className="text-white text-[15px] font-medium mb-4">Mobile patrol security across all London boroughs</h3>
             <p className="mb-4">
-              Vigil Security provides mobile patrol security London services across all 32 Greater London boroughs including Westminster, City of London, Camden, Islington, Hackney, Tower Hamlets, Southwark, Lambeth, Croydon, Barking & Dagenham, Newham, Ealing, Hounslow, Hillingdon, Barnet, and Enfield. Our SIA-licensed officers conduct scheduled patrols of offices, warehouses, industrial estates, retail premises, and construction sites with GPS-tracked checkpoints and detailed reporting.
+              Vigil Security provides mobile patrol security London services across Greater London including Westminster, City of London, Camden, Islington, Hackney, Tower Hamlets, Southwark, Lambeth, Croydon, Barking & Dagenham, Newham, Ealing, Hounslow, Hillingdon, Barnet, and Enfield. Our SIA-licensed officers conduct scheduled patrols of offices, warehouses, industrial estates, retail premises, and construction sites with GPS-tracked checkpoints and detailed reporting.
             </p>
             <p>
               All officers are directly employed by Vigil, never agency staff or sub-contractors. Officers use marked patrol vehicles and conduct external and internal checks covering doors, windows, gates, perimeters, car parks, and alarm systems.
@@ -494,7 +494,7 @@ export default function MobilePatrolsPage() {
               Mobile patrols provide visible security presence at a lower cost than static manned guarding. Ideal for premises that are unoccupied overnight or require periodic checks rather than continuous on-site presence. Our digital patrol system scans NFC checkpoints at every location, providing GPS-stamped proof of attendance uploaded to your client portal within 30 minutes of each visit.
             </p>
             <p className="mb-4">
-              We cover all 32 Greater London boroughs with response times of 20-30 minutes for alarm callouts. If you operate multiple sites, you can consolidate all mobile patrol services under one Vigil contract with unified reporting and one account manager.
+              We cover Greater London with rapid response times for alarm callouts. If you operate multiple sites, you can consolidate all mobile patrol services under one Vigil contract with unified reporting and one account manager.
             </p>
             <p>
               Related services: <Link href="/manned-guarding-london/" className="text-[#4ecdc4] underline">Manned guarding London</Link> · <Link href="/key-holding-alarm-response-london/" className="text-[#4ecdc4] underline">Key holding & alarm response</Link> · <Link href="/construction-site-security-london/" className="text-[#4ecdc4] underline">Construction site security</Link> · <Link href="/cctv-monitoring-london/" className="text-[#4ecdc4] underline">CCTV monitoring</Link>

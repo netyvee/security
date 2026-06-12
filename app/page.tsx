@@ -72,8 +72,8 @@ export default function HomePage() {
       <p className="sr-only">
         Vigil Security Services provides professional manned guarding, mobile
         patrols and SIA licensed security officers across London. Trusted by
-        businesses, construction sites, venues and corporate clients across all
-        32 London boroughs. Directly employed officers. 24/7 availability.
+        businesses, construction sites, venues and corporate clients across
+        Greater London. Directly employed officers. 24/7 availability.
       </p>
       <SecurityQualificationFlow />
     </HomeLayout>

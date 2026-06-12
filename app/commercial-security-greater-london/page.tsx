@@ -10,10 +10,10 @@ const serviceTitle = 'Commercial Security Greater London'
 
 export const metadata: Metadata = {
   title: `${serviceTitle} | SIA-Licensed | Vigil`,
-  description: `${focusKeyword} — SIA-licensed officers for offices, retail, construction, and hospitality across all 32 London boroughs. Directly employed, DBS-checked, £10M insured, 24/7 availability.`,
+  description: `${focusKeyword} — SIA-licensed officers for offices, retail, construction, and hospitality across Greater London. Directly employed, DBS-checked, £10M insured, 24/7 availability.`,
   openGraph: {
     title: `${serviceTitle} | SIA-Licensed | Vigil`,
-    description: `${focusKeyword} — SIA-licensed officers across all 32 London boroughs. Offices, retail, construction, hospitality. Directly employed, £10M insured, 24/7.`,
+    description: `${focusKeyword} — SIA-licensed officers across Greater London. Offices, retail, construction, hospitality. Directly employed, £10M insured, 24/7.`,
     url: 'https://security.vigilservices.co.uk/commercial-security-greater-london/',
     siteName: 'Vigil Security Services',
     locale: 'en_GB',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 const faqs = [
   {
     question: 'What areas of Greater London does Vigil Security cover?',
-    answer: 'Vigil Security operates across all 32 Greater London boroughs from central London financial districts (City of London, Canary Wharf, Westminster) through inner London (Camden, Islington, Hackney, Tower Hamlets, Southwark) to outer London boroughs (Barnet, Bromley, Croydon, Ealing, and all others). We deploy SIA-licensed officers to commercial offices, retail premises, construction sites, hospitality venues, healthcare facilities, educational institutions, and residential developments. All officers are directly employed by Vigil, DBS-checked, and familiar with Greater London geography including transport links, commercial zones, and borough-specific environments. If you operate multiple sites across Greater London, we provide consolidated security contracts with a single account manager, unified reporting, and consistent service standards regardless of borough.'
+    answer: 'Vigil Security operates across Greater London from central London financial districts (City of London, Canary Wharf, Westminster) through inner London (Camden, Islington, Hackney, Tower Hamlets, Southwark) to outer London boroughs (Barnet, Bromley, Croydon, Ealing, and all others). We deploy SIA-licensed officers to commercial offices, retail premises, construction sites, hospitality venues, healthcare facilities, educational institutions, and residential developments. All officers are directly employed by Vigil, DBS-checked, and familiar with Greater London geography including transport links, commercial zones, and borough-specific environments. If you operate multiple sites across Greater London, we provide consolidated security contracts with a single account manager, unified reporting, and consistent service standards regardless of borough.'
   },
   {
     question: 'Do you provide security for multi-site organisations across Greater London?',
@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     question: 'What commercial security services does Vigil provide across Greater London?',
-    answer: 'Vigil provides comprehensive commercial security services across all 32 Greater London boroughs including manned guarding for offices, retail premises, construction sites, and events with SIA-licensed officers stationed on-site during contracted hours, mobile patrols for unoccupied properties and construction sites with GPS-tracked visits and auditable proof of attendance, key holding and alarm response for out-of-hours alarm activations with response times typically under 20 minutes, door supervision for licensed premises under Licensing Act 2003 obligations, CCTV monitoring from on-site control rooms or client premises, event security for concerts, festivals, corporate functions, and private events, construction site security including CDM 2015 compliant gatehouse, patrols, and tool audits, and concierge security for residential developments combining reception services with security oversight. All services are available 24/7 across all Greater London boroughs with emergency callout capability.'
+    answer: 'Vigil provides comprehensive commercial security services across Greater London including manned guarding for offices, retail premises, construction sites, and events with SIA-licensed officers stationed on-site during contracted hours, mobile patrols for unoccupied properties and construction sites with GPS-tracked visits and auditable proof of attendance, key holding and alarm response for out-of-hours alarm activations with response times typically under 20 minutes, door supervision for licensed premises under Licensing Act 2003 obligations, CCTV monitoring from on-site control rooms or client premises, event security for concerts, festivals, corporate functions, and private events, construction site security including CDM 2015 compliant gatehouse, patrols, and tool audits, and concierge security for residential developments combining reception services with security oversight. All services are available 24/7 across all Greater London boroughs with emergency callout capability.'
   }
 ]
 
@@ -67,7 +67,7 @@ export default function CommercialSecurityGreaterLondonPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{
         __html: JSON.stringify({
           '@context': 'https://schema.org', '@type': 'Service', name: serviceTitle,
-          description: 'SIA-licensed commercial security services across all 32 Greater London boroughs.',
+          description: 'SIA-licensed commercial security services across Greater London.',
           provider: {
             '@type': 'LocalBusiness', name: 'Vigil Security Services',
             telephone: '+442039738892', email: 'security@vigilservices.co.uk',
@@ -91,7 +91,7 @@ export default function CommercialSecurityGreaterLondonPage() {
       <div className="bg-[#0a1628] pt-8 pb-6 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="quick-answer-block">
-            Commercial security Greater London provides SIA-licensed officers across all 32 London boroughs for offices, retail, construction, hospitality, and residential premises. Services include manned guarding, mobile patrols, key holding, alarm response, door supervision, and event security with 24/7 availability. Consolidated contracts available for multi-site organisations.
+            Commercial security Greater London provides SIA-licensed officers across Greater London for offices, retail, construction, hospitality, and residential premises. Services include manned guarding, mobile patrols, key holding, alarm response, door supervision, and event security with 24/7 availability. Consolidated contracts available for multi-site organisations.
           </div>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function CommercialSecurityGreaterLondonPage() {
               Commercial Security <em className="text-[#4ecdc4] not-italic">Greater London</em>
             </h1>
             <p className="text-[rgba(255,255,255,0.65)] text-[17px] leading-relaxed mb-8">
-              SIA-licensed security across all 32 London boroughs. Directly employed officers, DBS-checked, covering offices, retail, construction, and hospitality.
+              SIA-licensed security across Greater London. Directly employed officers, DBS-checked, covering offices, retail, construction, and hospitality.
             </p>
             <div className="flex flex-wrap gap-3 mb-8">
               {['SIA-licensed', 'DBS-checked', 'Directly employed', '£10M insured', 'All boroughs'].map(pill => (
@@ -127,7 +127,7 @@ export default function CommercialSecurityGreaterLondonPage() {
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-4 text-[13px] text-white/50">
           <div><strong className="text-white/70">Author:</strong> Vigil Security Operations Team</div>
           <div><strong className="text-white/70">Last reviewed:</strong> {currentDate}</div>
-          <div><strong className="text-white/70">Service area:</strong> All 32 Greater London Boroughs</div>
+          <div><strong className="text-white/70">Service area:</strong> Greater London</div>
         </div>
       </div>
 
@@ -135,12 +135,12 @@ export default function CommercialSecurityGreaterLondonPage() {
         <div className="max-w-4xl mx-auto prose prose-invert">
 
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-3">Commercial security services across Greater London</h2>
-          <p className="tldr mb-6">Vigil provides SIA-licensed security services across all 32 Greater London boroughs with directly employed officers and 24/7 availability.</p>
+          <p className="tldr mb-6">Vigil provides SIA-licensed security services across Greater London with directly employed officers and 24/7 availability.</p>
           <p>
             Greater London comprises all Greater London boroughs plus the City of London, spanning over 600 square miles from central London financial and legal districts through inner London residential and commercial zones to outer London suburban and industrial areas. The capital hosts millions of commercial premises including corporate offices from small startups to international headquarters, retail premises from independent shops to major shopping centres, construction sites from residential infills to major regeneration projects, hospitality venues including hotels, restaurants, bars, nightclubs, and entertainment venues, healthcare facilities including hospitals, clinics, and GP surgeries, educational institutions from primary schools to universities, cultural institutions including museums, galleries, and theatres, and residential developments from social housing to luxury high-rises.
           </p>
           <p>
-            Vigil Security operates across all 32 Greater London boroughs deploying SIA-licensed officers for manned guarding, mobile patrols, key holding and alarm response, door supervision, event security, construction site security, and concierge services. All officers are directly employed by Vigil — never agency staff or sub-contractors — ensuring consistent assignment, accountability, and adherence to our service standards. Officers are familiar with Greater London geography, transport links, and borough-specific commercial environments from financial districts to suburban retail parks.
+            Vigil Security operates across Greater London deploying SIA-licensed officers for manned guarding, mobile patrols, key holding and alarm response, door supervision, event security, construction site security, and concierge services. All officers are directly employed by Vigil — never agency staff or sub-contractors — ensuring consistent assignment, accountability, and adherence to our service standards. Officers are familiar with Greater London geography, transport links, and borough-specific commercial environments from financial districts to suburban retail parks.
           </p>
           <p>
             We provide both single-site contracts for individual premises and consolidated contracts for multi-site organisations operating across multiple boroughs. Consolidated contracts include a single account manager coordinating all locations, unified reporting across all sites, consistent service standards regardless of borough, centralised invoicing and administration, and coordinated officer deployment. This approach simplifies procurement for retail chains, property portfolios, construction contractors, and corporate organisations with London-wide operations.
@@ -170,7 +170,7 @@ export default function CommercialSecurityGreaterLondonPage() {
           <h2 className="font-display text-[clamp(26px,2.8vw,36px)] font-medium text-white mb-3 mt-12">Services available across all Greater London boroughs</h2>
           <p className="tldr mb-6">Manned guarding, mobile patrols, key holding, door supervision, event security, and construction site security with 24/7 availability.</p>
           <p>
-            Vigil provides comprehensive commercial security services across all 32 Greater London boroughs. <strong>Manned guarding:</strong> SIA-licensed officers stationed at your premises for access control, visitor management, CCTV monitoring, patrols, and incident response. Suitable for offices, retail premises, construction sites, and events. <strong>Mobile patrols:</strong> Scheduled patrol visits to unoccupied premises during overnight, weekend, or unstaffed periods with GPS-tracked proof of attendance. <strong>Key holding and alarm response:</strong> 24/7 alarm response service with key holding for out-of-hours activations — officers typically attend within 20 minutes. <strong>Door supervision:</strong> SIA Door Supervision for licensed premises under Licensing Act 2003 obligations including age verification, conflict management, and licensing law compliance. <strong>Event security:</strong> Crowd management, access control, and emergency response for concerts, festivals, corporate events, and private functions. <strong>Construction site security:</strong> CDM 2015 compliant gatehouse, mobile patrols, tool audits, PPE enforcement, and alarm response.
+            Vigil provides comprehensive commercial security services across Greater London. <strong>Manned guarding:</strong> SIA-licensed officers stationed at your premises for access control, visitor management, CCTV monitoring, patrols, and incident response. Suitable for offices, retail premises, construction sites, and events. <strong>Mobile patrols:</strong> Scheduled patrol visits to unoccupied premises during overnight, weekend, or unstaffed periods with GPS-tracked proof of attendance. <strong>Key holding and alarm response:</strong> 24/7 alarm response service with key holding for out-of-hours activations — officers typically attend within 20 minutes. <strong>Door supervision:</strong> SIA Door Supervision for licensed premises under Licensing Act 2003 obligations including age verification, conflict management, and licensing law compliance. <strong>Event security:</strong> Crowd management, access control, and emergency response for concerts, festivals, corporate events, and private functions. <strong>Construction site security:</strong> CDM 2015 compliant gatehouse, mobile patrols, tool audits, PPE enforcement, and alarm response.
           </p>
           <p>
             All services are available 24/7 across all Greater London boroughs with emergency callout capability. For service-specific details, see our dedicated pages including <Link href="/manned-guarding-london/" className="text-[#4ecdc4] underline">manned guarding</Link>, <Link href="/mobile-patrols-london/" className="text-[#4ecdc4] underline">mobile patrols</Link>, <Link href="/key-holding-alarm-response-london/" className="text-[#4ecdc4] underline">key holding and alarm response</Link>, <Link href="/event-security-london/" className="text-[#4ecdc4] underline">event security</Link>, <Link href="/retail-security-london/" className="text-[#4ecdc4] underline">retail security</Link>, <Link href="/construction-site-security-london/" className="text-[#4ecdc4] underline">construction site security</Link>, and <Link href="/concierge-security-london/" className="text-[#4ecdc4] underline">concierge security</Link>.
@@ -287,7 +287,7 @@ export default function CommercialSecurityGreaterLondonPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-display text-[clamp(28px,3vw,38px)] font-medium text-white mb-4">Ready to secure your Greater London premises?</h2>
           <p className="text-white/70 text-[17px] mb-8 max-w-2xl mx-auto">
-            Get a free quote for SIA-licensed security services across all 32 Greater London boroughs. Single-site and multi-site contracts available.
+            Get a free quote for SIA-licensed security services across Greater London. Single-site and multi-site contracts available.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="https://app.vigilservices.co.uk/enquire/security" className="btn-primary">Get a quote</Link>
@@ -300,7 +300,7 @@ export default function CommercialSecurityGreaterLondonPage() {
         <div className="max-w-4xl mx-auto prose prose-invert">
           <h2 className="font-display text-[clamp(24px,2.5vw,32px)] font-medium text-white mb-6">About Vigil Security Services in Greater London</h2>
           <p>
-            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, door supervision, event security, construction site security, and concierge services to commercial clients across all 32 Greater London boroughs. We deploy directly employed officers to offices, retail premises, construction sites, hospitality venues, healthcare facilities, educational institutions, cultural institutions, and residential developments.
+            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, door supervision, event security, construction site security, and concierge services to commercial clients across Greater London. We deploy directly employed officers to offices, retail premises, construction sites, hospitality venues, healthcare facilities, educational institutions, cultural institutions, and residential developments.
           </p>
           <p>
             Unlike national security companies that rely on agency staff, Vigil employs all officers directly. This ensures consistent assignment, accountability, and adherence to our service standards across all Greater London boroughs. We provide both single-site contracts for individual premises and consolidated contracts for multi-site organisations, simplifying procurement and ensuring consistent security standards across your entire London operation.

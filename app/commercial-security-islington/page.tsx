@@ -347,7 +347,7 @@ export default function CommercialSecurityIslingtonPage() {
         <div className="max-w-4xl mx-auto prose prose-invert">
           <h2 className="font-display text-[clamp(24px,2.5vw,32px)] font-medium text-white mb-6">About Vigil Security Services in {borough}</h2>
           <p>
-            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, and CCTV monitoring to commercial clients across Greater London. We operate in all 32 London boroughs including {borough}, deploying directly employed officers to corporate offices, tech startups, retail premises, hospitality venues, construction sites, and residential developments.
+            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, and CCTV monitoring to commercial clients across Greater London. We operate across all Greater London boroughs including {borough}, deploying directly employed officers to corporate offices, tech startups, retail premises, hospitality venues, construction sites, and residential developments.
           </p>
           <p>
             Unlike national security companies that rely on agency staff and sub-contractors, Vigil employs all officers directly. This ensures consistent assignment, accountability to our management team, adherence to training standards, and alignment with client-specific security protocols. Officers assigned to {borough} are familiar with central London commercial environments, understand corporate office and tech startup security requirements, and are trained to provide professional security that integrates seamlessly with business operations.

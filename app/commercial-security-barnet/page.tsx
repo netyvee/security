@@ -434,7 +434,7 @@ export default function CommercialSecurityBarnetPage() {
             About Vigil Security Services in {borough}
           </h2>
           <p>
-            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, and CCTV monitoring to commercial clients across Greater London. We operate in all 32 London boroughs including {borough}, deploying directly employed officers to corporate offices, retail premises, construction sites, healthcare facilities, educational institutions, and residential developments.
+            Vigil Security Services is a London-based security company providing SIA-licensed manned guarding, mobile patrols, key holding, alarm response, and CCTV monitoring to commercial clients across Greater London. We operate across all Greater London boroughs including {borough}, deploying directly employed officers to corporate offices, retail premises, construction sites, healthcare facilities, educational institutions, and residential developments.
           </p>
           <p>
             Unlike national security companies that rely on agency staff and sub-contractors, Vigil employs all officers directly. This ensures consistent assignment, accountability to our management team, adherence to training standards, and alignment with client-specific security protocols. Officers assigned to {borough} are familiar with local geography, transport links, and the commercial security challenges specific to the borough's mix of suburban, industrial, and town centre environments.

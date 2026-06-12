@@ -117,7 +117,7 @@ export default function DoorSupervisorsPage() {
       <div className="bg-[#0a1628] pt-8 pb-6 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="quick-answer-block">
-            Door supervisors London provides SIA-licensed officers for pubs, bars, nightclubs, and licensed events. Under the Private Security Industry Act 2001, a current SIA Door Supervisor licence is a legal requirement at all Licensing Act 2003 premises. Vigil deploys directly employed, DBS-checked door supervisors across all 32 London boroughs.
+            Door supervisors London provides SIA-licensed officers for pubs, bars, nightclubs, and licensed events. Under the Private Security Industry Act 2001, a current SIA Door Supervisor licence is a legal requirement at all Licensing Act 2003 premises. Vigil deploys directly employed, DBS-checked door supervisors across Greater London.
           </div>
         </div>
       </div>
@@ -325,7 +325,7 @@ export default function DoorSupervisorsPage() {
           <div>
             <h2 className="text-[15px] font-medium text-white/55 mb-3">Door supervisors London — SIA licensing and legal requirements</h2>
             <p className="text-[12px] text-white/28 leading-relaxed mb-4">
-              The Private Security Industry Act 2001 requires all door supervisors at licensed premises to hold a current SIA Door Supervisor licence. Vigil Security Services provides SIA-licensed, directly employed door supervisors across all 32 London boroughs — managing access control, crowd safety, Challenge 25 ID verification, and incident reporting for pubs, bars, nightclubs, restaurants, and licensed events.
+              The Private Security Industry Act 2001 requires all door supervisors at licensed premises to hold a current SIA Door Supervisor licence. Vigil Security Services provides SIA-licensed, directly employed door supervisors across Greater London — managing access control, crowd safety, Challenge 25 ID verification, and incident reporting for pubs, bars, nightclubs, restaurants, and licensed events.
             </p>
             <div className="flex flex-wrap gap-3">
               {[

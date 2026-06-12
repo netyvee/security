@@ -455,7 +455,7 @@ export default function KeyHoldingPage() {
           <div>
             <h3 className="text-white text-[15px] font-medium mb-4">Key holding and alarm response across Greater London</h3>
             <p className="mb-4">
-              Vigil Security provides key holding and alarm response London services across all 32 Greater London boroughs with guaranteed response times. Our SIA-licensed officers respond to intruder alarms, fire alarms, and panic alarms 24/7, with central London response times of 20 minutes and outer London response times of 30 minutes. Your keys are stored securely in a BS7558-approved key safe at our Ferguson House operations centre.
+              Vigil Security provides key holding and alarm response London services across Greater London with fast response times. Our SIA-licensed officers respond to intruder alarms, fire alarms, and panic alarms 24/7. Your keys are stored securely in a BS7558-approved key safe at our Ferguson House operations centre.
             </p>
             <p>
               All officers are directly employed by Vigil and carry £10M public liability insurance. Every alarm attendance includes a detailed report with photographs, timestamps, and confirmation that your premises are secure.
