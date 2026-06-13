@@ -1,287 +1,330 @@
-# CLAUDE.md — Vigil Security Services
-
-## PERMANENT SETTINGS — Never Change These
-
-### Site Identity
-- **Site:** Vigil Security Services
-- **Local folder:** C:\laragon\www\vigil-security
-- **GitHub repo:** https://github.com/netyvee/security
-- **Vercel project:** https://security-sable.vercel.app
-- **Domain:** security.vigilservices.co.uk
-
-### Stack
-- Next.js 14
-- Tailwind CSS
-- TypeScript
-- Vercel hosting
-- Standalone site (shares no code with vigil-cleaning)
-
-### Design System
-- **Accent color:** #4ecdc4 (teal)
-- **Navy base:** #0a1628
-- **Navy mid:** #0f1f3d
-- **Navy light:** #162849
-- **Gold (stars only):** #c9a84c
-- **Typography:** DM Sans (body), Playfair Display (headings)
-
-### Contact Details
-- **Email:** security@vigilservices.co.uk — ALL forms, ALL notifications, ALL API routes
-- **Phone:** 020 3973 8892
-- **Address:** Ferguson House, 113 Cranbrook Road, Ilford, IG1 4PU
-- **Instagram:** https://www.instagram.com/vigil.security/
-
-### Integrations
-- **GTM:** GTM-N74LRNBJ (this site's own container)
-- **Calendly:** Read from `NEXT_PUBLIC_CALENDLY_URL` env var — NEVER hardcode
-- **CRM:** POST https://app.vigilservices.co.uk/enquiry with `service_type=Security`
-- **Cloudinary:** cloud `duhicmygg`, folder `security/`
-- **Email:** Gmail SMTP using `GMAIL_USER` and `GMAIL_APP_PASSWORD` env vars
+# VIGIL SERVICES — PROJECT CONTEXT
+# Version: 2.0 — June 13 2026
+# Read this file at the start of EVERY session.
+# Then read DESIGN-SYSTEM.md and SOP-WEBSITE-BUILD.md.
+# This file is the index. Those files are the detail.
 
 ---
 
-## TRUTHFUL CLAIMS ONLY
+## COMPANY
 
-### ALLOWED Claims:
-- SIA-licensed officers
-- DBS-checked officers
-- Directly employed officers
-- £10M public/employer's liability insurance
-- Greater London coverage
-- 24/7 cover available
-
-### FORBIDDEN — Never Write:
-- "SIA Approved" or "SIA Approved Contractor"
-- "ACS" or "ACS Registered" or "ACS compliant"
-- "ISO Certified" or "ISO 9001"
-- "BS7858" or "BS7858 certified" or "BS7858 vetted"
-- "98%" or any other percentage statistic
-- "500+" or any site/guard/client count
-- "32 boroughs" (say "Greater London" or "all Greater London boroughs")
-- Any retention rate, response time, or invented number
-
-**If a stat slot needs filling, use a true fact from the ALLOWED list — never invent a number.**
+Vigil Services Ltd
+Company Registration: 11756806
+Registered address: Ferguson House, 113 Cranbrook Road, Ilford IG1 4PU
+Registered in England and Wales
 
 ---
 
-## OPERATING RULES
+## THE FOUR BUSINESSES
 
-1. **Never deploy without owner approval** (exception: security fixes, bug fixes)
-2. **Always use security@vigilservices.co.uk** for ALL email addresses
-3. **Always use #4ecdc4 teal** for accent colors — never orange
-4. **Always check forbidden claims** before pushing any content
-5. **Always test build** — must show 0 errors before pushing
-6. **Never use git add -A** — stage specific source files only
-7. **Keep .next/ and node_modules gitignored** (exception: vercel.json MUST be committed)
-8. **Match the exact design system** — no new colors, fonts, or spacing
-9. **SOP compliance required** — every page 2,500+ words, full schema, FAQs, etc.
-10. **When in doubt, ask** — never assume or invent
+These are four INDEPENDENT businesses sharing one legal entity.
+They do not cross-refer. They do not cross-sell.
+They do not link to each other on their websites.
+Treat each as a completely separate business.
 
----
+| Business | Trading name | Market |
+|----------|-------------|--------|
+| Cleaning | Vigil Cleaning Services | B2B commercial cleaning, London |
+| Security | Vigil Security Services | B2B security services, London |
+| Care | Vigil Care Services | Domiciliary care, London (deferred) |
+| Staffing | Vigil Care Staffing | Care sector staffing, London (deferred) |
 
-## DEPLOYMENT VERIFICATION — MANDATORY AFTER EVERY PUSH
+Each business:
+- Has its own website (separate repo, separate Vercel project)
+- Has its own phone number
+- Has its own enquiry URL
+- Has its own target buyer
+- Has its own regulatory environment
+- Operates completely independently
 
-**CRITICAL:** After every `git push`, you MUST verify the Vercel deployment succeeds. This is non-negotiable and automatic.
-
-### Autonomous Verification Process:
-
-1. **Wait 90 seconds** for Vercel to build and deploy
-
-2. **Check deployment status** using one of these methods:
-
-   **Method A (if VERCEL_TOKEN available):**
-   ```bash
-   curl -s "https://api.vercel.com/v6/deployments?projectId=prj_Pd0vRktsJFy2tThpoLsWhJZyKmnQ&limit=1" \
-     -H "Authorization: Bearer $VERCEL_TOKEN" | grep -o '"state":"[^"]*"'
-   ```
-
-   **Method B (fallback — always works):**
-   ```bash
-   curl -s -o /dev/null -w "%{http_code}" https://security-sable.vercel.app
-   ```
-   - `200` = deployment succeeded ✅
-   - Non-200 = deployment failed ❌
-
-3. **If deployment failed:**
-   - Run `npm run build` locally to capture errors
-   - Fix EVERY error automatically (no approval needed)
-   - Commit the fix with descriptive message
-   - Push to GitHub
-   - Wait another 90 seconds
-   - Check deployment status again
-   - **Repeat until deployment succeeds**
-
-4. **Report only when:**
-   - Deployment is confirmed live with HTTP 200 response
-   - Include: deployment URL, build time, route count, any fixes applied
-
-### Rules:
-- **Never skip verification** — every push requires confirmation
-- **Never ask for approval** during the fix loop — fix autonomously
-- **Never stop until 200 response** — persistence required
-- **Always fix locally first** — never push broken code hoping Vercel will fix it
-- **Log every iteration** — if multiple fix attempts needed, document what was tried
-
-### Exception:
-If 3+ consecutive fix attempts fail, report the error pattern and ask for human intervention.
+NEVER mix content between businesses.
+NEVER suggest cross-divisional links on websites.
+NEVER treat them as divisions of one company in content.
+The only shared element visible to users is the company
+registration number and registered address in the footer.
 
 ---
 
-## SOP REQUIREMENTS FOR SERVICE PAGES
+## PHONE NUMBERS — NEVER CHANGE
 
-Every service page must have ALL 20 checklist items:
+Cleaning:  020 3098 6037
+Security:  020 3973 8892
 
-1. Quick Answer Block 40-60 words BEFORE H1
-2. TL;DR under EVERY H2 in teal #4ecdc4
-3. 2,500+ words total
-4. 6+ FAQ questions, each 100+ words, FAQPage schema
-5. 3+ external authority links (sia.homeoffice.gov.uk, hse.gov.uk, gov.uk)
-6. Case study with 3 statistics (ALLOWED facts only)
-7. 3 testimonials with gold stars #c9a84c
-8. Full schema stack (LocalBusiness + Service + BreadcrumbList + FAQPage)
-9. Hero image via Cloudinary fetch from Unsplash
-10. Title 55-63 chars, focus keyword first
-11. Meta description 145-155 chars, CTA present
-12. EEAT bar with current review date
-13. CTA section linking to qualification flow
-14. SEO content block 500+ words, #060f20 background
-15. All internal links resolve
-16. robots meta: index,follow
-17. Canonical tag points to own URL
-18. Mobile responsive
-19. Breadcrumb with BreadcrumbList schema
-20. Zero forbidden claims (grep verify before marking complete)
+The security number has been corrected four times.
+020 3973 8887 is WRONG. 020 3973 8892 is CORRECT.
+Commit this before touching any file on the security site.
 
 ---
 
-## PHASE 4 STATUS
+## BRAND — CONFIRMED FINAL
 
-### Complete (2/8 service pages):
-- ✅ Manned Guarding London (2,850+ words, 20/20 SOP)
-- ✅ Mobile Patrols London (2,780+ words, 20/20 SOP)
+Both cleaning AND security websites:
+- Same colour palette: navy #0a1628 + teal #4ecdc4
+- Same layout structure (section order, spacing, patterns)
+- Same font pairing: DM Sans (body) + Playfair Display (headings)
+- Same VG favicon design (navy square, VG monogram, teal circle arc)
 
-### Remaining (6 service pages):
-- Key Holding & Alarm Response London
-- Event Security London
-- Retail Security London
-- Construction Site Security London
-- CCTV Monitoring London
-- Concierge Security London
+Do NOT use different accent colours per division on websites.
+Do NOT mention orange for the security site.
+The security site uses teal #4ecdc4 — same as cleaning.
 
-### Also Needed:
-- Services hub page `/security-services/`
-- 17 migration redirects in next.config.mjs
-- 10 borough pages (1,200+ words each)
-- Supporting pages (about, contact, faq, blog, legal)
+Read DESIGN-SYSTEM.md for full visual specification.
 
 ---
 
-## GIT WORKFLOW
+## REPOSITORIES
 
-### Staging Files:
-**ALWAYS stage specific paths:**
-```bash
-git add app/ components/ public/ lib/ 
-git add next.config.mjs package.json tailwind.config.ts tsconfig.json
-git add middleware.ts CLAUDE.md PROJECT-STATUS.md CHANGELOG.md
-```
+| Business | Repo | Branch | Live URL |
+|----------|------|--------|---------|
+| Cleaning | netyvee/vigil-cleaning | main | cleaning.vigilservices.co.uk |
+| Security | netyvee/security | main | security.vigilservices.co.uk |
+| CRM | netyvee/app | master | app.vigilservices.co.uk |
 
-**NEVER use:**
-```bash
-git add -A  # NO — includes build artifacts
-git add .   # NO — includes everything
-```
+Local paths:
+- Cleaning: C:\laragon\www\vigil-cleaning
+- Security: C:\laragon\www\security
+- CRM: C:\laragon\www\app
 
-### Commit Format:
-```
-feat: clear description of what changed
-
-Detailed explanation of:
-- What was built/fixed
-- Why it was done this way
-- Any decisions made
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
-### Push:
-```bash
-git push origin main
-```
-
----
-
-## BUILD VERIFICATION
-
-Before every push:
-
-1. **Run build:**
-   ```bash
-   npm run build
-   ```
-   Must show: ✓ 0 errors, ✓ 0 warnings
-
-2. **Forbidden claims grep:**
-   ```bash
-   grep -r "98%\|SIA Approved\|ACS\|BS7858\|500+\|32 boroughs" app/ components/
-   ```
-   Must show: 0 matches
-
-3. **Color verification:**
-   ```bash
-   grep -r "#EA580C\|rgba(234,88,12" app/ components/
-   ```
-   Must show: 0 matches
-
-4. **Email verification:**
-   ```bash
-   grep -r "@gmail.com\|@vigilservices.co.uk" app/ components/
-   ```
-   Must show: only security@vigilservices.co.uk (and vigsecs@gmail.com in API route is OK)
+Always verify repo with git remote -v before starting.
+STOP if wrong repo.
 
 ---
 
 ## DEPLOYMENT
 
-### Vercel Environment Variables:
-```
-NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/vigsecs/30min
-NEXT_PUBLIC_GTM_ID=GTM-N74LRNBJ
-NEXT_PUBLIC_APP_URL=https://security.vigilservices.co.uk
-GMAIL_USER=vigsecs@gmail.com
-GMAIL_APP_PASSWORD=[owner to supply]
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=duhicmygg
-ANTHROPIC_API_KEY=[same key as cleaning site]
-CRM_ENDPOINT=https://app.vigilservices.co.uk/enquiry
-ADMIN_EMAIL=vigsecs@gmail.com
-ADMIN_PASSWORD=[owner to supply]
-ADMIN_SESSION_SECRET=[owner to supply]
-```
-
-### Admin Security Configuration:
-- **Session timeout:** 5 minutes of inactivity (auto-refresh on activity)
-- **2FA via email OTP:** 6-digit code sent to ADMIN_EMAIL after correct password
-- **OTP expiry:** 5 minutes
-- **Rate limiting:** 3 failed OTP attempts = 15 minute lockout
-- **Password rate limiting:** 5 failed attempts = 1 hour lockout
-
-### Post-Deployment Checks:
-1. Homepage qualification flow works
-2. Calendly renders with teal colors
-3. Service pages load correctly
-4. Email routing to security@vigilservices.co.uk
-5. Schema markup present (view-source)
-6. Mobile responsive (375px viewport)
-7. Build: 0 errors in Vercel logs
+Next.js sites: Auto-deploy via Vercel on git push to main.
+Laravel CRM: Deploy via CPANEL-DEPLOY-COMMANDS.txt.
+GitHub Actions CI: GREEN (8 tests, 19 assertions).
 
 ---
 
-## NOTES
+## CRM ENQUIRY URLS — CONFIRMED LIVE
 
-- This is a STANDALONE site — not part of the monorepo
-- All shared components inlined to `/components/shared/`
-- No `@vigil/*` workspace dependencies
-- Phone number: 020 3973 8892 (NOT the cleaning number)
-- Email: security@vigilservices.co.uk (NOT cleaning@)
-- Instagram: vigil.security (NOT vigilcleaners)
+Cleaning: https://app.vigilservices.co.uk/enquire/cleaning
+Security: https://app.vigilservices.co.uk/enquire/security
+Care:     https://app.vigilservices.co.uk/enquire/care
+Staffing: https://app.vigilservices.co.uk/enquire/staffing
 
-**Always read this file at the start of every session.**
+All CTAs on all websites must link to these URLs.
+NEVER link to /get-started, /request-a-quote, /book-call.
+These routes are deprecated.
+
+The qualification flow links DIRECTLY to the CRM.
+It does not collect data first — it redirects immediately.
+
+---
+
+## CORE USP — USE IN ALL CONTENT
+
+"Vigil responds to every client query within 15 minutes."
+
+Positioning: Speed + value + reliability = operations partner.
+Not a cleaning company. Not a security company.
+A dependable operations partner.
+
+This is specific, verifiable, and true.
+Use it in hero sections, Why Vigil sections, and content.
+Do not dilute it with generic claims.
+
+---
+
+## PERMITTED CLAIMS
+
+Cleaning:
+✓ Directly employed operatives
+✓ DBS checked (Enhanced)
+✓ COSHH 2002 compliant
+✓ AWR 2010 compliant
+✓ CDM 2015 compliant
+✓ TUPE 2006 experience
+✓ £10M public liability insurance
+✓ 15-minute response to every client query
+✓ Company Reg. 11756806
+
+Security:
+✓ SIA-licensed officers
+✓ DBS checked (Enhanced)
+✓ BS7858 vetted
+✓ Directly employed officers
+✓ £10M public liability insurance
+✓ Private Security Industry Act 2001 compliant
+✓ 15-minute response to every client query
+✓ Company Reg. 11756806
+
+---
+
+## FORBIDDEN — NEVER USE
+
+Content forbidden on any Vigil site:
+✗ ACS Approved Contractor
+✗ ISO [any number]
+✗ Government approved / police approved
+✗ Specific response time in minutes (e.g. "20 minutes")
+✗ "32 boroughs" or "all 32" — use "Greater London"
+✗ 500+ clients
+✗ 98% satisfaction
+✗ Award-winning
+✗ Guaranteed (in service quality context)
+✗ &amp; in JSX — use & or {'&'}
+✗ Cross-divisional links on websites
+✗ Domestic / residential language
+✗ Agency language
+
+---
+
+## CONTENT RULES
+
+Target buyer: facilities manager, property director,
+              construction manager, event organiser.
+B2B only. Never domestic. Never residential.
+UK English throughout (not US English).
+Minimum contract: 2 visits/week, 4 hours/visit, 3-month rolling.
+Regulatory language is authority — never remove it.
+NHS references in healthcare content — keep them.
+Founder reviews all content before publishing.
+
+---
+
+## SITE ARCHITECTURE
+
+Cleaning (44 pages):
+- Homepage: qualification flow above fold + SEO content below
+- Borough pages: /commercial-cleaning-[borough]/
+- Blog: 3 posts (CDM 2015, CQC, TUPE)
+
+Security (41 pages):
+- Homepage: qualification flow above fold + SEO content below
+- Borough pages: /commercial-security-[borough]/
+- Blog: 3 posts (SIA, BS7858, Licensing Act)
+
+Both sites share same section order (see DESIGN-SYSTEM.md).
+Qualification flow is the primary conversion mechanism.
+Never remove or replace the qualification flow.
+
+---
+
+## KEY COMPONENTS
+
+Cleaning:
+- QualificationFlow.tsx — 14-screen flow (primary conversion)
+- CTASection.tsx — reusable CTA with CRM links
+- MobileBookingButton.tsx — sticky mobile CTA
+- Nav.tsx — navigation
+- Footer.tsx — primary footer (used in layout.tsx)
+- SiteFooter.tsx — legacy, review for consolidation
+
+Security:
+- SecurityQualificationFlow.tsx — multi-screen flow
+- components/shared/CTASection.tsx — reusable CTA
+- components/shared/Nav.tsx — navigation
+- components/Footer.tsx — primary footer
+- components/shared/Footer.tsx — may be duplicate, check
+
+---
+
+## CREDENTIALS STATUS — JUNE 2026
+
+| Credential | Cleaning | Security |
+|-----------|---------|---------|
+| ANTHROPIC_API_KEY | ✅ Active + running | ❓ Check Vercel |
+| GITHUB_TOKEN | ✅ Active | ❌ Needs adding |
+| PAGESPEED_API_KEY | ❌ Needs adding | ❌ Needs adding |
+| GSC credentials | ❌ Not set up | ❌ Not set up |
+| RESEND_API_KEY | ✅ Active | ✅ Active |
+
+Google Cloud project: elegant-hope-453720-r1
+GBP: Claimed for both divisions ✅
+
+---
+
+## CRM STATUS — JUNE 2026
+
+Confirmed working:
+- CI/CD pipeline via GitHub Actions ✅
+- 5 real clients in production ✅
+- shift_types 500 error FIXED ✅
+- Scheduling pages unblocked ✅
+- Session 5 fixes deployed ✅
+
+Outstanding:
+- Sessions 6-9 not yet run
+- Enquiry funnels unverified end-to-end
+- Client signing portal unverified end-to-end
+- June 8 bugs: Lead 404, sidebar duplication,
+  inactive buttons — all on Session 8 list
+
+CRM client portal shows specific trading name
+the client hired (not generic "Vigil Services").
+
+---
+
+## OUTSTANDING ISSUES — WEBSITES
+
+Both sites:
+- No skip navigation link (WCAG Level A violation)
+- Services dropdown missing from desktop nav
+- Qualification flow state not persisted (sessionStorage)
+- No sector strip on homepage
+- Homepage rebuild in progress
+
+Cleaning specific:
+- Two footer components — consolidate
+- QualificationFlow inputs 14-15px — iOS zoom bug
+- Apple touch icon needs PNG version
+- Canonical/sitemap conflicts (34 pages)
+- 7 broken images
+
+Security specific:
+- No favicon
+- Fonts not loaded via next/font
+- Tabler Icons CDN render-blocking link in layout
+- btn-primary contrast fail
+- FloatingCTA hidden on homepage
+- Nav missing Blog, FAQ, Locations links
+
+---
+
+## GOVERNANCE DOCUMENTS
+
+Read these before the relevant type of work:
+
+| Document | Read before |
+|----------|------------|
+| DESIGN-SYSTEM.md | Any component or visual change |
+| SOP-WEBSITE-BUILD.md | Any page creation or update |
+| VIGIL-CHECKLIST.md | Every session (progress tracker) |
+| REVIEW/REVIEW-SUMMARY.md | SEO or content sessions |
+
+---
+
+## MANDATORY RULES — NO EXCEPTIONS
+
+1. Read CLAUDE.md, DESIGN-SYSTEM.md before any component work
+2. Read SOP-WEBSITE-BUILD.md before any page work
+3. Verify repo with git remote -v — STOP if wrong
+4. Read every file before editing it
+5. grep before creating — never duplicate components
+6. npm run build before every commit
+7. Commit per fix — not one giant commit
+8. Never use sed bulk replace — edit files surgically
+9. SEO order: redirects → canonicals → sitemap
+10. Never remove qualification flow component
+11. Never add cross-divisional links to websites
+12. Never use orange for security site
+13. Never claim 32 boroughs — use Greater London
+14. Never add specific response time figures
+15. Update VIGIL-CHECKLIST.md after every session
+
+---
+
+## SESSION START CHECKLIST
+
+- [ ] Read CLAUDE.md (this file)
+- [ ] Read DESIGN-SYSTEM.md (if touching components)
+- [ ] Read SOP-WEBSITE-BUILD.md (if touching pages)
+- [ ] Read VIGIL-CHECKLIST.md (current progress)
+- [ ] Verify repo: git remote -v
+- [ ] Read files you will edit
+- [ ] grep for existing patterns before creating new ones
+- [ ] Confirm CRM URL for this division
+- [ ] Confirm phone number for this division
