@@ -245,66 +245,25 @@ export default function Nav({ minimal = false }: NavProps) {
                         North & East London
                       </h3>
                       <ul className="space-y-0.5">
-                        <li>
-                          <Link
-                            href="/commercial-security-barnet/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Barnet</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-camden/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Camden</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-hackney/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Hackney</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-islington/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Islington</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-tower-hamlets/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Tower Hamlets</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-canary-wharf/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Canary Wharf</span>
-                          </Link>
-                        </li>
+                        {[
+                          { href: "/commercial-security-barnet/", icon: "🌳", label: "Barnet" },
+                          { href: "/commercial-security-camden/", icon: "🎭", label: "Camden" },
+                          { href: "/commercial-security-hackney/", icon: "🎨", label: "Hackney" },
+                          { href: "/commercial-security-islington/", icon: "📍", label: "Islington" },
+                          { href: "/commercial-security-tower-hamlets/", icon: "🗼", label: "Tower Hamlets" },
+                          { href: "/commercial-security-canary-wharf/", icon: "🏢", label: "Canary Wharf" },
+                        ].map(loc => (
+                          <li key={loc.href}>
+                            <Link
+                              href={loc.href}
+                              className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded group/item"
+                              style={{ padding: '8px 12px' }}
+                            >
+                              <span className="text-[14px] flex-shrink-0">{loc.icon}</span>
+                              <span>{loc.label}</span>
+                            </Link>
+                          </li>
+                        ))}
                       </ul>
                     </div>
 
@@ -314,46 +273,23 @@ export default function Nav({ minimal = false }: NavProps) {
                         Central & South London
                       </h3>
                       <ul className="space-y-0.5">
-                        <li>
-                          <Link
-                            href="/commercial-security-city-of-london/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>City of London</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-westminster/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Westminster</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-southwark/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Southwark</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/commercial-security-greater-london/"
-                            className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded"
-                            style={{ padding: '8px 12px' }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#4ecdc4]/50 flex-shrink-0 mt-1" />
-                            <span>Greater London</span>
-                          </Link>
-                        </li>
+                        {[
+                          { href: "/commercial-security-city-of-london/", icon: "🏦", label: "City of London" },
+                          { href: "/commercial-security-westminster/", icon: "🏛️", label: "Westminster" },
+                          { href: "/commercial-security-southwark/", icon: "🌉", label: "Southwark" },
+                          { href: "/commercial-security-greater-london/", icon: "🗺️", label: "Greater London" },
+                        ].map(loc => (
+                          <li key={loc.href}>
+                            <Link
+                              href={loc.href}
+                              className="text-[13px] text-[rgba(255,255,255,0.65)] hover:text-[#4ecdc4] hover:bg-[rgba(78,205,196,0.08)] transition-all flex items-center gap-2 rounded group/item"
+                              style={{ padding: '8px 12px' }}
+                            >
+                              <span className="text-[14px] flex-shrink-0">{loc.icon}</span>
+                              <span>{loc.label}</span>
+                            </Link>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </div>
