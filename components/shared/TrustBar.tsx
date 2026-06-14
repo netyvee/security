@@ -1,5 +1,5 @@
 const items = [
-  { icon: "£5m", label: "Public liability insured" },
+  { icon: "£10M", label: "Public liability insured" },
   { icon: "DBS", label: "All operatives DBS checked" },
   { icon: "⚗", label: "COSHH compliant" },
   { icon: "3M", label: "3-month rolling contracts" },
