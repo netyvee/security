@@ -60,6 +60,7 @@ const siteSchema = {
         'https://www.instagram.com/vigil.security/',
         'https://cleaning.vigilservices.co.uk',
         'https://app.vigilservices.co.uk',
+        'https://share.google/1g4ca4Xm6Dt7F7e49',
       ],
     },
     {
