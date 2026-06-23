@@ -246,12 +246,15 @@ for (const r of canonicalRoutes) {
   }
 }
 
-// H_NAP_PHONE — forbidden numbers anywhere in scanned source
+// H_NAP_PHONE — forbidden numbers anywhere in scanned source.
+// SCAN_DIRS includes "app", so this checks EVERY page file (app/**/page.tsx),
+// not just layout — a wrong/foreign number on any page blocks the deploy.
 const scanExts = SCAN_DOCS ? ['.tsx', '.ts', '.jsx', '.js', '.json', '.md']
                            : ['.tsx', '.ts', '.jsx', '.js', '.json'];
 const scanFiles = SCAN_DIRS.flatMap((d) => walk(path.join(ROOT, d)))
   .map((f) => path.relative(ROOT, f).replace(/\\/g, '/'))
   .filter((f) => scanExts.includes(path.extname(f)) && !f.endsWith('seo-governance.config.json'));
+const pageFileCount = scanFiles.filter((f) => /\/page\.tsx$/.test(f) || f === 'app/page.tsx').length;
 const phoneRe = /(?:\+?44\s?|0)(?:\d[\s().-]?){9,11}\d/g;
 for (const f of scanFiles) {
   const src = fs.readFileSync(path.resolve(ROOT, f), 'utf8');
@@ -262,6 +265,37 @@ for (const f of scanFiles) {
       addHard('H_NAP_PHONE', f,
         `Forbidden phone "${m[0].trim()}" (this site's number is ${cfg.nap.phone})`,
         `Replace with ${cfg.nap.phone} / ${cfg.nap.phoneE164}`, line);
+    }
+  }
+}
+
+// H_FORBIDDEN_CLAIM — banned marketing claims in RENDERED page copy
+// (ACS, ISO certified, NN% satisfaction, 32 boroughs, police/government approved,
+// award-winning). Patterns come from the config so the rule is data, not code.
+// Scoped to the collected `pages` (real marketing page.tsx, excluding /api, /admin,
+// /portal and redirect stubs) so agent/API code that merely *lists* the forbidden
+// terms in a prompt does not false-positive.
+// Enforcement is config-gated: warn-only by default (existing live copy still
+// carries legacy claims pending founder-reviewed content cleanup), flipped to a
+// deploy-blocking hard block by setting forbiddenClaimsEnforce:true once clean.
+const forbiddenClaims = cfg.forbiddenClaims || [];
+const claimEnforce = !!cfg.forbiddenClaimsEnforce;
+if (forbiddenClaims.length) {
+  for (const p of pages) {
+    for (const claim of forbiddenClaims) {
+      let re;
+      try { re = new RegExp(claim, 'i'); } catch { continue; }
+      const m = p.src.match(re);
+      if (m) {
+        const line = p.src.slice(0, m.index).split('\n').length;
+        const message = `Forbidden marketing claim "${m[0].trim()}" (pattern: /${claim}/i)`;
+        const fix = 'Remove the forbidden claim — see SEO-GOVERNANCE.md / CLAUDE.md FORBIDDEN list';
+        if (claimEnforce) {
+          addHard('H_FORBIDDEN_CLAIM', p.file, message, fix, line);
+        } else {
+          addSoft('S_FORBIDDEN_CLAIM', p.file, `${message} [line ${line}]`, fix);
+        }
+      }
     }
   }
 }
@@ -354,6 +388,7 @@ if (overrideMatch) {
 // ───────────────────────── OUTPUT ─────────────────────────────────────────
 const C = { red: '\x1b[31m', yellow: '\x1b[33m', green: '\x1b[32m', dim: '\x1b[2m', reset: '\x1b[0m' };
 console.log(`\n=== SEO Integrity Check — site=${cfg.site} | pages=${pages.length} | ` +
+  `NAP-scanned page files=${pageFileCount} | ` +
   `mode=${REPORT_ONLY ? 'REPORT-ONLY' : 'ENFORCING'} ===`);
 
 if (findings.hard.length) {

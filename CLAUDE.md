@@ -6,19 +6,45 @@
 
 ---
 
-## MANDATORY — SEO GOVERNANCE GATE (read before any change)
+## SCOPE LOCK — declare at session start
 
-Before making ANY change to this repo:
-1. Read SEO-GOVERNANCE.md (the binding rules for this site).
+> This session is scoped to: **[SCOPE]**.
+> Do not modify files outside this scope. Cross-scope changes require a new
+> declared session.
+> Allowed scopes: `fix-canonicals` · `add-images` · `fix-nap` · `content-edit` ·
+> `schema-fix`. (e.g. a `fix-canonicals` session must not touch schema or images.)
+
+---
+
+## MANDATORY — AI SESSION PROTOCOL (read before any change)
+
+Every session (human or AI) that touches this repo MUST follow this protocol.
+Full rules: SEO-GOVERNANCE.md. CI enforces the gate on every push
+(.github/workflows/seo-check.yml); Vercel's Ignored Build Step also runs it.
+
+### Pre-session (before any change)
+1. Read this CLAUDE.md **and** SEO-GOVERNANCE.md.
 2. Run `node scripts/seo-integrity-check.mjs --config seo-governance.config.json`
-   and CONFIRM IT EXITS 0 (clean). If it is not clean, fixing the existing
-   findings is the first task — do not add new work on top of a red gate.
-3. After your change, run the check again AND `npm run build`; commit only if both pass.
+   — it MUST be clean (exit 0). If not, fixing the existing findings is the first
+   task; do not add new work on top of a red gate.
+3. Record the SEO baseline: page count + score distribution (from
+   `seo-integrity-report.json` / `.seo-baseline.json`).
+4. State the scope explicitly in the SCOPE LOCK above: which pages, what change type.
 
-The check is enforced in CI on every push (.github/workflows/seo-check.yml): a wrong
-phone number (this site = 020 3973 8892 only; 020 3973 8887 is permanently forbidden),
-a canonical→redirect conflict, a sitemap/canonical mismatch, or a missing canonical
-BLOCKS the deploy. NAP and build failures are never overridable.
+### Post-session (before commit)
+1. Run `node scripts/seo-integrity-check.mjs` — MUST be clean (exit 0).
+2. Run `npm run build` — MUST pass.
+3. Record the session in `AUDIT/AI-SESSION-LOG.md` (in netyvee/app): date, scope,
+   pages modified, SEO score before, SEO score after, CI status, evidence of fix.
+4. **No session may be marked complete without before/after SEO scores.**
+
+Hard blocks (deploy cannot proceed): a wrong/foreign phone number (this site =
+**020 3973 8892** only; **020 3973 8887** is permanently forbidden), canonical→
+redirect, sitemap/canonical mismatch, missing canonical. NAP and build failures are
+NEVER overridable. The forbidden-marketing-claim check (ACS, ISO numbers,
+"32 boroughs", "% satisfaction", police/government approved, award-winning)
+currently runs as a WARNING — see SEO-GOVERNANCE.md §6; it flips to a hard block
+once the legacy copy is cleaned (`forbiddenClaimsEnforce`).
 
 ---
 
