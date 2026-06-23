@@ -17,6 +17,10 @@
     "staffing.vigilservices.co.uk"
   ],
   "enquiryUrl": "https://app.vigilservices.co.uk/enquire/security",
+  "crm": {
+    "slotTemplatesApi": "https://app.vigilservices.co.uk/api/page-slot-templates",
+    "napRegistryApi": "https://app.vigilservices.co.uk/api/nap-registry"
+  },
   "forbiddenClaims": [
     "\\bACS\\b",
     "\\bISO\\s*(certified|\\d)",

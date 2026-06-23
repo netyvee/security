@@ -55,9 +55,28 @@ if (!fs.existsSync(CONFIG_PATH)) {
 }
 const cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
 
-const REQUIRED = ['site', 'canonicalBase', 'trailingSlash', 'nap'];
-for (const k of REQUIRED) {
-  if (cfg[k] === undefined) { console.error(`FATAL: config missing "${k}"`); process.exit(2); }
+// D1 (Phase 5): validate the config schema on every run. A missing/invalid
+// required field is a hard block — exit non-zero so CI fails and Vercel's
+// inverted ignore step cancels the build (fail-safe on a broken config).
+const cfgErrors = [];
+const reqTop = { site: 'string', domain: 'string', canonicalBase: 'string', trailingSlash: 'boolean' };
+for (const [k, t] of Object.entries(reqTop)) {
+  if (cfg[k] === undefined || cfg[k] === null) cfgErrors.push(`missing "${k}"`);
+  else if (typeof cfg[k] !== t) cfgErrors.push(`"${k}" must be a ${t}`);
+}
+if (!cfg.nap || typeof cfg.nap !== 'object') {
+  cfgErrors.push('missing "nap" object');
+} else {
+  if (!cfg.nap.phone) cfgErrors.push('missing "nap.phone"');
+  if (!cfg.nap.phoneE164) cfgErrors.push('missing "nap.phoneE164"');
+}
+if (!Array.isArray(cfg.forbiddenClaims) || cfg.forbiddenClaims.length === 0) {
+  cfgErrors.push('missing or empty "forbiddenClaims" array');
+}
+if (cfgErrors.length) {
+  console.error('FATAL: seo-governance.config.json is invalid (hard block):\n  - '
+    + cfgErrors.join('\n  - '));
+  process.exit(2);
 }
 
 const BASE = cfg.canonicalBase.replace(/\/$/, '');
@@ -135,6 +154,92 @@ const isExcluded = (route) =>
 // digit signature = last 10 digits (format-agnostic across 020.../+44...)
 const sig = (s) => (s.replace(/\D/g, '').slice(-10));
 const forbiddenSigs = new Set((cfg.nap.forbiddenPhones || []).map(sig));
+
+/** Fetch JSON from a CRM API with a timeout; returns null on any failure so an
+ *  unreachable CRM degrades to a soft warning rather than blocking the deploy. */
+async function fetchJson(url, ms = 12000) {
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), ms);
+    const res = await fetch(url, { signal: ctl.signal, headers: { Accept: 'application/json' } });
+    clearTimeout(t);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+/** Parse the image-slot interfaces out of types/page-templates.ts → { Interface:
+ *  [slotKeys] }. Used to verify the CRM's page_slot_templates never reference a
+ *  slot key the website type contract does not define (the Session-37 break). */
+function parseTsSlots(file) {
+  const out = {};
+  if (!fs.existsSync(file)) return out;
+  const src = fs.readFileSync(file, 'utf8');
+  for (const iface of ['ImageSlots', 'BoroughImageSlots', 'BlogImageSlots']) {
+    const m = src.match(new RegExp(`interface\\s+${iface}\\s*\\{([\\s\\S]*?)\\}`));
+    if (!m) continue;
+    out[iface] = [...m[1].matchAll(/^\s*(\w+)\??\s*:/gm)].map((x) => x[1]);
+  }
+  return out;
+}
+
+// ── CRM cross-checks (Phase 5 D3 + D4) — run before the NAP scan so the registry
+//    can augment the forbidden-number set. An unreachable CRM degrades to a soft
+//    warning (never blocks a website deploy on CRM downtime). ─────────────────
+const PAGE_TYPE_IFACE = { service: 'ImageSlots', homepage: 'ImageSlots',
+                          borough: 'BoroughImageSlots', blog: 'BlogImageSlots' };
+
+// D4: validate NAP against the CRM nap_registry (single source of truth).
+if (cfg.crm?.napRegistryApi) {
+  const reg = await fetchJson(cfg.crm.napRegistryApi);
+  const rows = reg?.registry || reg?.nap || (Array.isArray(reg) ? reg : null);
+  if (!rows) {
+    addSoft('S_NAP_REGISTRY', 'crm',
+      `NAP registry API unreachable (${cfg.crm.napRegistryApi}) — NAP not cross-checked vs registry`,
+      'verify CRM availability / endpoint');
+  } else {
+    const mine = rows.find((r) => r.division === cfg.division);
+    if (!mine) {
+      addSoft('S_NAP_REGISTRY', cfg.site,
+        `division "${cfg.division}" missing from nap_registry`, 'add it to the CRM nap_registry');
+    } else if (sig(mine.phone) !== sig(cfg.nap.phone)) {
+      addHard('H_NAP_REGISTRY', cfg.site,
+        `config nap.phone "${cfg.nap.phone}" != nap_registry "${mine.phone}" for division ${cfg.division}`,
+        'sync seo-governance.config.json nap.phone to the CRM nap_registry (single source of truth)');
+    }
+    // Every OTHER division's registry phone becomes a forbidden number here —
+    // data-driven cross-division contamination guard.
+    for (const r of (rows || [])) {
+      if (r.division !== cfg.division && r.phone) forbiddenSigs.add(sig(r.phone));
+    }
+  }
+}
+
+// D3: slot-contract parity — CRM page_slot_templates keys MUST be a subset of the
+// website type contract for each page type. A CRM key not in the TS interface is
+// the Session-37 build break; block it before it can ship.
+if (cfg.crm?.slotTemplatesApi) {
+  const crm = await fetchJson(cfg.crm.slotTemplatesApi);
+  const slots = crm?.slots || crm;
+  if (!slots || typeof slots !== 'object') {
+    addSoft('S_SLOT_CONTRACT', 'crm',
+      `slot-template API unreachable (${cfg.crm.slotTemplatesApi}) — slot parity not verified`,
+      'verify CRM availability / endpoint');
+  } else {
+    const ts = parseTsSlots(path.resolve(ROOT, 'types/page-templates.ts'));
+    for (const [pageType, keys] of Object.entries(slots)) {
+      const iface = PAGE_TYPE_IFACE[pageType];
+      if (!iface || !Array.isArray(keys)) continue;
+      const allowed = ts[iface] || [];
+      const extra = keys.filter((k) => !allowed.includes(k));
+      if (extra.length) {
+        addHard('H_SLOT_CONTRACT', 'types/page-templates.ts',
+          `CRM page_slot_templates for "${pageType}" use key(s) not in ${iface}: ${extra.join(', ')}`,
+          'Align the CRM PageSlotTemplateSeeder with types/page-templates.ts (Session-37 class)');
+      }
+    }
+  }
+}
 
 // ───────────────────────── collect pages ──────────────────────────────────
 const appFiles = walk(path.join(ROOT, 'app')).map((f) => path.relative(ROOT, f).replace(/\\/g, '/'));
