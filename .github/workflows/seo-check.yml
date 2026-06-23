@@ -46,3 +46,22 @@ jobs:
           name: seo-integrity-report
           path: seo-integrity-report.json
           if-no-files-found: ignore
+
+      # Deploy tagging (Phase 6 D3) — record this push as a deploy in the CRM
+      # for ranking-volatility attribution. Only on push to main, only after the
+      # gate above passed. Skips silently if DEPLOY_RECORD_TOKEN is not set.
+      - name: Record deploy (ranking attribution)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          DEPLOY_RECORD_TOKEN: ${{ secrets.DEPLOY_RECORD_TOKEN }}
+        run: |
+          if [ -z "$DEPLOY_RECORD_TOKEN" ]; then
+            echo "DEPLOY_RECORD_TOKEN not set — skipping deploy record."
+            exit 0
+          fi
+          PAGES=$(git diff --name-only HEAD~1 HEAD -- 'app/**/page.tsx' 2>/dev/null | wc -l | tr -d ' ')
+          curl -s -X POST "https://app.vigilservices.co.uk/api/deployments" \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Token: $DEPLOY_RECORD_TOKEN" \
+            -d "{\"site\":\"security\",\"commit_sha\":\"${{ github.sha }}\",\"pages_affected\":${PAGES:-0}}" \
+            && echo "deploy recorded (security)" || echo "deploy record POST failed (non-fatal)"
