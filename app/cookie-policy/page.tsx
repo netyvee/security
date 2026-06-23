@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [{ url: '/api/og', width: 1200, height: 630, alt: 'Vigil Security Services' }],
   },
-  alternates: { canonical: '/cookie-policy/' },
+  alternates: { canonical: '/cookie-policy' },
   robots: { index: true, follow: true },
 }
 

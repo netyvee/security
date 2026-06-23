@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Mobile Patrols London | Mobile Patrol Security Services',
     description:  'mobile patrol security London — SIA-licensed mobile patrol officers across Greater London. Cost-effective security patrols for offices, retail, and industrial premises. Directly employed, £10M insured.',
-    canonical:    'https://security.vigilservices.co.uk/mobile-patrols-london/',
+    canonical:    'https://security.vigilservices.co.uk/mobile-patrols-london',
     focusKeyword: 'mobile patrol security london',
   },
   h1:          'Mobile Patrol Security London',

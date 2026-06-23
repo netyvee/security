@@ -65,7 +65,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Tower Hamlets | B2B Contracts | Vigil',
     description:  'Commercial security Tower Hamlets. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-tower-hamlets/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-tower-hamlets',
     focusKeyword: 'commercial security tower hamlets',
   },
   borough:      'Tower Hamlets',

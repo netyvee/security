@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Concierge Security London | SIA-Licensed Officers | Vigil',
     description:  'concierge security London — SIA-licensed concierge security officers for residential buildings and corporate premises across Greater London. Directly employed, DBS-checked, £10M insured.',
-    canonical:    'https://security.vigilservices.co.uk/concierge-security-london/',
+    canonical:    'https://security.vigilservices.co.uk/concierge-security-london',
     focusKeyword: 'concierge security london',
   },
   h1:          'Concierge Security London',

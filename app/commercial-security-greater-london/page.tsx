@@ -65,7 +65,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Greater London | B2B Contracts | Vigil',
     description:  'SIA-licensed commercial security services across Greater London.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-greater-london/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-greater-london',
     focusKeyword: 'commercial security greater london',
   },
   borough:      'Greater London',

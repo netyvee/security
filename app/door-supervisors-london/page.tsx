@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Door Supervisors London | SIA-Licensed Door Supervisors | Vigil',
     description:  'Door supervisors London — SIA-licensed door supervisors for licensed premises, pubs, bars, nightclubs, and events across Greater London. Directly employed, DBS-checked, £10M insured.',
-    canonical:    'https://security.vigilservices.co.uk/door-supervisors-london/',
+    canonical:    'https://security.vigilservices.co.uk/door-supervisors-london',
     focusKeyword: 'door supervisors london',
   },
   h1:          'Door Supervisors London',

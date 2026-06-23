@@ -73,7 +73,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Ealing | B2B Contracts | Vigil',
     description:  'Commercial security Ealing. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-ealing/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-ealing',
     focusKeyword: 'commercial security ealing',
   },
   borough:      'Ealing',

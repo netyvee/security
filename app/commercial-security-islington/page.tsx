@@ -73,7 +73,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Islington | B2B Contracts | Vigil',
     description:  'Commercial security Islington. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-islington/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-islington',
     focusKeyword: 'commercial security islington',
   },
   borough:      'Islington',

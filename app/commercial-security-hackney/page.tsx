@@ -73,7 +73,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Hackney | B2B Contracts | Vigil',
     description:  'Commercial security Hackney. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-hackney/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-hackney',
     focusKeyword: 'commercial security hackney',
   },
   borough:      'Hackney',

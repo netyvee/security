@@ -56,7 +56,7 @@ const postData: BlogPostData = {
   seo: {
     title:        'BS7858 Vetting Explained: Why It Matters | Vigil',
     description:  'Understanding BS7858 vetting standards for security personnel. Learn what BS7858 screening involves, why it matters for your business, and how it differs from basic DBS checks.',
-    canonical:    'https://security.vigilservices.co.uk/blog/bs7858-vetting-explained/',
+    canonical:    'https://security.vigilservices.co.uk/blog/bs7858-vetting-explained',
     focusKeyword: 'BS7858 vetting security personnel',
   },
 

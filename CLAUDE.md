@@ -6,6 +6,22 @@
 
 ---
 
+## MANDATORY — SEO GOVERNANCE GATE (read before any change)
+
+Before making ANY change to this repo:
+1. Read SEO-GOVERNANCE.md (the binding rules for this site).
+2. Run `node scripts/seo-integrity-check.mjs --config seo-governance.config.json`
+   and CONFIRM IT EXITS 0 (clean). If it is not clean, fixing the existing
+   findings is the first task — do not add new work on top of a red gate.
+3. After your change, run the check again AND `npm run build`; commit only if both pass.
+
+The check is enforced in CI on every push (.github/workflows/seo-check.yml): a wrong
+phone number (this site = 020 3973 8892 only; 020 3973 8887 is permanently forbidden),
+a canonical→redirect conflict, a sitemap/canonical mismatch, or a missing canonical
+BLOCKS the deploy. NAP and build failures are never overridable.
+
+---
+
 ## COMPANY
 
 Vigil Services Ltd

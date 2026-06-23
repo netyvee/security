@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Key Holding & Alarm Response London | 24/7 Alarm Response | Vigil',
     description:  'key holding alarm response London — SIA-licensed officers respond to your alarm activations 24/7. Professional keyholding for offices, retail, and commercial premises across Greater London.',
-    canonical:    'https://security.vigilservices.co.uk/key-holding-alarm-response-london/',
+    canonical:    'https://security.vigilservices.co.uk/key-holding-alarm-response-london',
     focusKeyword: 'key holding & alarm response london',
   },
   h1:          'Key Holding & Alarm Response London',

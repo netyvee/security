@@ -73,7 +73,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Lewisham | B2B Contracts | Vigil',
     description:  'Commercial security Lewisham. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-lewisham/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-lewisham',
     focusKeyword: 'commercial security lewisham',
   },
   borough:      'Lewisham',

@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Event Security London | SIA-Licensed Event Security Officers',
     description:  'event security London — SIA-licensed Door Supervisors and event security officers for corporate events, private functions, and public gatherings across Greater London. £10M insured.',
-    canonical:    'https://security.vigilservices.co.uk/event-security-london/',
+    canonical:    'https://security.vigilservices.co.uk/event-security-london',
     focusKeyword: 'event security london',
   },
   h1:          'Event Security London',

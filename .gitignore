@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SEO integrity check generated report (CI artifact, not committed)
+seo-integrity-report.json

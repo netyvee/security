@@ -73,7 +73,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Barnet | B2B Contracts | Vigil',
     description:  'Commercial security Barnet. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-barnet/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-barnet',
     focusKeyword: 'commercial security barnet',
   },
   borough:      'Barnet',

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     images: [{ url: '/api/og', width: 1200, height: 630, alt: 'Vigil Security Services' }],
   },
   alternates: {
-    canonical: '/environmental-commitment/',
+    canonical: '/environmental-commitment',
   },
   robots: {
     index: true,

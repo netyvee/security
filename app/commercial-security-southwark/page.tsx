@@ -65,7 +65,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Southwark | B2B Contracts | Vigil',
     description:  'Commercial security Southwark. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-southwark/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-southwark',
     focusKeyword: 'commercial security southwark',
   },
   borough:      'Southwark',

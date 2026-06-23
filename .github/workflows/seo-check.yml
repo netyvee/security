@@ -1,0 +1,48 @@
+name: SEO Integrity Gate
+
+# Runs after `npm run build`, before Vercel promotes the deploy.
+# Blocks the deploy if seo-integrity-check.mjs finds a hard block
+# (canonical→redirect, sitemap/canonical mismatch, wrong NAP phone,
+#  missing canonical). See SEO-GOVERNANCE.md.
+#
+# To make Vercel itself refuse a failing build, set the project's
+# "Ignored Build Step" to: node scripts/seo-integrity-check.mjs --config seo-governance.config.json
+# (exit non-zero skips the build). This workflow is the authoritative line either way.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  seo-gate:
+    name: SEO Integrity Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (TypeScript / Next.js)
+        run: npm run build
+
+      - name: SEO integrity check
+        env:
+          # head_commit.message carries any [seo-override: reason] flag on push
+          SEO_COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: node scripts/seo-integrity-check.mjs --config seo-governance.config.json
+
+      - name: Upload SEO report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-integrity-report
+          path: seo-integrity-report.json
+          if-no-files-found: ignore

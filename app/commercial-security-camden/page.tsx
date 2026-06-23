@@ -65,7 +65,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Camden | B2B Contracts | Vigil',
     description:  'Commercial security Camden. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-camden/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-camden',
     focusKeyword: 'commercial security camden',
   },
   borough:      'Camden',

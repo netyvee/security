@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Retail Security London | Loss Prevention | Vigil',
     description:  'retail security London — SIA-licensed retail security officers and store detectives for shops and shopping centres across Greater London. Loss prevention, shoplifting deterrence.',
-    canonical:    'https://security.vigilservices.co.uk/retail-security-london/',
+    canonical:    'https://security.vigilservices.co.uk/retail-security-london',
     focusKeyword: 'retail security london',
   },
   h1:          'Retail Security London',

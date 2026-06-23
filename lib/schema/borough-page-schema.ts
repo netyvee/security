@@ -11,7 +11,9 @@ export function generateBoroughPageSchema(
   const siteUrl  = isClean
     ? 'https://cleaning.vigilservices.co.uk'
     : 'https://security.vigilservices.co.uk'
-  const phone    = isClean ? '+442030986037' : '+442039738892'
+  // Security-site NAP only — single number, never the cleaning number.
+  // Wrong/foreign numbers are a CI hard block (seo-integrity-check.mjs H_NAP_PHONE).
+  const phone    = '+442039738892'
   const serviceType = isClean
     ? 'Commercial Cleaning'
     : 'Security Services'

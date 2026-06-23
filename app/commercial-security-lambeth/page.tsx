@@ -73,7 +73,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Lambeth | B2B Contracts | Vigil',
     description:  'Commercial security Lambeth. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-lambeth/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-lambeth',
     focusKeyword: 'commercial security lambeth',
   },
   borough:      'Lambeth',

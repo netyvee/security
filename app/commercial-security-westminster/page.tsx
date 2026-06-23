@@ -65,7 +65,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Westminster | B2B Contracts | Vigil',
     description:  'Commercial security Westminster. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-westminster/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-westminster',
     focusKeyword: 'commercial security westminster',
   },
   borough:      'Westminster',

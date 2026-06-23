@@ -71,7 +71,7 @@ const postData: BlogPostData = {
   seo: {
     title:        'Licensing Act 2003: Security for London Venues | Vigil',
     description:  'Complete guide to security requirements under the Licensing Act 2003 for pubs, clubs, and licensed premises in London. Understand your legal obligations and conditions.',
-    canonical:    'https://security.vigilservices.co.uk/blog/licensing-act-2003-security/',
+    canonical:    'https://security.vigilservices.co.uk/blog/licensing-act-2003-security',
     focusKeyword: 'Licensing Act 2003 security London venues',
   },
 

@@ -65,7 +65,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security Canary Wharf | B2B Contracts | Vigil',
     description:  'Commercial security Canary Wharf. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-canary-wharf/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-canary-wharf',
     focusKeyword: 'commercial security canary wharf',
   },
   borough:      'Canary Wharf',

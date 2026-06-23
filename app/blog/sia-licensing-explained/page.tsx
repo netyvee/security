@@ -56,7 +56,7 @@ const postData: BlogPostData = {
   seo: {
     title:        'SIA Licensing Explained: Hiring Security London | Vigil',
     description:  'Complete guide to SIA licensing for security officers in London. Learn what SIA approval means, how to verify licences, and why it matters for your business.',
-    canonical:    'https://security.vigilservices.co.uk/blog/sia-licensing-explained/',
+    canonical:    'https://security.vigilservices.co.uk/blog/sia-licensing-explained',
     focusKeyword: 'SIA licensing security London',
   },
 

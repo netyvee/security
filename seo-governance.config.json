@@ -1,0 +1,35 @@
+{
+  "site": "security",
+  "domain": "https://security.vigilservices.co.uk",
+  "canonicalBase": "https://security.vigilservices.co.uk",
+  "trailingSlash": false,
+  "division": "security",
+  "nap": {
+    "phone": "020 3973 8892",
+    "phoneE164": "+442039738892",
+    "forbiddenPhones": ["020 3098 6037", "020 3973 8887"],
+    "companyReg": "11756806",
+    "addressPostcode": "IG1 4PU"
+  },
+  "crossDivisionDomains": [
+    "cleaning.vigilservices.co.uk",
+    "care.vigilservices.co.uk",
+    "staffing.vigilservices.co.uk"
+  ],
+  "enquiryUrl": "https://app.vigilservices.co.uk/enquire/security",
+  "excludeRoutes": ["/api", "/admin", "/portal"],
+  "scanDirs": ["app", "components", "lib", "config"],
+  "scanDocs": false,
+  "scoring": {
+    "regressionThreshold": 10,
+    "baselineFile": ".seo-baseline.json"
+  },
+  "override": {
+    "overridableHardRules": [
+      "H_CANONICAL_FORM",
+      "H_CANONICAL_REDIRECT",
+      "H_SITEMAP_CANONICAL",
+      "H_MISSING_CANONICAL"
+    ]
+  }
+}

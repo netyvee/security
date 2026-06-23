@@ -65,7 +65,7 @@ const pageData: BoroughPageData = {
   seo: {
     title:        'Commercial Security City Of London | B2B Contracts | Vigil',
     description:  'Commercial security City Of London. Directly employed. DBS checked. 15-minute response.',
-    canonical:    'https://security.vigilservices.co.uk/commercial-security-city-of-london/',
+    canonical:    'https://security.vigilservices.co.uk/commercial-security-city-of-london',
     focusKeyword: 'commercial security city of london',
   },
   borough:      'City Of London',

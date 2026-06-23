@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'CCTV Monitoring London | SIA-Licensed Security | Vigil',
     description:  'CCTV monitoring London — SIA-licensed CCTV monitoring officers and CCTV operators for commercial premises across Greater London. Loss prevention, security breaches deterrence.',
-    canonical:    'https://security.vigilservices.co.uk/cctv-monitoring-london/',
+    canonical:    'https://security.vigilservices.co.uk/cctv-monitoring-london',
     focusKeyword: 'cctv monitoring london',
   },
   h1:          'CCTV Monitoring London',

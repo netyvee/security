@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Construction Site Security London | SIA-Licensed | Vigil',
     description:  'construction site security London — SIA-licensed officers and site supervisors for construction sites across Greater London. Access control, site theft deterrence. Directly employed, £10M insured.',
-    canonical:    'https://security.vigilservices.co.uk/construction-site-security-london/',
+    canonical:    'https://security.vigilservices.co.uk/construction-site-security-london',
     focusKeyword: 'construction site security london',
   },
   h1:          'Construction Site Security London',

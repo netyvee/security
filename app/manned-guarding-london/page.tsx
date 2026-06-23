@@ -95,7 +95,7 @@ const pageData: ServicePageData = {
   seo: {
     title:        'Manned Guarding London | SIA-Licensed Security Officers',
     description:  'manned guarding London — SIA-licensed officers, directly employed, £10M insured. Professional on-site security for offices, retail, and commercial premises across Greater London.',
-    canonical:    'https://security.vigilservices.co.uk/manned-guarding-london/',
+    canonical:    'https://security.vigilservices.co.uk/manned-guarding-london',
     focusKeyword: 'manned guarding london',
   },
   h1:          'Manned Guarding London',
