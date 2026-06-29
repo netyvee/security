@@ -6,6 +6,7 @@ import CTASection from '@/components/shared/CTASection'
 import Footer from '@/components/shared/Footer'
 import Nav from '@/components/shared/Nav'
 import TrustBar from '@/components/shared/TrustBar'
+import { getMarkdownPostSummaries } from '@/lib/blog/markdownPosts'
 
 export const metadata: Metadata = {
   title: 'Security Industry Insights | Vigil Security Services Blog',
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/blog' },
 }
 
-const blogPosts = [
+const legacyPosts = [
   {
     slug: 'sia-licensing-explained',
     title: 'SIA Licensing Explained — What to Check Before Hiring a Security Company in London',
@@ -57,6 +58,14 @@ const blogPosts = [
     image: 'https://res.cloudinary.com/duhicmygg/image/fetch/f_auto,q_auto,w_800/https://images.unsplash.com/photo-1436450412740-6b988f486c6b',
   },
 ]
+
+// Merge CRM-generated markdown posts with the bespoke legacy posts.
+// Markdown wins on a slug collision; newest first. Feeds both the grid below
+// and the Blog JSON-LD schema.
+const markdownPosts = getMarkdownPostSummaries()
+const seenSlugs = new Set(markdownPosts.map((p) => p.slug))
+const blogPosts = [...markdownPosts, ...legacyPosts.filter((p) => !seenSlugs.has(p.slug))]
+  .sort((a, b) => (a.date < b.date ? 1 : -1))
 
 const schema = {
   '@context': 'https://schema.org',

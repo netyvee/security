@@ -1,0 +1,2 @@
+# CRM-generated blog posts are committed here as {slug}.md by the BlogChannelAdapter.
+# The markdown loader (lib/blog/markdownPosts.ts) renders them via /blog/[slug].
